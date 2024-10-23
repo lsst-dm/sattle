@@ -1,0 +1,34 @@
+
+
+
+API service:
+
+
+PUT to /visit_cache
+
+JSON {'visit_id': 1234,
+      'exposure_start_mjd': 1234.566
+      'exposure_end_mjd': 1234.999
+      'boresight_ra': 12.23   # decimal degrees
+      'boresight_dec': -20.5}
+
+times and boresight values passed to the sattle method 
+
+
+
+
+PUT to /diasource_whitelist
+
+JSON {'visit_id': 1234,
+      'detector_id': 18,
+      'diasources': [{'diasource_id: 12345, 'bbox': [[ra1, dec1], [ra2, dec2], [ra3, dec3], [ra4, dec4]]}, 
+                     { ... another diasource},...  ]
+
+and returns
+
+JSON {'visit_id': 1234,
+      'detector_id': 18,
+      'whitelist': [1234, 2345, another allowed_diasource_id, ...]
+
+
+sattle filter task will take the cache computed in /visit_cache and the diasource structure/dataframe with bboxes and return the list of whitelisted ids.
