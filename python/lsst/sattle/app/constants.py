@@ -1,3 +1,4 @@
+# flake8: noqa
 # https://gist.github.com/jbn/fc90e3ddbc5c60c698d07b3df30004c8
 import os
 import time
