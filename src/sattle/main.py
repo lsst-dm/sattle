@@ -32,7 +32,7 @@ async def cache_update(visit_satellite_cache):
             # TODO: consider if we need to think about IERS_A
             # or just use non-astropy timestamps
 
-            for visit_id, cache in visit_satellite_cache:
+            for visit_id, cache in visit_satellite_cache.items():
                 if time_now > (cache['compute_time'] + 
                                expire_cache_time_min * 3600  * 24):
                     try:
@@ -109,8 +109,9 @@ async def visit_handler(request):
         #matched_satellites  = sattle.run()# boresight and time
 
         # TODO: make sure this works as expected with no results
+        matched_satellites = ['this is', 'not real']
 
-        #cache[data['visit_id']] = matched_satellites
+        cache[data['visit_id']]['matched_satellites'] = matched_satellites
         cache[data['visit_id']]['compute_time'] = time()
         print(cache[data['visit_id']])
 
@@ -197,7 +198,7 @@ def main():
     HOST = '127.0.0.1'
     PORT = '9999'
 
-    visit_satellite_cache = {}
+    visit_satellite_cache = defaultdict(dict)
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(build_server(HOST, PORT, visit_satellite_cache))
