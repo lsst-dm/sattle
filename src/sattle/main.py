@@ -85,6 +85,16 @@ async def aio_scheduler_status_handler(request):
  
 
 
+async def get_cache_handler(request):
+    """Precompute satellite cache given visit information"""
+    data = await request.json()
+    logging.info(data)
+
+    cache  = request.app['visit_satellite_cache']
+
+
+    return web.json_response(cache)
+
 async def visit_handler(request):
     """Precompute satellite cache given visit information"""
     data = await request.json()
@@ -107,9 +117,9 @@ async def visit_handler(request):
     try:
         # TODO: use actual API 
         #matched_satellites  = sattle.run()# boresight and time
+        matched_satellites = ['this is', 'not real']
 
         # TODO: make sure this works as expected with no results
-        matched_satellites = ['this is', 'not real']
 
         cache[data['visit_id']]['matched_satellites'] = matched_satellites
         cache[data['visit_id']]['compute_time'] = time()
@@ -148,6 +158,7 @@ async def diasource_handler(request):
     # TODO: check bboxes are configured as expected
 
     visit_id = data['visit_id']
+    detector_id = data['detector_id']
 
     cache = request.app['visit_satellite_cache']
 
@@ -184,6 +195,7 @@ async def build_server(address, port, visit_satellite_cache):
     loop = asyncio.get_event_loop()
     app = web.Application(loop=loop)
     app.router.add_route('PUT', "/visit_cache", visit_handler)
+    app.router.add_route('GET', "/visit_cache", get_cache_handler)
     app.router.add_route('PUT', "/diasource_allow_list", diasource_handler)
 
     app['visit_satellite_cache'] = visit_satellite_cache
@@ -211,6 +223,6 @@ def main():
     except KeyboardInterrupt:
         logging.info("Shutting Down!")
         # Canceling pending tasks and stopping the loop
-        asyncio.gather(*asyncio.Task.all_tasks()).cancel()
+        asyncio.gather(*asyncio.all_tasks()).cancel()
         loop.stop()
         loop.close()
