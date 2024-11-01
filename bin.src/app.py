@@ -1,4 +1,4 @@
 """Main sattle web API"""
-from sattle.main import main
+from lsst.sattle.app.main import main
 
 main()
