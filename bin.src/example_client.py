@@ -9,10 +9,22 @@ PORT = 9999
 print('sending data to the visit cache')
 
 
-r = requests.put(f'{HOST}:{PORT}/visit_cache', json = 
-         {"visit_id":1234, "exposure_start_mjd":567.34, 
-          "exposure_end_mjd":567.36,
-          "boresight_ra":180.0, "boresight_dec": -23.4})
+#r = requests.put(f'{HOST}:{PORT}/visit_cache', json =
+#         {"visit_id":1234, "exposure_start_mjd":60638.14213550567,
+#          "exposure_end_mjd":60638.14263550567,
+#          "boresight_ra":37.44, "boresight_dec": 7.29})
+
+#Use this for 2024112300242
+#r = requests.put(f'{HOST}:{PORT}/visit_cache', json =
+#         {"visit_id":1234, "exposure_start_mjd":60638.14213799195,
+#          "exposure_end_mjd":60638.14248521417,
+#          "boresight_ra":37.44, "boresight_dec": 7.29})
+
+# USe for 2024112300225
+r = requests.put(f'{HOST}:{PORT}/visit_cache', json =
+         {"visit_id":1234, "exposure_start_mjd":60638.12818957747,
+          "exposure_end_mjd":60638.12853679968,
+          "boresight_ra":38.1218149812, "boresight_dec": 6.5492319878})
 
 print(f'status code: {r.status_code}')
 print(r.text)

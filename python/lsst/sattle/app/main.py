@@ -16,25 +16,47 @@ TLE_URL = 'https://raw.githubusercontent.com/Bill-Gray/sat_code/master/test.tle'
 def read_tle_from_url(url, tle_source):
     tles = []
 
+    # TODO: Currently this requires manual input of ra/dec. Make this read
+    # from a file so it can be checked faster.
     if tle_source == 'satchecker':
         params = {
-            "latitude": -30.244633,
-            "longitude": -70.749417,
-            "fov": 2,
-            "start_time_jd": 2460638.6421355,
-            "duration": 5,
-            "ra": 37.44,
-            "dec": 7.29,
-        }
-        base_url = "https://dev.satchecker.cps.iau.noirlab.edu"
-        test_url = f"{base_url}/tools/tles-at-epoch/"
+            "latitude": -30.244633333333333,
+            "longitude": -70.74941666666666,
+            "fov_radius": 1,
+            "elevation": 2662.75,
+            "start_time_jd": 2460638.6277619335,
+            "duration": 30,
+            "ra": 38.1218149812,
+            "dec": 6.5492319878,
+            "group_by": 'satellite',
+            "is_illuminated": True, }
 
-        response = requests.get(test_url, params=params, timeout=10)
+        base_url = "https://dev.satchecker.cps.iau.noirlab.edu"
+        test_url = f"{base_url}/fov/satellite-passes/"
+
+        response = requests.get(test_url, params=params, timeout=70)
 
         if response.status_code == 200:
-            for entry in response.json()[0]['data']:
-                tle = TLE(entry['tle_line1'], entry['tle_line2'])
-                tles.append(tle)
+
+            satellite_json = response.json()['data']['satellites']
+
+            for sat_name in satellite_json.keys():
+                norad_id = satellite_json[sat_name]['norad_id']
+
+                params = {
+                    "id": norad_id,
+                    "id_type": 'catalog',
+                    "start_date_jd": 2460637,
+                    "end_date_jd": 2460639, }
+
+                base_url = "https://dev.satchecker.cps.iau.noirlab.edu"
+                test_url = f"{base_url}/tools/get-tle-data/"
+
+                response = requests.get(test_url, params=params, timeout=70)
+
+                for entry in response.json():
+                    tle = TLE(entry['tle_line1'], entry['tle_line2'])
+                    tles.append(tle)
         else:
             print(
                 f"Failed to fetch TLE data. Status code: {response.status_code}")
@@ -59,7 +81,14 @@ def read_tle_from_url(url, tle_source):
             print(
                 f"Failed to fetch TLE data. Status code: {response.status_code}")
 
+    # TODO: remove, used for testing only
+    with open('satchecker_output.txt', 'w') as file:
+        for tle in tles:
+            file.write(f"{tle.line1}\n")
+            file.write(f"{tle.line2}\n")
+
     return tles
+
 
 class TLE:
     def __init__(self, line1, line2):
@@ -74,16 +103,10 @@ async def cache_update(visit_satellite_cache, tles):
     """Main loop that clears the cache according to the clock."""
     interval = 10  # seconds
     expire_cache_time_min = 30  # minutes
-    # Add different interval for tles
-    # Maybe do seperate function, same pattern as this
 
     while True:
         try:
             await asyncio.sleep(interval)
-
-            # TODO: either here, or in some sort of cron, need to check for
-            # updated catalogs
-            tles = read_tle_from_url(TLE_URL, "satchecker")
 
             time_now = time()
             # TODO: consider if we need to think about IERS_A
@@ -103,32 +126,16 @@ async def cache_update(visit_satellite_cache, tles):
 
     return
 
+
 async def tle_update(visit_satellite_cache, tles):
-    """Main loop that clears the cache according to the clock."""
-    interval = 600  # seconds
-    expire_cache_time_min = 30  # minutes
-    # Add different interval for tles
-    # Do we need to expire the list? It isn't cached per say so no?
-    # Maybe do seperate function, same pattern as this
+    """Main loop that clears the tle cache according to the clock."""
+    interval = 600000  # seconds
 
     while True:
         try:
             await asyncio.sleep(interval)
 
-            # TODO: either here, or in some sort of cron, need to check for
-            # updated catalogs
-            tles = read_tle_from_url(TLE_URL)
-
-            time_now = time()
-            # TODO: consider if we need to think about IERS_A
-            # or just use non-astropy timestamps
-
-            for visit_id, cache in visit_satellite_cache.items():
-                if time_now > (cache['compute_time'] + expire_cache_time_min * 3600 * 24):
-                    try:
-                        visit_satellite_cache.pop(visit_id, None)
-                    except KeyError:
-                        continue
+            tles = read_tle_from_url(TLE_URL, 'satchecker')  # noqa
 
         except Exception as e:
             # So you can observe on disconnects and such.
@@ -140,9 +147,6 @@ async def tle_update(visit_satellite_cache, tles):
 
 async def aio_scheduler_status_handler(request):
     """Status monitor"""
-    import pydevd_pycharm
-    pydevd_pycharm.settrace('localhost', port=8888, stdoutToServer=True,
-                            stderrToServer=True)
     # http://HOST:PORT/?interval=90
     interval = int(request.GET.get('interval', 1))
 
@@ -213,7 +217,7 @@ async def visit_handler(request):
                                             exposure_end_mjd=data['exposure_end_mjd'],
                                             boresight_ra=data['boresight_ra'],
                                             boresight_dec=data['boresight_dec'],
-                                            tles = tles)  # boresight and time
+                                            tles=tles)  # boresight and time
 
         # TODO: make sure this works as expected with no results
 
@@ -312,7 +316,7 @@ def main():
     logging.info("Server ready!")
 
     task = loop.create_task(cache_update(visit_satellite_cache, tles)) # noqa
-    # Where does visit handler get called so it always has the sattleTask? Does it need to be created here???
+    tle_task = loop.create_task(tle_update(visit_satellite_cache, tles)) # noqa
     try:
         loop.run_forever()
     except KeyboardInterrupt:

@@ -7,7 +7,7 @@ import lsst.utils.tests
 
 from lsst.sattle.sattlePy import SattleTask, SattleFilterTask
 
-def generate_bboxs():
+def generate_bboxes():
     pass
 
 class FilterSattleTaskTest(unittest.TestCase):
@@ -22,10 +22,10 @@ class FilterSattleTaskTest(unittest.TestCase):
     def test_run(self):
         self.assertEqual(True, True)  # add assertion here
 
-    def test_check_tracts(self):
+    def test_check_tracks(self):
         self.assertEqual(True, True)  # add assertion here
 
-    def test_satellite_tracts(self):
+    def test_satellite_tracks(self):
         psf = 0.5
         sat_coords = np.array([[[10, 15],
                        [1, 1],
@@ -38,8 +38,7 @@ class FilterSattleTaskTest(unittest.TestCase):
 
         satTask = SattleFilterTask()
 
-        tracts = satTask.satellite_tracts(psf, sat_coords)
-        print(tracts)
+        tracks = satTask.satellite_tracks(psf, sat_coords)
         # self.assertEqual(len(tracts), 4)
         # self.assertEqual(True, True)  # add assertion here
 
@@ -57,6 +56,9 @@ class FilterSattleTaskTest(unittest.TestCase):
 
         angles = satTask.find_corners(np.array(sat_coords), 5)
 
+    def test_extend_line(self):
+        satTask = SattleFilterTask()
+        satTask.extend_line(2,3, 1,2,.1)
 
 class SattleTaskTest(unittest.TestCase):
 

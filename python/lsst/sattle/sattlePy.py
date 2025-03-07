@@ -1,9 +1,11 @@
 from lsst.sattle import sattle
 import numpy as np
+from astropy.time import Time
 
 import lsst.pex.config as pexConfig
 import lsst.pipe.base as pipeBase
 import lsst.sphgeom as sphgeom
+import warnings
 
 
 __all__ = ["SattleConfig", "SattleTask"]
@@ -27,7 +29,6 @@ class SattleConfig(pexConfig.Config):
     search_buffer = pexConfig.Field(
         dtype=float,
         default=1680.0,
-        # default=9680.0,
         doc="Search radius buffer in arcseconds/s. Based on estimated 4 degrees "
             "distance travelled in 30 seconds, which is 480 arcseconds"
             " per second.",
@@ -78,17 +79,22 @@ class SattleTask(pipeBase.Task):
             A two-dimensional array that contains a sub array of paired ra and
             dec coordinates for satellites which cross through a given region.
         """
-
         inputs = sattle.Inputs()
-        exposure_time = (exposure_end_mjd - exposure_start_mjd) * 86400.0
+        # Everything should be in astropy.time
+        # This gets us the time in seconds
+        time_start = Time(exposure_start_mjd, format='mjd', scale='tai')
+        time_end = Time(exposure_end_mjd, format='mjd', scale='tai')
+        exposure_time = (time_end - time_start).sec
         inputs.target_ra = boresight_ra
         inputs.target_dec = boresight_dec
+        # Search radius in degrees.
         inputs.search_radius = (self.config.detector_radius
                                 + self.config.search_buffer*exposure_time) / 3600.0
         inputs.ht_in_meters = self.config.height
-        inputs.jd = [exposure_start_mjd, exposure_end_mjd]
+        inputs.jd = [time_start.utc.jd, time_end.utc.jd]
         satellite_ra = []
         satellite_dec = []
+        satellite_list = []
         for single_tle in tles:
 
             tle = sattle.TleType()
@@ -102,6 +108,8 @@ class SattleTask(pipeBase.Task):
                 # TODO: Remove print in sattle.so
                 satellite_ra.append(list(out.ra))
                 satellite_dec.append(list(out.dec))
+                if tle.norad_number not in satellite_list:
+                    satellite_list.append(tle.norad_number)
 
         satellite_positions = [satellite_ra, satellite_dec]
 
@@ -140,9 +148,6 @@ class SattleFilterTask(pipeBase.Task):
         If the bounding boxes do not overlap with the satellite tracks, then
         the source Ids are passed back as a allow list.
         """
-        import pydevd_pycharm
-        pydevd_pycharm.settrace('localhost', port=8888, stdoutToServer=True,
-                                stderrToServer=True)
         track_width = self.config.track_width
         sat_coords = np.array(sat_coords['matched_satellites'])
         bboxes = []
@@ -151,11 +156,12 @@ class SattleFilterTask(pipeBase.Task):
             bboxes.append(diaSource['bbox'])
             sourceIds.append(diaSource['diasource_id'])
         if not sat_coords.any():
-            raise Warning("Satellite coordinates empty, cannot calculate satellite tracks.")
+            warnings.warn("Satellite coordinates empty, No satellite tracks calculated.")
+            return sourceIds
         bbox_sph_coords = self.calc_bbox_sph_coords(bboxes)
-        satellite_tracks = self.satellite_tracks(track_width, sat_coords) #tracks
+        satellite_tracks = self.satellite_tracks(track_width, sat_coords)
 
-        id_allow_list = self._check_tracks(bbox_sph_coords, satellite_tracks, sourceIds) #Sphere coords bboxes
+        id_allow_list = self._check_tracks(bbox_sph_coords, satellite_tracks, sourceIds)
 
         return id_allow_list
 
@@ -175,11 +181,10 @@ class SattleFilterTask(pipeBase.Task):
             Array containing the bounding boxes in spherical coordinates
         """
 
-        sphere_bboxes = []
         # Make this array math friendly
         sphere_bboxes = []
-        # Currently this will fail if there is a mismatch between where the satellites are
-        # and the boxes???
+        # Currently this will fail if there is a mismatch between where the
+        # satellites are and the boxes???
         for bbox in bboxes:
 
             sphere_bboxes.append(sphgeom.ConvexPolygon([
@@ -189,35 +194,48 @@ class SattleFilterTask(pipeBase.Task):
                 sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[3][0], bbox[3][1]))
             ]))
 
-        # Converted vectors isn't being used, what are we doing here?
+        # Converted vectors isn't being used, what are we doing here? Want this
+        # to be faster but currently incompatible need to rewrite
         # converted_vectors = np.apply_along_axis(lambda bbox: [
-        #    sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[0], bbox[1])),
-        #    sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[2], bbox[3])),
-        #    sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[4], bbox[5])),
-        #    sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[6], bbox[7]))
+        #   sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[0], bbox[1])),
+        #   sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[2], bbox[3])),
+        #   sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[4], bbox[5])),
+        #   sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[6], bbox[7]))
         # ], axis=-1, arr=bboxes)
 
         return np.array(sphere_bboxes)
 
     @staticmethod
-    def find_corners(sat_coords, length):
-        # currently assumes one point at a time but we want array math
+    def find_corners(self, sat_coords, length):
+        """ Takes the satellite coordinates which are in lat and lon and
+        calculates  the corners of the satellites path. This is done by looking
+        at the endpoints of the satellites movement, finding the perpendicular
+        line to those endpoints, and growing the perpendicular line
+        to a specific length. We also add a buffer to the satellite endpoints
+        to ensure the entire satellite path is included."""
+        # TODO: currently assumes one point at a time but we want array math
+        # TODO: Confirm that the math doesn't care about wrapping around 360/90
         x1, y1 = sat_coords[:, :, 0]
         x2, y2 = sat_coords[:, :, 1]
+
+        # Extend the initial satellite points so that we create a buffer zone
+        # around the two end points.
+        x1, y1, x2, y2 = self._extend_line(x1, y1, x2, y2, length)
 
         corner1 = np.zeros((2, len(x1)))
         corner2 = np.zeros((2, len(x1)))
         corner3 = np.zeros((2, len(x1)))
         corner4 = np.zeros((2, len(x1)))
 
-        # Need to make this specific here for
-
+        # Mask will be used to seperate any horizontal or vertical satellite
+        # paths out.
         mask = np.ones(len(x1), dtype=bool)
 
         horizontal = np.where(abs(x2 - x1) == 0)[0]
         mask[horizontal] = False
 
         if horizontal.size != 0:  # No slope just to corners here
+
             corner1[0][horizontal], corner1[1][horizontal] = x1[horizontal] + length, y1[horizontal]
             corner2[0][horizontal], corner2[1][horizontal] = x1[horizontal] - length, y1[horizontal]
             corner3[0][horizontal], corner3[1][horizontal] = x2[horizontal] + length, y2[horizontal]
@@ -232,21 +250,25 @@ class SattleFilterTask(pipeBase.Task):
             corner3[0][vertical], corner3[1][vertical] = x2[vertical], y2[vertical] + length
             corner4[0][vertical], corner4[1][vertical] = x2[vertical], y2[vertical] - length
 
-        # Need a better name
+        # Need a better name, angled isn't descriptive
+        # Mask prevents the angle calculation from being done on horizontal
+        # and vertical paths
         angled = np.arange(len(x1))[mask]
 
         perpendicular_slope = -1 / (y2[angled] - y1[angled]) / (x2[angled] - x1[angled])
 
+        # TODO: Currently on the perpendicular line gets expanded, not the
+        #  original center line
         # Find two points on the perpendicular line
-        # Move a small distance 'length' in the x direction
+        # Expand to make a perpendicular line of length x
         dx = length / (1 + perpendicular_slope ** 2) ** 0.5  # Normalize direction
         dy = perpendicular_slope * dx
 
-        # Points on the perpendicular line
+        # Upper points on the perpendicular line
         corner1[0][angled], corner1[1][angled] = x1[angled] + dx, y1[angled] + dy
         corner2[0][angled], corner2[1][angled] = x1[angled] - dx, y1[angled] - dy
 
-        # Points on the perpendicular line
+        # Lower points on the perpendicular line
         corner3[0][angled], corner3[1][angled] = x2[angled] + dx, y2[angled] + dy
         corner4[0][angled], corner4[1][angled] = x2[angled] - dx, y2[angled] - dy
 
@@ -258,7 +280,7 @@ class SattleFilterTask(pipeBase.Task):
         tracks is based on the psf.
         """
         tracks = []
-        corner1, corner2, corner4, corner3 = self.find_corners(sat_coords, psf)
+        corner1, corner2, corner4, corner3 = self.find_corners(self, sat_coords, psf)
 
         for i in range(len(corner1[0])):
             try:
@@ -272,8 +294,15 @@ class SattleFilterTask(pipeBase.Task):
                             sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(corner3[0][i], corner3[1][i])),
                             sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(corner4[0][i], corner4[1][i]))])
                     tracks.append(track)
-            except:
-                print(corner1[0][i],corner2[1][i],corner2[0][i],corner2[1][i],corner3[0][i],corner2[1][i],corner4[0][i],corner4[1][i])
+            # TODO: Using for troubleshooting, make more robust
+            except RuntimeError:
+                print(corner1[0][i], corner2[1][i], corner2[0][i], corner2[1][i], corner3[0][i],
+                      corner2[1][i], corner4[0][i], corner4[1][i])
+        # TODO: This is for testing only, remove
+        with open('2024112300225_long_satellites.txt', 'w') as file:
+            # Write each item of the list on a new line
+            for item in tracks:
+                file.write(f"{item}\n")
 
         return tracks
 
@@ -293,3 +322,24 @@ class SattleFilterTask(pipeBase.Task):
                 id_allow_list.append(sourceIds[i])
 
         return id_allow_list
+
+    def _extend_line(self, x1, y1, x2, y2, extend_length):
+        """ Extend the length of the satellite path by
+        a specified length"""
+        dx = x2 - x1
+        dy = y2 - y1
+
+        # Calculate the length of the direction vector
+        length = np.sqrt(dx ** 2 + dy ** 2)
+
+        # Normalize the direction vector
+        unit_x = dx / length
+        unit_y = dy / length
+
+        # Extend the line on both ends by the length
+        x1_extended = x1 - extend_length * unit_x
+        y1_extended = y1 - extend_length * unit_y
+        x2_extended = x2 + extend_length * unit_x
+        y2_extended = y2 + extend_length * unit_y
+
+        return x1_extended, y1_extended, x2_extended, y2_extended
