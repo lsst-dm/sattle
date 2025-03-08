@@ -214,7 +214,7 @@ class SattleFilterTask(pipeBase.Task):
         to a specific length. We also add a buffer to the satellite endpoints
         to ensure the entire satellite path is included."""
         # TODO: currently assumes one point at a time but we want array math
-        # TODO: Confirm that the math doesn't care about wrapping around 360/90
+        # TODO: Confirm we always make the smallest region
         x1, y1 = sat_coords[:, :, 0]
         x2, y2 = sat_coords[:, :, 1]
 
@@ -227,7 +227,7 @@ class SattleFilterTask(pipeBase.Task):
         corner3 = np.zeros((2, len(x1)))
         corner4 = np.zeros((2, len(x1)))
 
-        # Mask will be used to seperate any horizontal or vertical satellite
+        # Mask will be used to separate any horizontal or vertical satellite
         # paths out.
         mask = np.ones(len(x1), dtype=bool)
 
@@ -257,8 +257,6 @@ class SattleFilterTask(pipeBase.Task):
 
         perpendicular_slope = -1 / (y2[angled] - y1[angled]) / (x2[angled] - x1[angled])
 
-        # TODO: Currently on the perpendicular line gets expanded, not the
-        #  original center line
         # Find two points on the perpendicular line
         # Expand to make a perpendicular line of length x
         dx = length / (1 + perpendicular_slope ** 2) ** 0.5  # Normalize direction
@@ -272,12 +270,20 @@ class SattleFilterTask(pipeBase.Task):
         corner3[0][angled], corner3[1][angled] = x2[angled] + dx, y2[angled] + dy
         corner4[0][angled], corner4[1][angled] = x2[angled] - dx, y2[angled] - dy
 
+        # Check that none of the coordinates go beyond what is allowed
+        # in lon and lat
+        corner1 = self._check_corners(corner1)
+        corner2 = self._check_corners(corner2)
+        corner3 = self._check_corners(corner3)
+        corner4 = self._check_corners(corner4)
+
+
         return corner1, corner2, corner3, corner4
 
     def satellite_tracks(self, psf, sat_coords):
         """ Calculate the satellite tracks using their beginning and end
         points in ra and dec and the angle between them. The width of the
-        tracks is based on the psf.
+        tracks is based on the psf (for now).
         """
         tracks = []
         corner1, corner2, corner4, corner3 = self.find_corners(self, sat_coords, psf)
@@ -337,9 +343,36 @@ class SattleFilterTask(pipeBase.Task):
         unit_y = dy / length
 
         # Extend the line on both ends by the length
-        x1_extended = x1 - extend_length * unit_x
-        y1_extended = y1 - extend_length * unit_y
-        x2_extended = x2 + extend_length * unit_x
-        y2_extended = y2 + extend_length * unit_y
+        x1 = x1 - extend_length * unit_x
+        y1 = y1 - extend_length * unit_y
+        x2 = x2 + extend_length * unit_x
+        y2 = y2 + extend_length * unit_y
 
-        return x1_extended, y1_extended, x2_extended, y2_extended
+        return x1, y1, x2, y2
+
+    def _check_corners(self, corner):
+        """ After all the calculations, make sure none of the coordinates
+        exceed the spherical coordinates. If they do correct them."""
+        lon, lat = corner[0], corner[1]
+
+        # Check lat first in case we flip over the poles
+        # Don't really need this one but whatever
+        # these names are terrible
+        lat_exceed_ninety = np.where(lat > 90)[0]
+        if lat_exceed_ninety.size != 0:
+            lat[lat_exceed_ninety] = 180 - lat[lat_exceed_ninety]
+            lon[lat_exceed_ninety] = lon[lat_exceed_ninety] + 180
+        lat_less_neg_ninety = np.where(lat < -90)[0]
+        if lat_less_neg_ninety.size != 0:
+            lat[lat_less_neg_ninety] = -180 - lat[lat_less_neg_ninety]
+            lon[lat_less_neg_ninety] = lon[lat_less_neg_ninety] + 180
+
+        lon_exceed_threesixty = np.where(lon > 360)[0]
+        if lon_exceed_threesixty.size != 0:
+            lon[lon_exceed_threesixty]-= 360
+
+        lon_less_neg_threesixty = np.where(lon > 360)[0]
+        if lon_less_neg_threesixty.size != 0:
+            lon[lon_less_neg_threesixty]+= 360
+
+        return lon, lat
