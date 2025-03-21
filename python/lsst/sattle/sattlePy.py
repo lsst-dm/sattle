@@ -22,19 +22,17 @@
 import logging
 import numpy as np
 import warnings
-from typing import Any, Optional
+from typing import Any, Optional, List
 from astropy.time import Time
 
 import lsst.sphgeom as sphgeom
 from lsst.sattle import sattle
 
 
-__all__ = ["SattleConfig", "SattleTask"]
-
+__all__ = ["SattleConfig", "SattleTask", "SatelliteFilterConfig", "SattleFilterTask"]
 
 class Field:
-    """Field class for use in SattleConfig.
-    """
+    """Field class for use in configuration classes."""
     def __init__(self, dtype: type, default: Any = None, doc: Optional[str] = None):
         self.dtype = dtype
         self.default = default
@@ -45,7 +43,6 @@ class Field:
 
     def __get__(self, instance, owner):
         return self.default
-
 
 class SattleConfig:
     """Config class for SattleConfig.
@@ -90,11 +87,7 @@ class SattleTask:
     ConfigClass = SattleConfig
 
     def __init__(self, config: SattleConfig = None, **kwargs):
-        if config is None:
-            self.config = SattleConfig()  # Use default config if not provided
-        else:
-            self.config = config
-
+        self.config = config or SattleConfig()
         super().__init__(**kwargs)
 
     def run(self, visit_id, exposure_start_mjd, exposure_end_mjd, boresight_ra, boresight_dec, tles):
@@ -121,19 +114,36 @@ class SattleTask:
             The first dimension is the paired Ra and the second array is the
             paired Dec.
         """
-        inputs = sattle.Inputs()
         # Everything should be in astropy.time
         # This gets us the time in seconds
         time_start = Time(exposure_start_mjd, format='mjd', scale='tai')
         time_end = Time(exposure_end_mjd, format='mjd', scale='tai')
         exposure_time = (time_end - time_start).sec
+
+        inputs = sattle.Inputs()
         inputs.target_ra = boresight_ra
         inputs.target_dec = boresight_dec
         # Search radius in degrees.
-        inputs.search_radius = (self.config.detector_radius
-                                + self.config.search_buffer*exposure_time) / 3600.0
+        inputs.search_radius = (self.config.detector_radius +
+                                self.config.search_buffer * exposure_time) / 3600.0
         inputs.ht_in_meters = self.config.height
         inputs.jd = [time_start.utc.jd, time_end.utc.jd]
+
+        satellite_positions = [[], []]  # [ra_list, dec_list]
+        unique_satellites = set()
+
+        for tle_data in tles:
+            tle = sattle.TleType()
+            sattle.parse_elements(tle_data.line1, tle_data.line2, tle)
+            out = sattle.calc_sat(inputs, tle)
+
+            if any(out.ra) and any(out.dec):
+                satellite_positions[0].append(list(out.ra))
+                satellite_positions[1].append(list(out.dec))
+                unique_satellites.add(tle.norad_number)
+
+        return satellite_positions
+
         satellite_ra = []
         satellite_dec = []
         satellite_list = []
@@ -170,7 +180,7 @@ class SatelliteFilterConfig:
 
     track_width = Field(
         dtype=float,
-        doc="Degrees added to the satellite tracks to give them a width.",
+        doc="Degrees added to the satellite racks to give them a width.",
         default=0.01,
     )
 
@@ -179,20 +189,15 @@ class SattleFilterTask:
     """ This task takes the satellite catalog for a specific visit determined
     in SattleTask and checks it against a diaSource catalog.
     """
-
     ConfigClass = SatelliteFilterConfig
 
     def __init__(self, config: SatelliteFilterConfig = None, **kwargs):
-        if config is None:
-            self.config = SatelliteFilterConfig()  # Use default config if not provided
-        else:
-            self.config = config
-
+        self.config = config or SatelliteFilterConfig()
         super().__init__(**kwargs)
 
-    def run(self, sat_coords, diaSources):
+    def run(self, sat_coords: np.ndarray, diaSources: dict) -> list:
         """ Compare satellite tracks and source bounding boxes to create
-        a source allow list.
+        a source allowlist.
 
         Take a catalog of satellite start and endpoints and generate satellite
         tracks. Then, compare these tracks to a catalog of diaSource bounding
@@ -203,70 +208,109 @@ class SattleFilterTask:
         Parameters
         ----------
         sat_coords: `numpy.ndarray`
-            An array of dimensions 2 x n x 2 containing the start end point
-            coordinate pairs for a given visit. The first dimension is
-            lon and the second dimension is lat.
-        diaSources:  `dict`
-            A dictionary of dia source IDs and their coordinates which will be
-            checked against the satellite coordinates.
+            Array of satellite track coordinates with shape (2, n, 2) where:
+            - First dimension (2): RA or Dec coordinate pair sets
+            - Second dimension (n): number of satellite tracks
+            - Third dimension (2): Beginning and end point coordinates
+
+        diaSources: `dict`
+            Dictionary containing diasource data with keys:
+            - 'source_bboxes': list of bounding boxes for each source
+            - 'ids': list of corresponding source IDs
 
         Returns
         -------
         allow_list : `array`
-            An array of allowed visit ids.
+            List of diaSource IDs that don't intersect with satellite satellite_tracks.
+            Returns empty list if all sources are filtered. Returns the full
+            diaSource ID list if no satellites are found.
+
+        Notes
+        -----
+        The function performs these steps:
+        1. Converts diasource source_bboxes to spherical coordinates
+        2. Generates satellite track polygons
+        3. Checks for intersections
+        4. Returns IDs of non-intersecting sources
+
         """
-        track_width = self.config.track_width
-        sat_coords = np.array(sat_coords['matched_satellites'])
-        bboxes = []
-        sourceIds = []
-        for diaSource in diaSources:
-            bboxes.append(diaSource['bbox'])
-            sourceIds.append(diaSource['diasource_id'])
-        if not sat_coords.any():
-            warnings.warn("Satellite coordinates empty, No satellite tracks calculated.")
-            return sourceIds
-        bbox_sph_coords = self.calc_bbox_sph_coords(bboxes)
-        satellite_tracks = self.satellite_tracks(track_width, sat_coords)
+        try:
+            track_width = self.config.track_width
+            sat_coords = np.array(sat_coords['matched_satellites'])
+            source_bboxes = []
+            source_ids = []
+            for diaSource in diaSources:
+                source_bboxes.append(diaSource['bbox'])
+                source_ids.append(diaSource['diasource_id'])
+            if not sat_coords.any():
+                warnings.warn("Satellite coordinates empty, No satellite satellite_tracks calculated.")
+                return source_ids
+            bbox_sph_coords = self.calc_bbox_sph_coords(source_bboxes)
 
-        id_allow_list = self._check_tracks(bbox_sph_coords, satellite_tracks, sourceIds)
+            # Generate satellite track polygons
+            satellite_tracks = self.satellite_tracks(track_width, sat_coords)
 
-        return id_allow_list
+            # Check for intersections and get allowed IDs
+            id_allow_list = self._check_tracks(bbox_sph_coords, satellite_tracks, source_ids)
+
+            return id_allow_list
+
+        except Exception as e:
+            logging.error(f"Error in SattleFilterTask.run: {str(e)}")
+            raise RuntimeError(f"Failed to filter diasources: {str(e)}")
 
     @staticmethod
-    def calc_bbox_sph_coords(bboxes):
-        """Retrieve the bbox of each dia source and return the bbox coordinates
-        in spherical geometry.
+    def calc_bbox_sph_coords(bboxes: list) -> np.ndarray:
+        """Convert diaSource bounding boxes from RA/Dec to spherical
+        geometry coordinates.
 
         Parameters
         ----------
-        bboxes: `numpy.ndarray`
-            Array containing bounding boxes of all sources in ra and dec.
+        bboxes: `list`
+            A list containing N bounding boxes, where each box
+            has 4 corners with RA and Dec coordinates.
 
         Returns
         -------
         sph_coords : `numpy.ndarray`
-            Array containing the bounding boxes in spherical geometry
-            convex polygons.
-        """
+            Array of ConvexPolygon objects representing the bounding boxes in
+            spherical geometry.
 
-        # TODO: Possibly adjust for faster array math
-        sphere_bboxes = []
-        for bbox in bboxes:
-            sphere_bboxes.append(sphgeom.ConvexPolygon([
-                sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[0][0], bbox[0][1])),
-                sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[1][0], bbox[1][1])),
-                sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[2][0], bbox[2][1])),
-                sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[3][0], bbox[3][1]))
-            ]))
+        Notes
+        -----
+        Each bounding box is converted into a ConvexPolygon using the following steps:
+        1. Convert each corner from (RA, Dec) to unit vector
+        2. Create a ConvexPolygon from the four corner vectors
+        """
+        # Convert to np.array, maybe do earlier??
+        bboxes = np.asarray(bboxes, dtype=np.float64)
+
+        # Ensure correct shape (N, 4, 2)
+        if len(bboxes.shape) != 3 or bboxes.shape[1:] != (4, 2):
+            bboxes = np.array(bboxes).reshape(-1, 4, 2)
+
+        # Vectorized creation of LonLat objects for all corners of all boxes
+        corners = bboxes.reshape(-1, 2)  # Reshape to (N*4, 2) for vectorized operation
+        lon_lat_points = [sphgeom.LonLat.fromDegrees(ra, dec) for ra, dec in corners]
+
+        # Convert to unit vectors
+        unit_vectors = [sphgeom.UnitVector3d(point) for point in lon_lat_points]
+
+        # Group vectors back into sets of 4 for each bbox
+        vector_groups = [unit_vectors[i:i + 4] for i in range(0, len(unit_vectors), 4)]
+
+        # Create ConvexPolygon objects
+        sphere_bboxes = [sphgeom.ConvexPolygon(vectors) for vectors in vector_groups]
 
         return np.array(sphere_bboxes)
 
-    @staticmethod
-    def _find_corners(sat_coords, length):
-        """ Takes the satellite coordinates which are in lat and lon and
-        calculates  the corners of the satellites path.
 
-        This is done by looking at the endpoints of the satellites movement,
+    @staticmethod
+    def _find_corners(sat_coords: np.ndarray, length: float):
+        """ Takes the satellite coordinates which are in lat and lon and
+        calculates the corners of the satellite's path.
+
+        This is done by looking at the endpoints of the satellite's movement,
         finding the perpendicular line to those endpoints, and growing the
         perpendicular line to a specific length. We also add a buffer to the
         satellite endpoints to ensure the entire satellite path is included.
@@ -297,7 +341,8 @@ class SattleFilterTask:
         x2, y2 = sat_coords[:, :, 1]
 
         # Extend the initial satellite points so that we create a buffer zone
-        # around the two end points.
+        # around the two end points. This is different from extending the
+        # bounding box which happens below.
         x1, y1, x2, y2 = SattleFilterTask._extend_line(x1, y1, x2, y2, length)
 
         corner1 = np.zeros((2, len(x1)))
@@ -328,12 +373,11 @@ class SattleFilterTask:
             corner3[0][vertical], corner3[1][vertical] = x2[vertical], y2[vertical] + length
             corner4[0][vertical], corner4[1][vertical] = x2[vertical], y2[vertical] - length
 
-        # TODO: Possibly rename
         # Mask prevents the angle calculation from being done on horizontal
         # and vertical paths
-        angled = np.arange(len(x1))[mask]
+        diagonal = np.arange(len(x1))[mask]
 
-        perpendicular_slope = -1 / (y2[angled] - y1[angled]) / (x2[angled] - x1[angled])
+        perpendicular_slope = -1 / (y2[diagonal] - y1[diagonal]) / (x2[diagonal] - x1[diagonal])
 
         # Find two points on the perpendicular line
         # Expand to make a perpendicular line of length x
@@ -341,25 +385,25 @@ class SattleFilterTask:
         dy = perpendicular_slope * dx
 
         # Calculate each corner point
-        corner1[0][angled], corner1[1][angled] = x1[angled] + dx, y1[angled] + dy
-        corner2[0][angled], corner2[1][angled] = x1[angled] - dx, y1[angled] - dy
-        corner3[0][angled], corner3[1][angled] = x2[angled] + dx, y2[angled] + dy
-        corner4[0][angled], corner4[1][angled] = x2[angled] - dx, y2[angled] - dy
+        corner1[0][diagonal], corner1[1][diagonal] = x1[diagonal] + dx, y1[diagonal] + dy
+        corner2[0][diagonal], corner2[1][diagonal] = x1[diagonal] - dx, y1[diagonal] - dy
+        corner3[0][diagonal], corner3[1][diagonal] = x2[diagonal] + dx, y2[diagonal] + dy
+        corner4[0][diagonal], corner4[1][diagonal] = x2[diagonal] - dx, y2[diagonal] - dy
 
         # Check that none of the coordinates go beyond what is allowed
         # in lon and lat. If so, wrap coordinates around to correct.
-        corner1[0], corner1[1] = SattleFilterTask._check_corners(corner1)
-        corner2[0], corner2[1] = SattleFilterTask._check_corners(corner2)
-        corner3[0], corner3[1] = SattleFilterTask._check_corners(corner3)
-        corner4[0], corner4[1] = SattleFilterTask._check_corners(corner4)
+        corner1[0], corner1[1] = SattleFilterTask._normalize_coordinates(corner1)
+        corner2[0], corner2[1] = SattleFilterTask._normalize_coordinates(corner2)
+        corner3[0], corner3[1] = SattleFilterTask._normalize_coordinates(corner3)
+        corner4[0], corner4[1] = SattleFilterTask._normalize_coordinates(corner4)
 
         return corner1, corner2, corner3, corner4
 
     @staticmethod
-    def satellite_tracks(track_width, sat_coords):
-        """ Calculate the satellite tracks using their beginning and end
+    def satellite_tracks(track_width: float, sat_coords: np.ndarray) -> List[sphgeom.ConvexPolygon]:
+        """ Calculate the satellite satellite_tracks using their beginning and end
         points in ra and dec and the angle between them. The width of the
-        tracks is based on the track_width.
+        satellite_tracks is based on the track_width.
 
         Parameters
         ----------
@@ -372,8 +416,8 @@ class SattleFilterTask:
 
         Returns
         -------
-        tracks : `numpy.ndarray`
-            An array of satellite tracks as spherical convex polygons.
+        satellite_tracks : `numpy.ndarray`
+            An array of satellite satellite_tracks as spherical convex polygons.
         """
         tracks = []
         corner1, corner2, corner4, corner3 = SattleFilterTask._find_corners(sat_coords, track_width)
@@ -403,19 +447,19 @@ class SattleFilterTask:
         return np.array(tracks)
 
     @staticmethod
-    def _check_tracks(sphere_bboxes, tracks, sourceIds):
+    def _check_tracks(sphere_source_bboxes: np.ndarray, satellite_tracks: np.ndarray, source_ids: list) -> list:
         """ Check if sources bounding box in the catalog fall within the
         calculated satellite boundaries. If they are not, the id is added
-        to the allow list.
+        to the allowlist.
 
         Parameters
         ----------
-        sphere_bboxes: `numpy.ndarray`
+        sphere_source_bboxes: `numpy.ndarray`
             An array of dia source bounding boxes as spherical convex
-            poluygons
-        tracks: `numpy.ndarray`
+            polygons
+        satellite_tracks: `numpy.ndarray`
             An array of satellite tracks as spherical convex polygons
-        sourceIds: `list`
+        source_ids: `list`
             A list of dia source IDs corresponding to the dia source
             bounding boxes.
 
@@ -426,33 +470,33 @@ class SattleFilterTask:
 
         """
         id_allow_list = []
-        if sphere_bboxes.size > 1:
-            for i, coord in enumerate(sphere_bboxes):
-                if len(tracks) > 1:
+        if sphere_source_bboxes.size > 1:
+            for i, coord in enumerate(sphere_source_bboxes):
+                if len(satellite_tracks) > 1:
                     check = False
-                    for track in tracks:
+                    for track in satellite_tracks:
                         if track.intersects(coord):
                             check = True
                             break
                 else:
                     check = False
-                    if tracks[0].intersects(coord):
+                    if satellite_tracks[0].intersects(coord):
                         check = True
                 if not check:
-                    id_allow_list.append(sourceIds[i])
+                    id_allow_list.append(source_ids[i])
         else:
-            if len(tracks) > 1:
+            if len(satellite_tracks) > 1:
                 check = False
-                for track in tracks:
-                    if track.intersects(sphere_bboxes.item()):
+                for track in satellite_tracks:
+                    if track.intersects(sphere_source_bboxes.item()):
                         check = True
                         break
             else:
                 check = False
-                if tracks[0].intersects(sphere_bboxes.item()):
+                if satellite_tracks[0].intersects(sphere_source_bboxes.item()):
                     check = True
             if not check:
-                id_allow_list.append(sourceIds)
+                id_allow_list.append(source_ids)
 
         return id_allow_list
 
@@ -483,26 +527,46 @@ class SattleFilterTask:
         """
         # Trails should not be longer than 180 degrees
         dx = ((x2 - x1 + 180) % 360) - 180
-
         dy = y2 - y1
+        # Create arrays for the extended coordinates
+        x1_new = np.zeros_like(x1)
+        y1_new = np.zeros_like(y1)
+        x2_new = np.zeros_like(x2)
+        y2_new = np.zeros_like(y2)
 
-        # Calculate the length of the direction vector
-        length = np.sqrt(dx ** 2 + dy ** 2)
+        # Handle horizontal lines (where y1 == y2)
+        horizontal = np.abs(dy) < 1e-10
+        x1_new[horizontal] = x1[horizontal] - np.sign(
+            dx[horizontal]) * extend_length
+        y1_new[horizontal] = y1[horizontal]
+        x2_new[horizontal] = x2[horizontal] + np.sign(
+            dx[horizontal]) * extend_length
+        y2_new[horizontal] = y2[horizontal]
 
-        # Normalize the direction vector
-        unit_x = dx / length
-        unit_y = dy / length
+        # Handle vertical lines (where x1 == x2)
+        vertical = np.abs(dx) < 1e-10
+        x1_new[vertical] = x1[vertical]
+        y1_new[vertical] = y1[vertical] - np.sign(dy[vertical]) * extend_length
+        x2_new[vertical] = x2[vertical]
+        y2_new[vertical] = y2[vertical] + np.sign(dy[vertical]) * extend_length
 
-        # Extend the line on both ends by the length
-        x1 = x1 - extend_length * unit_x
-        y1 = y1 - extend_length * unit_y
-        x2 = x2 + extend_length * unit_x
-        y2 = y2 + extend_length * unit_y
+        # Handle diagonal lines
 
-        return x1, y1, x2, y2
+        diagonal = ~(horizontal | vertical)
+        if np.any(diagonal):
+            length = np.sqrt(dx[diagonal] ** 2 + dy[diagonal] ** 2)
+            unit_x = dx[diagonal] / length
+            unit_y = dy[diagonal] / length
+
+            x1_new[diagonal] = x1[diagonal] - extend_length * unit_x
+            y1_new[diagonal] = y1[diagonal] - extend_length * unit_y
+            x2_new[diagonal] = x2[diagonal] + extend_length * unit_x
+            y2_new[diagonal] = y2[diagonal] + extend_length * unit_y
+
+        return x1_new, y1_new, x2_new, y2_new
 
     @staticmethod
-    def _check_corners(corner):
+    def _normalize_coordinates(corner):
         """ After all the calculations, make sure none of the coordinates
         exceed the spherical coordinates. If they do correct them.
 
@@ -520,21 +584,21 @@ class SattleFilterTask:
         """
         lon, lat = corner[0], corner[1]
 
-        over_lat_limit = np.where(lat > 90)[0]
+        over_lat_limit = np.where(lat > 90.0)[0]
         if over_lat_limit .size != 0:
-            lat[over_lat_limit] = 180 - lat[over_lat_limit]
-            lon[over_lat_limit] = lon[over_lat_limit] + 180
-        under_lat_limit = np.where(lat < -90)[0]
+            lat[over_lat_limit] = 180.0 - lat[over_lat_limit]
+            lon[over_lat_limit] = lon[over_lat_limit] + 180.0
+        under_lat_limit = np.where(lat < -90.0)[0]
         if under_lat_limit.size != 0:
-            lat[under_lat_limit] = -180 - lat[under_lat_limit]
-            lon[under_lat_limit] = lon[under_lat_limit] + 180
+            lat[under_lat_limit] = -180.0 - lat[under_lat_limit]
+            lon[under_lat_limit] = lon[under_lat_limit] + 180.0
 
-        over_lon_limit = np.where(lon > 360)[0]
+        over_lon_limit = np.where(lon > 360.0)[0]
         if over_lon_limit.size != 0:
-            lon[over_lon_limit] -= 360
+            lon[over_lon_limit] -= 360.0
 
-        under_lon_limit = np.where(lon < 0)[0]
+        under_lon_limit = np.where(lon < 0.0)[0]
         if under_lon_limit.size != 0:
-            lon[under_lon_limit] += 360
+            lon[under_lon_limit] += 360.0
 
         return lon, lat
