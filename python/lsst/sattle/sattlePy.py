@@ -2,31 +2,42 @@ from lsst.sattle import sattle
 import numpy as np
 from astropy.time import Time
 
-import lsst.pex.config as pexConfig
-import lsst.pipe.base as pipeBase
 import lsst.sphgeom as sphgeom
 import warnings
+from typing import Any, Optional
 
 
 __all__ = ["SattleConfig", "SattleTask"]
 
+class Field:
+    def __init__(self, dtype: type, default: Any = None, doc: Optional[str] = None):
+        self.dtype = dtype
+        self.default = default
+        self.doc = doc
 
-class SattleConfig(pexConfig.Config):
+    def __repr__(self):
+        return f"Field(dtype={self.dtype}, default={self.default}, doc={self.doc})"
+
+    def __get__(self, instance, owner):
+        return self.default
+
+
+class SattleConfig:
     """Config class for SattleConfig.
     """
-    tle_url = pexConfig.Field(
+    tle_url = Field(
         dtype=str,
         default='https://raw.githubusercontent.com/Bill-Gray/sat_code/master/test.tle',
         doc="Url to the TLE API.",
     )
 
-    detector_radius = pexConfig.Field(
+    detector_radius = Field(
         dtype=float,
         default=6300,
         doc="Detector radius in arcseconds. (1.75 degrees)",
     )
 
-    search_buffer = pexConfig.Field(
+    search_buffer = Field(
         dtype=float,
         default=1680.0,
         doc="Search radius buffer in arcseconds/s. Based on estimated 4 degrees "
@@ -34,27 +45,31 @@ class SattleConfig(pexConfig.Config):
             " per second.",
     )
 
-    psf = pexConfig.Field(
+    psf = Field(
         dtype=float,
         default=0.5,
         doc="The width of the satellite track in arcseconds."
     )
 
-    height = pexConfig.Field(
+    height = Field(
         dtype=float,
         default=10.0,
         doc="Height of the telescope in meters.",
     )
 
 
-class SattleTask(pipeBase.Task):
+class SattleTask:
     """Retrieve DiaObjects and associated DiaSources from the Apdb given an
     input exposure.
     """
     ConfigClass = SattleConfig
-    _DefaultName = "sattleTask"
 
-    def __init__(self, **kwargs):
+    def __init__(self, config: SattleConfig = None, **kwargs):
+        if config is None:
+            self.config = SattleConfig()  # Use default config if not provided
+        else:
+            self.config = config
+
         super().__init__(**kwargs)
 
     def run(self, visit_id, exposure_start_mjd, exposure_end_mjd, boresight_ra, boresight_dec, tles):
@@ -105,6 +120,8 @@ class SattleTask(pipeBase.Task):
             # That's why they appear twice.
             # in the current test case, there are only 2 valid satellites
             if any(out.ra) and any(out.dec):
+                print("Time difference in hours: " + str((time_start - Time(tle.epoch, format='jd')).sec/60/60))
+
                 # TODO: Remove print in sattle.so
                 satellite_ra.append(list(out.ra))
                 satellite_dec.append(list(out.dec))
@@ -116,27 +133,34 @@ class SattleTask(pipeBase.Task):
         return satellite_positions
 
 
-class SatelliteFilterConfig(pexConfig.Config):
+class SatelliteFilterConfig:
     """Config class for TrailedSourceFilterTask.
     """
 
-    psf_multiplier = pexConfig.Field(
+    psf_multiplier = Field(
         dtype=float,
         doc="Multiply the psf by this value.",
         default=2.0,
     )
 
-    track_width = pexConfig.Field(
+    track_width = Field(
         dtype=float,
         doc="Degrees added to the satellite tracks to give them a width.",
         default=0.01,
     )
 
 
-class SattleFilterTask(pipeBase.Task):
+class SattleFilterTask:
 
     ConfigClass = SatelliteFilterConfig
-    _DefaultName = "satelliteSourceFilter"
+
+    def __init__(self, config: SatelliteFilterConfig = None, **kwargs):
+        if config is None:
+            self.config = SatelliteFilterConfig()  # Use default config if not provided
+        else:
+            self.config = config
+
+        super().__init__(**kwargs)
 
     def run(self, sat_coords, diaSources):
         """ Compare satellite tracks and source bounding boxes to create
@@ -213,7 +237,6 @@ class SattleFilterTask(pipeBase.Task):
         line to those endpoints, and growing the perpendicular line
         to a specific length. We also add a buffer to the satellite endpoints
         to ensure the entire satellite path is included."""
-        # TODO: currently assumes one point at a time but we want array math
         # TODO: Confirm we always make the smallest region
         x1, y1 = sat_coords[:, :, 0]
         x2, y2 = sat_coords[:, :, 1]
@@ -230,8 +253,8 @@ class SattleFilterTask(pipeBase.Task):
         # Mask will be used to separate any horizontal or vertical satellite
         # paths out.
         mask = np.ones(len(x1), dtype=bool)
-
         horizontal = np.where(abs(x2 - x1) == 0)[0]
+        # Where the mask is false, we won't calculate the angle
         mask[horizontal] = False
 
         if horizontal.size != 0:  # No slope just to corners here
@@ -262,21 +285,18 @@ class SattleFilterTask(pipeBase.Task):
         dx = length / (1 + perpendicular_slope ** 2) ** 0.5  # Normalize direction
         dy = perpendicular_slope * dx
 
-        # Upper points on the perpendicular line
+        # Calculate each corner point
         corner1[0][angled], corner1[1][angled] = x1[angled] + dx, y1[angled] + dy
         corner2[0][angled], corner2[1][angled] = x1[angled] - dx, y1[angled] - dy
-
-        # Lower points on the perpendicular line
         corner3[0][angled], corner3[1][angled] = x2[angled] + dx, y2[angled] + dy
         corner4[0][angled], corner4[1][angled] = x2[angled] - dx, y2[angled] - dy
 
         # Check that none of the coordinates go beyond what is allowed
-        # in lon and lat
+        # in lon and lat. If so, wrap coordinates around to correct.
         corner1 = self._check_corners(corner1)
         corner2 = self._check_corners(corner2)
         corner3 = self._check_corners(corner3)
         corner4 = self._check_corners(corner4)
-
 
         return corner1, corner2, corner3, corner4
 
@@ -305,7 +325,7 @@ class SattleFilterTask(pipeBase.Task):
                 print(corner1[0][i], corner2[1][i], corner2[0][i], corner2[1][i], corner3[0][i],
                       corner2[1][i], corner4[0][i], corner4[1][i])
         # TODO: This is for testing only, remove
-        with open('2024112300225_long_satellites.txt', 'w') as file:
+        with open('2024112600107_long_satellites.txt', 'w') as file:
             # Write each item of the list on a new line
             for item in tracks:
                 file.write(f"{item}\n")

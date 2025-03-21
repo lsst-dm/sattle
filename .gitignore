@@ -21,3 +21,13 @@ pytest_session.txt
 .coverage
 
 .idea/workspace.xml
+
+python/lsst/sattle/logs/
+
+.idea/inspectionProfiles/
+
+.idea/
+
+.DS_Store
+/virtualenv/
+/sattle_env/
