@@ -9,6 +9,7 @@ from typing import Any, Optional
 
 __all__ = ["SattleConfig", "SattleTask"]
 
+
 class Field:
     def __init__(self, dtype: type, default: Any = None, doc: Optional[str] = None):
         self.dtype = dtype
@@ -116,11 +117,9 @@ class SattleTask:
             sattle.parse_elements(single_tle.line1, single_tle.line2, tle)
 
             out = sattle.calc_sat(inputs, tle)
-            # In the test tle list, some satellites are doubled.
-            # That's why they appear twice.
-            # in the current test case, there are only 2 valid satellites
             if any(out.ra) and any(out.dec):
-                print("Time difference in hours: " + str((time_start - Time(tle.epoch, format='jd')).sec/60/60))
+                print("Time difference in hours: " +
+                      str((time_start - Time(tle.epoch, format='jd')).sec/60/60))
 
                 # TODO: Remove print in sattle.so
                 satellite_ra.append(list(out.ra))
@@ -189,8 +188,8 @@ class SattleFilterTask:
 
         return id_allow_list
 
-    # Rename as this is not sat coords is sph dia coords
-    def calc_bbox_sph_coords(self, bboxes):
+    @staticmethod
+    def calc_bbox_sph_coords(bboxes):
         """Retrieve the bbox of each dia source and return the bbox coordinates
         in spherical geometry.
 
@@ -205,12 +204,9 @@ class SattleFilterTask:
             Array containing the bounding boxes in spherical coordinates
         """
 
-        # Make this array math friendly
+        # TODO: Possibly adjust for faster array math
         sphere_bboxes = []
-        # Currently this will fail if there is a mismatch between where the
-        # satellites are and the boxes???
         for bbox in bboxes:
-
             sphere_bboxes.append(sphgeom.ConvexPolygon([
                 sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[0][0], bbox[0][1])),
                 sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[1][0], bbox[1][1])),
@@ -218,19 +214,10 @@ class SattleFilterTask:
                 sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[3][0], bbox[3][1]))
             ]))
 
-        # Converted vectors isn't being used, what are we doing here? Want this
-        # to be faster but currently incompatible need to rewrite
-        # converted_vectors = np.apply_along_axis(lambda bbox: [
-        #   sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[0], bbox[1])),
-        #   sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[2], bbox[3])),
-        #   sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[4], bbox[5])),
-        #   sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(bbox[6], bbox[7]))
-        # ], axis=-1, arr=bboxes)
-
         return np.array(sphere_bboxes)
 
     @staticmethod
-    def find_corners(self, sat_coords, length):
+    def _find_corners(sat_coords, length):
         """ Takes the satellite coordinates which are in lat and lon and
         calculates  the corners of the satellites path. This is done by looking
         at the endpoints of the satellites movement, finding the perpendicular
@@ -243,7 +230,7 @@ class SattleFilterTask:
 
         # Extend the initial satellite points so that we create a buffer zone
         # around the two end points.
-        x1, y1, x2, y2 = self._extend_line(x1, y1, x2, y2, length)
+        x1, y1, x2, y2 = SattleFilterTask._extend_line(x1, y1, x2, y2, length)
 
         corner1 = np.zeros((2, len(x1)))
         corner2 = np.zeros((2, len(x1)))
@@ -273,7 +260,7 @@ class SattleFilterTask:
             corner3[0][vertical], corner3[1][vertical] = x2[vertical], y2[vertical] + length
             corner4[0][vertical], corner4[1][vertical] = x2[vertical], y2[vertical] - length
 
-        # Need a better name, angled isn't descriptive
+        # TODO: Possibly rename
         # Mask prevents the angle calculation from being done on horizontal
         # and vertical paths
         angled = np.arange(len(x1))[mask]
@@ -293,20 +280,21 @@ class SattleFilterTask:
 
         # Check that none of the coordinates go beyond what is allowed
         # in lon and lat. If so, wrap coordinates around to correct.
-        corner1 = self._check_corners(corner1)
-        corner2 = self._check_corners(corner2)
-        corner3 = self._check_corners(corner3)
-        corner4 = self._check_corners(corner4)
+        corner1 = SattleFilterTask._check_corners(corner1)
+        corner2 = SattleFilterTask._check_corners(corner2)
+        corner3 = SattleFilterTask._check_corners(corner3)
+        corner4 = SattleFilterTask._check_corners(corner4)
 
         return corner1, corner2, corner3, corner4
 
-    def satellite_tracks(self, psf, sat_coords):
+    @staticmethod
+    def satellite_tracks(psf, sat_coords):
         """ Calculate the satellite tracks using their beginning and end
         points in ra and dec and the angle between them. The width of the
         tracks is based on the psf (for now).
         """
         tracks = []
-        corner1, corner2, corner4, corner3 = self.find_corners(self, sat_coords, psf)
+        corner1, corner2, corner4, corner3 = SattleFilterTask._find_corners(sat_coords, psf)
 
         for i in range(len(corner1[0])):
             try:
@@ -324,35 +312,58 @@ class SattleFilterTask:
             except RuntimeError:
                 print(corner1[0][i], corner2[1][i], corner2[0][i], corner2[1][i], corner3[0][i],
                       corner2[1][i], corner4[0][i], corner4[1][i])
-        # TODO: This is for testing only, remove
+        # TODO: This is for testing only, remove once unit tests done
         with open('2024112600107_long_satellites.txt', 'w') as file:
-            # Write each item of the list on a new line
             for item in tracks:
                 file.write(f"{item}\n")
 
         return tracks
 
-    def _check_tracks(self, sphere_bboxes, tracks, sourceIds):
+    @staticmethod
+    def _check_tracks(sphere_bboxes, tracks, sourceIds):
         """ Check if sources bounding box in the catalog fall within the
         calculated satellite boundaries. If they are not, the id is added
         to the allow list.
         """
         id_allow_list = []
-        for i, coord in enumerate(sphere_bboxes):
-            check = False
-            for track in tracks:
-                if track.intersects(coord):
+        if sphere_bboxes.size > 1:
+            for i, coord in enumerate(sphere_bboxes):
+                if len(tracks) > 1:
+                    check = False
+                    for track in tracks:
+                        if track.intersects(coord):
+                            check = True
+                            break
+                else:
+                    check = False
+                    if tracks[0].intersects(coord):
+                        check = True
+                if not check:
+                    id_allow_list.append(sourceIds[i])
+        else:
+            if len(tracks) > 1:
+                check = False
+                for track in tracks:
+                    if track.intersects(sphere_bboxes.item()):
+                        check = True
+                        break
+            else:
+                check = False
+                if tracks[0].intersects(sphere_bboxes.item()):
                     check = True
-                    break
             if not check:
-                id_allow_list.append(sourceIds[i])
+                id_allow_list.append(sourceIds)
 
         return id_allow_list
 
-    def _extend_line(self, x1, y1, x2, y2, extend_length):
+    @staticmethod
+    def _extend_line(x1, y1, x2, y2, extend_length):
         """ Extend the length of the satellite path by
         a specified length"""
-        dx = x2 - x1
+
+        # Trails should not be longer than 180 degrees
+        dx = ((x2 - x1 + 180) % 360) - 180
+
         dy = y2 - y1
 
         # Calculate the length of the direction vector
@@ -370,29 +381,27 @@ class SattleFilterTask:
 
         return x1, y1, x2, y2
 
-    def _check_corners(self, corner):
+    @staticmethod
+    def _check_corners(corner):
         """ After all the calculations, make sure none of the coordinates
         exceed the spherical coordinates. If they do correct them."""
         lon, lat = corner[0], corner[1]
 
-        # Check lat first in case we flip over the poles
-        # Don't really need this one but whatever
-        # these names are terrible
-        lat_exceed_ninety = np.where(lat > 90)[0]
-        if lat_exceed_ninety.size != 0:
-            lat[lat_exceed_ninety] = 180 - lat[lat_exceed_ninety]
-            lon[lat_exceed_ninety] = lon[lat_exceed_ninety] + 180
-        lat_less_neg_ninety = np.where(lat < -90)[0]
-        if lat_less_neg_ninety.size != 0:
-            lat[lat_less_neg_ninety] = -180 - lat[lat_less_neg_ninety]
-            lon[lat_less_neg_ninety] = lon[lat_less_neg_ninety] + 180
+        over_lat_limit = np.where(lat > 90)[0]
+        if over_lat_limit .size != 0:
+            lat[over_lat_limit] = 180 - lat[over_lat_limit]
+            lon[over_lat_limit] = lon[over_lat_limit] + 180
+        under_lat_limit = np.where(lat < -90)[0]
+        if under_lat_limit.size != 0:
+            lat[under_lat_limit] = -180 - lat[under_lat_limit]
+            lon[under_lat_limit] = lon[under_lat_limit] + 180
 
-        lon_exceed_threesixty = np.where(lon > 360)[0]
-        if lon_exceed_threesixty.size != 0:
-            lon[lon_exceed_threesixty]-= 360
+        over_lon_limit = np.where(lon > 360)[0]
+        if over_lon_limit.size != 0:
+            lon[over_lon_limit] -= 360
 
-        lon_less_neg_threesixty = np.where(lon > 360)[0]
-        if lon_less_neg_threesixty.size != 0:
-            lon[lon_less_neg_threesixty]+= 360
+        under_lon_limit = np.where(lon < 0)[0]
+        if under_lon_limit.size != 0:
+            lon[under_lon_limit] += 360
 
         return lon, lat

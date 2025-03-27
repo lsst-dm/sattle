@@ -1,0 +1,22 @@
+2025-03-28 20:30:51,146 INFO main Server ready!
+2025-03-28 20:30:52,969 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60641.04957530673, 'exposure_end_mjd': 60641.049922528946, 'boresight_ra': 38.3951559125, 'boresight_dec': 7.1126590888}
+2025-03-28 20:30:53,052 INFO web_log ::1 [28/Mar/2025:12:30:52 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-03-28 20:30:53,052 INFO web_log ::1 [28/Mar/2025:12:30:52 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-03-28 20:30:53,055 INFO main {}
+2025-03-28 20:30:53,055 INFO web_log ::1 [28/Mar/2025:12:30:53 -0800] "GET /visit_cache HTTP/1.1" 200 478 "-" "python-requests/2.32.3"
+2025-03-28 20:30:53,055 INFO web_log ::1 [28/Mar/2025:12:30:53 -0800] "GET /visit_cache HTTP/1.1" 200 478 "-" "python-requests/2.32.3"
+2025-03-28 20:30:53,056 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-03-28 20:30:53,058 INFO web_log ::1 [28/Mar/2025:12:30:53 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-03-28 20:30:53,058 INFO web_log ::1 [28/Mar/2025:12:30:53 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-03-28 20:30:57,459 INFO main Shutting Down!
+2025-03-28 20:34:10,758 INFO main Server ready!
+2025-03-28 20:34:46,676 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60641.04957530673, 'exposure_end_mjd': 60641.049922528946, 'boresight_ra': 38.3951559125, 'boresight_dec': 7.1126590888}
+2025-03-28 20:34:46,759 INFO web_log 127.0.0.1 [28/Mar/2025:12:34:46 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-03-28 20:34:46,759 INFO web_log 127.0.0.1 [28/Mar/2025:12:34:46 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-03-28 20:34:46,760 INFO main {}
+2025-03-28 20:34:46,761 INFO web_log 127.0.0.1 [28/Mar/2025:12:34:46 -0800] "GET /visit_cache HTTP/1.1" 200 477 "-" "python-requests/2.32.3"
+2025-03-28 20:34:46,761 INFO web_log 127.0.0.1 [28/Mar/2025:12:34:46 -0800] "GET /visit_cache HTTP/1.1" 200 477 "-" "python-requests/2.32.3"
+2025-03-28 20:34:46,762 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-03-28 20:34:46,763 INFO web_log 127.0.0.1 [28/Mar/2025:12:34:46 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-03-28 20:34:46,763 INFO web_log 127.0.0.1 [28/Mar/2025:12:34:46 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-03-28 20:35:01,873 INFO main Shutting Down!

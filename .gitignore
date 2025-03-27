@@ -22,8 +22,6 @@ pytest_session.txt
 
 .idea/workspace.xml
 
-python/lsst/sattle/logs/
-
 .idea/inspectionProfiles/
 
 .idea/

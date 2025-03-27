@@ -25,7 +25,7 @@ def read_tle_from_url(url, tle_source):
     # This would mean we remove the initial query though this is important
     # Keep this in but change
     # Needs to be all satellites visible in a night
-    start_time =  2460641.549147066
+    start_time = 2460641.549147066
     if tle_source == 'satchecker_query':
         params = {
             "latitude": -30.244633333333333,
@@ -112,7 +112,7 @@ def read_tle_from_url(url, tle_source):
             print(
                 f"Failed to fetch TLE data. Status code: {response.status_code}")
 
-    # TODO: remove, used for testing only
+    # TODO: remove in final product, used for testing only
     with open('satchecker_output.txt', 'w') as file:
         for tle in tles:
             file.write(f"{tle.line1}\n")
@@ -335,8 +335,8 @@ def main():
 
     logging.config.dictConfig(LOGGING)
 
-    HOST = '127.0.0.1'
-    PORT = '9999'
+    HOST = '0.0.0.0'
+    PORT = 9999
 
     visit_satellite_cache = defaultdict(dict)
     tles = read_tle_from_url(TLE_URL, 'satchecker_query')
