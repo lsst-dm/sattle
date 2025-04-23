@@ -1,16 +1,40 @@
-from lsst.sattle import sattle
+# This file is part of sattle.
+#
+# Developed for the LSST Data Management System.
+# This product includes software developed by the LSST Project
+# (https://www.lsst.org).
+# See the COPYRIGHT file at the top-level directory of this distribution
+# for details of code ownership.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import logging
 import numpy as np
+import warnings
+from typing import Any, Optional
 from astropy.time import Time
 
 import lsst.sphgeom as sphgeom
-import warnings
-from typing import Any, Optional
+from lsst.sattle import sattle
 
 
 __all__ = ["SattleConfig", "SattleTask"]
 
 
 class Field:
+    """Field class for use in SattleConfig.
+    """
     def __init__(self, dtype: type, default: Any = None, doc: Optional[str] = None):
         self.dtype = dtype
         self.default = default
@@ -85,15 +109,17 @@ class SattleTask:
         exposure_end_mjd: `float`
             The end time of the exposure in MJD.
         boresight_ra: `float`
-            The RA coordinate of the boresight of a given exposure
+            The RA coordinate of the boresight of a given exposure in degrees.
         boresight_dec:  `float`
-            The Dec coordinate of the boresight of a given exposure.
+            The Dec coordinate of the boresight of a given exposure in degrees.
 
         Returns
         -------
-        satellite_positions : `array`
-            A two-dimensional array that contains a sub array of paired ra and
+        satellite_positions : `list`
+            A two-dimensional list that contains a sub array of paired ra and
             dec coordinates for satellites which cross through a given region.
+            The first dimension is the paired Ra and the second array is the
+            paired Dec.
         """
         inputs = sattle.Inputs()
         # Everything should be in astropy.time
@@ -118,8 +144,8 @@ class SattleTask:
 
             out = sattle.calc_sat(inputs, tle)
             if any(out.ra) and any(out.dec):
-                print("Time difference in hours: " +
-                      str((time_start - Time(tle.epoch, format='jd')).sec/60/60))
+                print("Time difference in "
+                      "hours: " + str((time_start - Time(tle.epoch, format='jd')).sec/60/60))
 
                 # TODO: Remove print in sattle.so
                 satellite_ra.append(list(out.ra))
@@ -138,7 +164,7 @@ class SatelliteFilterConfig:
 
     psf_multiplier = Field(
         dtype=float,
-        doc="Multiply the psf by this value.",
+        doc="Multiply the track_width by this value.",
         default=2.0,
     )
 
@@ -150,6 +176,9 @@ class SatelliteFilterConfig:
 
 
 class SattleFilterTask:
+    """ This task takes the satellite catalog for a specific visit determined
+    in SattleTask and checks it against a diaSource catalog.
+    """
 
     ConfigClass = SatelliteFilterConfig
 
@@ -170,6 +199,21 @@ class SattleFilterTask:
         boxes.
         If the bounding boxes do not overlap with the satellite tracks, then
         the source Ids are passed back as a allow list.
+
+        Parameters
+        ----------
+        sat_coords: `numpy.ndarray`
+            An array of dimensions 2 x n x 2 containing the start end point
+            coordinate pairs for a given visit. The first dimension is
+            lon and the second dimension is lat.
+        diaSources:  `dict`
+            A dictionary of dia source IDs and their coordinates which will be
+            checked against the satellite coordinates.
+
+        Returns
+        -------
+        allow_list : `array`
+            An array of allowed visit ids.
         """
         track_width = self.config.track_width
         sat_coords = np.array(sat_coords['matched_satellites'])
@@ -195,13 +239,14 @@ class SattleFilterTask:
 
         Parameters
         ----------
-        bboxes: `numpy.array`
-            Array containing bounding boxes of all sources.
+        bboxes: `numpy.ndarray`
+            Array containing bounding boxes of all sources in ra and dec.
 
         Returns
         -------
-        sph_coords : `numpy.array`
-            Array containing the bounding boxes in spherical coordinates
+        sph_coords : `numpy.ndarray`
+            Array containing the bounding boxes in spherical geometry
+            convex polygons.
         """
 
         # TODO: Possibly adjust for faster array math
@@ -219,11 +264,34 @@ class SattleFilterTask:
     @staticmethod
     def _find_corners(sat_coords, length):
         """ Takes the satellite coordinates which are in lat and lon and
-        calculates  the corners of the satellites path. This is done by looking
-        at the endpoints of the satellites movement, finding the perpendicular
-        line to those endpoints, and growing the perpendicular line
-        to a specific length. We also add a buffer to the satellite endpoints
-        to ensure the entire satellite path is included."""
+        calculates  the corners of the satellites path.
+
+        This is done by looking at the endpoints of the satellites movement,
+        finding the perpendicular line to those endpoints, and growing the
+        perpendicular line to a specific length. We also add a buffer to the
+        satellite endpoints to ensure the entire satellite path is included.
+
+        Parameters
+        ----------
+        sat_coords: `numpy.ndarray`
+            An array of dimensions 2 x n x 2 containing the start end point
+            coordinate pairs. The first dimension is lon and the second
+            dimension is lat.
+        length: `float`
+            Length in degrees that the satellite track and width will be
+            extended.
+
+        Returns
+        -------
+        corners1 : `numpy.ndarray`
+            Array containing the first corner of each bounding box.
+        corners2 : `numpy.ndarray`
+            Array containing the second corner of each bounding box.
+        corners3 : `numpy.ndarray`
+            Array containing the third corner of each bounding box.
+        corners4 : `numpy.ndarray`
+            Array containing the fourth corner of each bounding box.
+        """
         # TODO: Confirm we always make the smallest region
         x1, y1 = sat_coords[:, :, 0]
         x2, y2 = sat_coords[:, :, 1]
@@ -280,21 +348,35 @@ class SattleFilterTask:
 
         # Check that none of the coordinates go beyond what is allowed
         # in lon and lat. If so, wrap coordinates around to correct.
-        corner1 = SattleFilterTask._check_corners(corner1)
-        corner2 = SattleFilterTask._check_corners(corner2)
-        corner3 = SattleFilterTask._check_corners(corner3)
-        corner4 = SattleFilterTask._check_corners(corner4)
+        corner1[0], corner1[1] = SattleFilterTask._check_corners(corner1)
+        corner2[0], corner2[1] = SattleFilterTask._check_corners(corner2)
+        corner3[0], corner3[1] = SattleFilterTask._check_corners(corner3)
+        corner4[0], corner4[1] = SattleFilterTask._check_corners(corner4)
 
         return corner1, corner2, corner3, corner4
 
     @staticmethod
-    def satellite_tracks(psf, sat_coords):
+    def satellite_tracks(track_width, sat_coords):
         """ Calculate the satellite tracks using their beginning and end
         points in ra and dec and the angle between them. The width of the
-        tracks is based on the psf (for now).
+        tracks is based on the track_width.
+
+        Parameters
+        ----------
+        track_width: `float`
+            Degrees to be added to the satellite track and length
+        sat_coords: `numpy.ndarray`
+            An array of dimensions 2 x n x 2 containing the start end point
+            coordinate pairs. The first dimension is lon and the second
+            dimension is lat.
+
+        Returns
+        -------
+        tracks : `numpy.ndarray`
+            An array of satellite tracks as spherical convex polygons.
         """
         tracks = []
-        corner1, corner2, corner4, corner3 = SattleFilterTask._find_corners(sat_coords, psf)
+        corner1, corner2, corner4, corner3 = SattleFilterTask._find_corners(sat_coords, track_width)
 
         for i in range(len(corner1[0])):
             try:
@@ -309,7 +391,8 @@ class SattleFilterTask:
                             sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(corner4[0][i], corner4[1][i]))])
                     tracks.append(track)
             # TODO: Using for troubleshooting, make more robust
-            except RuntimeError:
+            except RuntimeError as e:
+                logging.exception(e)
                 print(corner1[0][i], corner2[1][i], corner2[0][i], corner2[1][i], corner3[0][i],
                       corner2[1][i], corner4[0][i], corner4[1][i])
         # TODO: This is for testing only, remove once unit tests done
@@ -317,13 +400,30 @@ class SattleFilterTask:
             for item in tracks:
                 file.write(f"{item}\n")
 
-        return tracks
+        return np.array(tracks)
 
     @staticmethod
     def _check_tracks(sphere_bboxes, tracks, sourceIds):
         """ Check if sources bounding box in the catalog fall within the
         calculated satellite boundaries. If they are not, the id is added
         to the allow list.
+
+        Parameters
+        ----------
+        sphere_bboxes: `numpy.ndarray`
+            An array of dia source bounding boxes as spherical convex
+            poluygons
+        tracks: `numpy.ndarray`
+            An array of satellite tracks as spherical convex polygons
+        sourceIds: `list`
+            A list of dia source IDs corresponding to the dia source
+            bounding boxes.
+
+        Returns
+        -------
+        id_allow_list : `list`
+            A list containing allowed source IDs.
+
         """
         id_allow_list = []
         if sphere_bboxes.size > 1:
@@ -359,8 +459,28 @@ class SattleFilterTask:
     @staticmethod
     def _extend_line(x1, y1, x2, y2, extend_length):
         """ Extend the length of the satellite path by
-        a specified length"""
+        a specified length.
 
+        Parameters
+        ----------
+        x1: `numpy.ndarray`
+            Array containing all x1 line coordinates.
+        y1: `numpy.ndarray`
+            Array containing all  y1 line coordinates
+        x2: `numpy.ndarray`
+            Array containing all x2 line coordinates.
+        y2: `numpy.ndarray`
+            Array containing all  y2 line coordinates
+        extend_length: `float`
+            The length in degrees to extend the line.
+
+        Returns
+        -------
+        lon : `numpy.ndarray`
+            Array of lons which have been checked and corrected if necessary.
+        lat : `numpy.ndarray`
+            Array of lats which have been checked and corrected if necessary.
+        """
         # Trails should not be longer than 180 degrees
         dx = ((x2 - x1 + 180) % 360) - 180
 
@@ -384,7 +504,20 @@ class SattleFilterTask:
     @staticmethod
     def _check_corners(corner):
         """ After all the calculations, make sure none of the coordinates
-        exceed the spherical coordinates. If they do correct them."""
+        exceed the spherical coordinates. If they do correct them.
+
+        Parameters
+        ----------
+        corner: `numpy.ndarray`
+            Array containing the corner coordinates.
+
+        Returns
+        -------
+        lon : `numpy.ndarray`
+            Array of lons which have been checked and corrected if necessary.
+        lat : `numpy.ndarray`
+            Array of lats which have been checked and corrected if necessary.
+        """
         lon, lat = corner[0], corner[1]
 
         over_lat_limit = np.where(lat > 90)[0]

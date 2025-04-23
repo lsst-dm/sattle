@@ -29,3 +29,5 @@ pytest_session.txt
 .DS_Store
 /virtualenv/
 /sattle_env/
+
+python/lsst/sattle/logs/sattle.log
