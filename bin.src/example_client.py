@@ -2,7 +2,7 @@
 
 import requests
 
-HOST = 'http://127.0.0.1'
+HOST = 'http://localhost'
 PORT = 9999
 
 
@@ -22,9 +22,9 @@ print('sending data to the visit cache')
 
 # USe for 2024112300225
 r = requests.put(f'{HOST}:{PORT}/visit_cache', json =
-         {"visit_id":1234, "exposure_start_mjd":60638.12818957747,
-          "exposure_end_mjd":60638.12853679968,
-          "boresight_ra":38.1218149812, "boresight_dec": 6.5492319878})
+        {"visit_id":1234, "exposure_start_mjd":60641.04957530673,
+         "exposure_end_mjd":60641.049922528946,
+         "boresight_ra":38.3951559125, "boresight_dec": 7.1126590888})
 
 print(f'status code: {r.status_code}')
 print(r.text)

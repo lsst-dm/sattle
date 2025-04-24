@@ -21,3 +21,4 @@
 
 from . import sattle
 from .sattlePy import *
+from .app import *

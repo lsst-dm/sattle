@@ -6,6 +6,7 @@ from time import time
 import logging
 import logging.config
 import requests
+from astropy.time import Time
 
 from .constants import LOGGING
 from lsst.sattle import sattlePy
@@ -18,16 +19,23 @@ def read_tle_from_url(url, tle_source):
 
     # TODO: Currently this requires manual input of ra/dec. Make this read
     # from a file so it can be checked faster.
-    if tle_source == 'satchecker':
+
+    # We need to change this to be more useful for verification.
+    # Should make it a per day tle list, so verification checks per day.
+    # This would mean we remove the initial query though this is important
+    # Keep this in but change
+    # Needs to be all satellites visible in a night
+    start_time = 2460641.549147066
+    if tle_source == 'satchecker_query':
         params = {
             "latitude": -30.244633333333333,
             "longitude": -70.74941666666666,
             "fov_radius": 1,
             "elevation": 2662.75,
-            "start_time_jd": 2460638.6277619335,
-            "duration": 30,
-            "ra": 38.1218149812,
-            "dec": 6.5492319878,
+            "start_time_jd": start_time,
+            "duration": 120,
+            "ra": 38.3951559125,
+            "dec": 7.1126590888,
             "group_by": 'satellite',
             "is_illuminated": True, }
 
@@ -36,8 +44,9 @@ def read_tle_from_url(url, tle_source):
 
         response = requests.get(test_url, params=params, timeout=70)
 
+        # This needs to be swapped so the start and end brackets the start time
+        # By a specific set of hours so we don't have crazy offsets in epoch.
         if response.status_code == 200:
-
             satellite_json = response.json()['data']['satellites']
 
             for sat_name in satellite_json.keys():
@@ -46,22 +55,44 @@ def read_tle_from_url(url, tle_source):
                 params = {
                     "id": norad_id,
                     "id_type": 'catalog',
-                    "start_date_jd": 2460637,
-                    "end_date_jd": 2460639, }
+                    "start_date_jd": start_time-0.6,
+                    "end_date_jd": start_time+0.6, }
 
                 base_url = "https://dev.satchecker.cps.iau.noirlab.edu"
                 test_url = f"{base_url}/tools/get-tle-data/"
 
                 response = requests.get(test_url, params=params, timeout=70)
 
+                # Here we need to only select the most recent tle
+
+                first = True
                 for entry in response.json():
-                    tle = TLE(entry['tle_line1'], entry['tle_line2'])
-                    tles.append(tle)
+                    epoch = Time(entry['epoch'][:-4], scale='utc')
+                    current_epoch_delta = abs(epoch.jd - start_time)
+                    print("Epoch delta: ", current_epoch_delta)
+
+                    if first:
+                        tle = TLE(entry['tle_line1'], entry['tle_line2'])
+                        epoch_delta = current_epoch_delta
+                        first = False
+                    elif epoch_delta > current_epoch_delta:
+                        epoch_delta = current_epoch_delta
+                        tle = TLE(entry['tle_line1'], entry['tle_line2'])
+
+                # Only the lowest time delta will get added to the list for
+                # a specific satellite
+                tles.append(tle)
         else:
             print(
                 f"Failed to fetch TLE data. Status code: {response.status_code}")
 
-    elif tle_source == 'test':
+    if tle_source == 'satchecker_comcam':
+
+        print("Hi")
+
+        # Check the date and pick the correct tle file.
+
+    elif tle_source == 'sat_code':
 
         response = requests.get(url)
 
@@ -81,7 +112,7 @@ def read_tle_from_url(url, tle_source):
             print(
                 f"Failed to fetch TLE data. Status code: {response.status_code}")
 
-    # TODO: remove, used for testing only
+    # TODO: remove in final product, used for testing only
     with open('satchecker_output.txt', 'w') as file:
         for tle in tles:
             file.write(f"{tle.line1}\n")
@@ -304,11 +335,11 @@ def main():
 
     logging.config.dictConfig(LOGGING)
 
-    HOST = '127.0.0.1'
-    PORT = '9999'
+    HOST = '0.0.0.0'
+    PORT = 9999
 
     visit_satellite_cache = defaultdict(dict)
-    tles = read_tle_from_url(TLE_URL, 'satchecker')
+    tles = read_tle_from_url(TLE_URL, 'satchecker_query')
     sattleTask = sattlePy.SattleTask()
 
     loop = asyncio.get_event_loop()
