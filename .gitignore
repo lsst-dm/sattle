@@ -30,4 +30,6 @@ pytest_session.txt
 /virtualenv/
 /sattle_env/
 
+2024112600107_long_satellites.txt
+
 python/lsst/sattle/logs/sattle.log
