@@ -31,6 +31,7 @@ from lsst.sattle import sattle
 
 __all__ = ["SattleConfig", "SattleTask", "SatelliteFilterConfig", "SattleFilterTask"]
 
+
 class Field:
     """Field class for use in configuration classes."""
     def __init__(self, dtype: type, default: Any = None, doc: Optional[str] = None):
@@ -43,6 +44,7 @@ class Field:
 
     def __get__(self, instance, owner):
         return self.default
+
 
 class SattleConfig:
     """Config class for SattleConfig.
@@ -124,8 +126,8 @@ class SattleTask:
         inputs.target_ra = boresight_ra
         inputs.target_dec = boresight_dec
         # Search radius in degrees.
-        inputs.search_radius = (self.config.detector_radius +
-                                self.config.search_buffer * exposure_time) / 3600.0
+        inputs.search_radius = ((self.config.detector_radius + self.config.search_buffer * exposure_time)
+                                / 3600.0)
         inputs.ht_in_meters = self.config.height
         inputs.jd = [time_start.utc.jd, time_end.utc.jd]
 
@@ -221,7 +223,7 @@ class SattleFilterTask:
         Returns
         -------
         allow_list : `array`
-            List of diaSource IDs that don't intersect with satellite satellite_tracks.
+            List of diaSource IDs that don't intersect with satellite tracks.
             Returns empty list if all sources are filtered. Returns the full
             diaSource ID list if no satellites are found.
 
@@ -275,12 +277,6 @@ class SattleFilterTask:
         sph_coords : `numpy.ndarray`
             Array of ConvexPolygon objects representing the bounding boxes in
             spherical geometry.
-
-        Notes
-        -----
-        Each bounding box is converted into a ConvexPolygon using the following steps:
-        1. Convert each corner from (RA, Dec) to unit vector
-        2. Create a ConvexPolygon from the four corner vectors
         """
         # Convert to np.array, maybe do earlier??
         bboxes = np.asarray(bboxes, dtype=np.float64)
@@ -303,7 +299,6 @@ class SattleFilterTask:
         sphere_bboxes = [sphgeom.ConvexPolygon(vectors) for vectors in vector_groups]
 
         return np.array(sphere_bboxes)
-
 
     @staticmethod
     def _find_corners(sat_coords: np.ndarray, length: float):
@@ -401,9 +396,9 @@ class SattleFilterTask:
 
     @staticmethod
     def satellite_tracks(track_width: float, sat_coords: np.ndarray) -> List[sphgeom.ConvexPolygon]:
-        """ Calculate the satellite satellite_tracks using their beginning and end
-        points in ra and dec and the angle between them. The width of the
-        satellite_tracks is based on the track_width.
+        """ Calculate the satellite tracks using their beginning and
+        end points in ra and dec and the angle between them. The width of the
+        tracks is based on the track_width.
 
         Parameters
         ----------
@@ -417,7 +412,7 @@ class SattleFilterTask:
         Returns
         -------
         satellite_tracks : `numpy.ndarray`
-            An array of satellite satellite_tracks as spherical convex polygons.
+            An array of satellite tracks as spherical convex polygons.
         """
         tracks = []
         corner1, corner2, corner4, corner3 = SattleFilterTask._find_corners(sat_coords, track_width)
@@ -447,7 +442,8 @@ class SattleFilterTask:
         return np.array(tracks)
 
     @staticmethod
-    def _check_tracks(sphere_source_bboxes: np.ndarray, satellite_tracks: np.ndarray, source_ids: list) -> list:
+    def _check_tracks(sphere_source_bboxes: np.ndarray, satellite_tracks: np.ndarray,
+                      source_ids: list) -> list:
         """ Check if sources bounding box in the catalog fall within the
         calculated satellite boundaries. If they are not, the id is added
         to the allowlist.

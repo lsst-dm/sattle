@@ -12,19 +12,20 @@ from .constants import LOGGING
 from lsst.sattle import sattlePy
 
 TLE_PARAMS = {
-            "latitude": -30.244633333333333,
-            "longitude": -70.74941666666666,
-            "fov_radius": 1,
-            "elevation": 2662.75,
-            "start_time_jd": 2460641.549147066,
-            "duration": 120,
-            "ra": 38.3951559125,
-            "dec": 7.1126590888,
-            "group_by": 'satellite',
-            "is_illuminated": True, }
+    "latitude": -30.244633333333333,
+    "longitude": -70.74941666666666,
+    "fov_radius": 1,
+    "elevation": 2662.75,
+    "start_time_jd": 2460641.549147066,
+    "duration": 120,
+    "ra": 38.3951559125,
+    "dec": 7.1126590888,
+    "group_by": 'satellite',
+    "is_illuminated": True, }
+
 
 # Change nqame to read tles
-def read_tles(tle_source, filename=None, url=None, write_file=None, params = None):
+def read_tles(tle_source, filename=None, url=None, write_file=None, params=None):
     tles = []
 
     # TODO: Currently this requires manual input of ra/dec. Make this read
@@ -145,7 +146,7 @@ class TLE:
         return f"TLE(line1='{self.line1}', line2='{self.line2}')"
 
 
-async def cache_update(visit_satellite_cache, tles, force_update = None):
+async def cache_update(visit_satellite_cache, tles, force_update=None):
     """Main loop that clears the cache according to the clock."""
     interval = 10  # seconds
     expire_cache_time_min = 30  # minutes
