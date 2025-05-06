@@ -99,7 +99,7 @@ class SattleTask:
         ----------
         visit_id: `int`
             The visit ID for a given exposure.
-        exposure_start_mjd:  `float`
+        exposure_start_mjd: `float`
             The start time of the exposure in MJD.
         exposure_end_mjd: `float`
             The end time of the exposure in MJD.

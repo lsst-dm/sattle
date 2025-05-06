@@ -66,7 +66,7 @@ class FilterSattleTaskTest(unittest.TestCase):
         """ This test can only run if a local test sattle server is running. It
         checks that the full filter task runs successfully and returns
         the expected list of allowed ids."""
-        ## Talk with Eric about best way to use this??
+        #TODO: This will be addressed in DM-50889
         sattleTask = SattleTask()
         self.assertEqual(True, True)  # add assertion here
 
@@ -231,7 +231,6 @@ class FilterSattleTaskTest(unittest.TestCase):
         np.allclose(corner4, expected_corner4)
 
 
-
     def test_find_corners_lon_extremes(self):
         """ Test if find_corners correctly wraps lon coordinates when extending
         over 0 degrees into negative longitude and wraps back to 0 over 360
@@ -350,22 +349,17 @@ class FilterSattleTaskTest(unittest.TestCase):
         self.assertAlmostEqual(result[2].item(), expected_x2, places=3)
         self.assertAlmostEqual(result[3].item(), expected_y2, places=3)
 
-    def test_check_corners(self):
+    def test_normalize_coordinates(self):
         """ Test that the lat and lon extremes are handled correctly."""
         corners = np.array([[20.0, -10.0, 380.0, 10.0, 10.0, 354.0],
                            [30.0, 20.0, 20.0, -99.0, 99.0, 99.0]])
-        result = SattleFilterTask._check_corners(corners)
+        result = SattleFilterTask._normalize_coordinates(corners)
         expected_result = np.array([[20.0, 350, 20, 190, 190, 174.0],
                            [30.0, 20.0, 20.0, -81, 81.0, 81.0]])
         np.testing.assert_array_equal(result, expected_result)
 
-class SattleTaskTest(unittest.TestCase):
 
-    def setUp(self):
-        self.bbox_list=[]
-        for i in range(20):
-            # make bboxes here, need to be in format bbox[0][0] etc
-            print("Hi")
+class SattleTaskTest(unittest.TestCase):
 
     def test_run(self):
         """ The example satchecker_output has 3 satellites """
