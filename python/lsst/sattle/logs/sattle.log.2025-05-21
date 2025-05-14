@@ -1,0 +1,531 @@
+2025-05-21 17:44:29,600 INFO main Shutting Down!
+2025-05-21 17:44:31,156 INFO pullCatalog Logging in
+2025-05-21 17:44:32,553 INFO pullCatalog Successfully logged in
+2025-05-21 17:44:32,554 INFO pullCatalog Requesting GP catalog
+2025-05-21 17:49:09,594 INFO pullCatalog Logging in
+2025-05-21 17:49:10,773 INFO pullCatalog Successfully logged in
+2025-05-21 17:49:10,773 INFO pullCatalog Requesting GP catalog
+2025-05-21 17:49:32,676 INFO pullCatalog Received GP catalog
+2025-05-21 17:49:32,676 INFO pullCatalog Logging out
+2025-05-21 17:49:33,003 INFO pullCatalog Logged out
+2025-05-21 17:49:33,227 INFO main Server ready!
+2025-05-21 18:13:33,598 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60633.09713337375, 'exposure_end_mjd': 60633.09748059596, 'boresight_ra': 59.2603658355, 'boresight_dec': -48.6722040564, 'historical': True}
+2025-05-21 18:13:33,598 INFO pullCatalog Logging in
+2025-05-21 18:13:34,810 INFO pullCatalog Successfully logged in
+2025-05-21 18:13:34,810 INFO pullCatalog Requesting GP catalog
+2025-05-21 18:13:46,515 INFO pullCatalog Received GP catalog
+2025-05-21 18:13:46,516 INFO pullCatalog Logging out
+2025-05-21 18:13:46,888 INFO pullCatalog Logged out
+2025-05-21 18:13:49,880 INFO web_log 127.0.0.1 [21/May/2025:10:13:33 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-21 18:13:49,880 INFO web_log 127.0.0.1 [21/May/2025:10:13:33 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-21 18:13:49,883 INFO main {}
+2025-05-21 18:13:49,883 INFO web_log 127.0.0.1 [21/May/2025:10:13:49 -0800] "GET /visit_cache HTTP/1.1" 200 558 "-" "python-requests/2.32.3"
+2025-05-21 18:13:49,883 INFO web_log 127.0.0.1 [21/May/2025:10:13:49 -0800] "GET /visit_cache HTTP/1.1" 200 558 "-" "python-requests/2.32.3"
+2025-05-21 18:13:49,884 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4569, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}, {'diasource_id': 4568, 'bbox': [[38, 7], [39, 8], [39, 7], [38, 8]]}]}
+2025-05-21 18:13:49,886 INFO web_log 127.0.0.1 [21/May/2025:10:13:49 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 230 "-" "python-requests/2.32.3"
+2025-05-21 18:13:49,886 INFO web_log 127.0.0.1 [21/May/2025:10:13:49 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 230 "-" "python-requests/2.32.3"
+2025-05-21 18:13:49,889 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-05-21 18:13:49,890 INFO web_log 127.0.0.1 [21/May/2025:10:13:49 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-21 18:13:49,890 INFO web_log 127.0.0.1 [21/May/2025:10:13:49 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-21 19:14:05,117 INFO main Shutting Down!
+2025-05-21 19:14:06,403 INFO pullCatalog Logging in
+2025-05-21 19:14:07,523 INFO pullCatalog Successfully logged in
+2025-05-21 19:14:07,524 INFO pullCatalog Requesting GP catalog
+2025-05-21 19:14:29,241 INFO pullCatalog Received GP catalog
+2025-05-21 19:14:29,241 INFO pullCatalog Logging out
+2025-05-21 19:14:29,631 INFO pullCatalog Logged out
+2025-05-21 19:14:29,789 INFO main Server ready!
+2025-05-21 19:14:39,743 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60633.09713337375, 'exposure_end_mjd': 60633.09748059596, 'boresight_ra': 59.2603658355, 'boresight_dec': -48.6722040564, 'historical': True}
+2025-05-21 19:14:39,743 INFO pullCatalog Logging in
+2025-05-21 19:14:41,175 INFO pullCatalog Successfully logged in
+2025-05-21 19:14:41,175 INFO pullCatalog Requesting GP catalog
+2025-05-21 19:15:29,593 INFO pullCatalog Received GP catalog
+2025-05-21 19:15:29,593 INFO pullCatalog Logging out
+2025-05-21 19:15:30,074 INFO pullCatalog Logged out
+2025-05-21 19:15:33,446 INFO web_log 127.0.0.1 [21/May/2025:11:14:39 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-21 19:15:33,446 INFO web_log 127.0.0.1 [21/May/2025:11:14:39 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-21 19:15:33,449 INFO main {}
+2025-05-21 19:15:33,450 INFO web_log 127.0.0.1 [21/May/2025:11:15:33 -0800] "GET /visit_cache HTTP/1.1" 200 559 "-" "python-requests/2.32.3"
+2025-05-21 19:15:33,450 INFO web_log 127.0.0.1 [21/May/2025:11:15:33 -0800] "GET /visit_cache HTTP/1.1" 200 559 "-" "python-requests/2.32.3"
+2025-05-21 19:15:33,452 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4569, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}, {'diasource_id': 4568, 'bbox': [[38, 7], [39, 8], [39, 7], [38, 8]]}]}
+2025-05-21 19:15:33,455 INFO web_log 127.0.0.1 [21/May/2025:11:15:33 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 230 "-" "python-requests/2.32.3"
+2025-05-21 19:15:33,455 INFO web_log 127.0.0.1 [21/May/2025:11:15:33 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 230 "-" "python-requests/2.32.3"
+2025-05-21 19:15:33,457 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-05-21 19:15:33,457 INFO web_log 127.0.0.1 [21/May/2025:11:15:33 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-21 19:15:33,457 INFO web_log 127.0.0.1 [21/May/2025:11:15:33 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-21 19:42:38,840 INFO main Shutting Down!
+2025-05-21 19:42:40,328 INFO pullCatalog Logging in
+2025-05-21 19:42:41,558 INFO pullCatalog Successfully logged in
+2025-05-21 19:42:41,558 INFO pullCatalog Requesting GP catalog
+2025-05-21 19:42:47,561 INFO pullCatalog Received GP catalog
+2025-05-21 19:42:47,561 INFO pullCatalog Logging out
+2025-05-21 19:42:47,906 INFO pullCatalog Logged out
+2025-05-21 19:42:48,073 INFO main Server ready!
+2025-05-21 19:43:25,676 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60633.09713337375, 'exposure_end_mjd': 60633.09748059596, 'boresight_ra': 59.2603658355, 'boresight_dec': -48.6722040564, 'historical': True}
+2025-05-21 19:43:25,770 INFO pullCatalog Logging in
+2025-05-21 19:43:26,676 INFO pullCatalog Successfully logged in
+2025-05-21 19:43:26,676 INFO pullCatalog Requesting GP catalog
+2025-05-21 19:43:27,023 INFO pullCatalog Received GP catalog
+2025-05-21 19:43:27,023 INFO pullCatalog Logging out
+2025-05-21 19:43:27,341 INFO pullCatalog Logged out
+2025-05-21 19:43:27,341 ERROR main can only concatenate str (not "float") to str
+Traceback (most recent call last):
+  File "/Users/bsmart/LSST/code/sattle/python/lsst/sattle/app/main.py", line 342, in visit_handler
+    tles = read_tles('catalog', date=data['exposure_start_mjd'])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bsmart/LSST/code/sattle/python/lsst/sattle/app/main.py", line 177, in read_tles
+    print("Using historical catalog for date: " + date + "")
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~
+TypeError: can only concatenate str (not "float") to str
+2025-05-21 19:43:27,343 INFO web_log 127.0.0.1 [21/May/2025:11:43:25 -0800] "PUT /visit_cache HTTP/1.1" 500 190 "-" "python-requests/2.32.3"
+2025-05-21 19:43:27,343 INFO web_log 127.0.0.1 [21/May/2025:11:43:25 -0800] "PUT /visit_cache HTTP/1.1" 500 190 "-" "python-requests/2.32.3"
+2025-05-21 19:43:27,346 INFO main {}
+2025-05-21 19:43:27,347 INFO web_log 127.0.0.1 [21/May/2025:11:43:27 -0800] "GET /visit_cache HTTP/1.1" 200 161 "-" "python-requests/2.32.3"
+2025-05-21 19:43:27,347 INFO web_log 127.0.0.1 [21/May/2025:11:43:27 -0800] "GET /visit_cache HTTP/1.1" 200 161 "-" "python-requests/2.32.3"
+2025-05-21 19:43:27,349 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4569, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}, {'diasource_id': 4568, 'bbox': [[38, 7], [39, 8], [39, 7], [38, 8]]}]}
+2025-05-21 19:43:27,349 INFO web_log 127.0.0.1 [21/May/2025:11:43:27 -0800] "PUT /diasource_allow_list HTTP/1.1" 404 203 "-" "python-requests/2.32.3"
+2025-05-21 19:43:27,349 INFO web_log 127.0.0.1 [21/May/2025:11:43:27 -0800] "PUT /diasource_allow_list HTTP/1.1" 404 203 "-" "python-requests/2.32.3"
+2025-05-21 19:43:27,351 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-05-21 19:43:27,351 INFO web_log 127.0.0.1 [21/May/2025:11:43:27 -0800] "PUT /diasource_allow_list HTTP/1.1" 404 203 "-" "python-requests/2.32.3"
+2025-05-21 19:43:27,351 INFO web_log 127.0.0.1 [21/May/2025:11:43:27 -0800] "PUT /diasource_allow_list HTTP/1.1" 404 203 "-" "python-requests/2.32.3"
+2025-05-21 19:44:14,796 INFO main Shutting Down!
+2025-05-21 19:44:16,263 INFO pullCatalog Logging in
+2025-05-21 19:44:17,261 INFO pullCatalog Successfully logged in
+2025-05-21 19:44:17,262 INFO pullCatalog Requesting GP catalog
+2025-05-21 19:44:38,900 INFO pullCatalog Received GP catalog
+2025-05-21 19:44:38,900 INFO pullCatalog Logging out
+2025-05-21 19:44:39,319 INFO pullCatalog Logged out
+2025-05-21 19:44:39,482 INFO main Server ready!
+2025-05-21 19:44:43,660 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60633.09713337375, 'exposure_end_mjd': 60633.09748059596, 'boresight_ra': 59.2603658355, 'boresight_dec': -48.6722040564, 'historical': True}
+2025-05-21 19:44:43,746 INFO pullCatalog Logging in
+2025-05-21 19:44:44,743 INFO pullCatalog Successfully logged in
+2025-05-21 19:44:44,743 INFO pullCatalog Requesting GP catalog
+2025-05-21 19:44:45,154 INFO pullCatalog Received GP catalog
+2025-05-21 19:44:45,154 INFO pullCatalog Logging out
+2025-05-21 19:44:45,456 INFO pullCatalog Logged out
+2025-05-21 19:44:45,459 INFO web_log 127.0.0.1 [21/May/2025:11:44:43 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-21 19:44:45,459 INFO web_log 127.0.0.1 [21/May/2025:11:44:43 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-21 19:44:45,464 INFO main {}
+2025-05-21 19:44:45,464 INFO web_log 127.0.0.1 [21/May/2025:11:44:45 -0800] "GET /visit_cache HTTP/1.1" 200 237 "-" "python-requests/2.32.3"
+2025-05-21 19:44:45,464 INFO web_log 127.0.0.1 [21/May/2025:11:44:45 -0800] "GET /visit_cache HTTP/1.1" 200 237 "-" "python-requests/2.32.3"
+2025-05-21 19:44:45,466 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4569, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}, {'diasource_id': 4568, 'bbox': [[38, 7], [39, 8], [39, 7], [38, 8]]}]}
+2025-05-21 19:44:45,468 INFO web_log 127.0.0.1 [21/May/2025:11:44:45 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 230 "-" "python-requests/2.32.3"
+2025-05-21 19:44:45,468 INFO web_log 127.0.0.1 [21/May/2025:11:44:45 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 230 "-" "python-requests/2.32.3"
+2025-05-21 19:44:45,469 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-05-21 19:44:45,470 INFO web_log 127.0.0.1 [21/May/2025:11:44:45 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-21 19:44:45,470 INFO web_log 127.0.0.1 [21/May/2025:11:44:45 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-21 19:46:04,018 INFO main Shutting Down!
+2025-05-21 19:46:05,434 INFO pullCatalog Logging in
+2025-05-21 19:46:09,191 INFO pullCatalog Successfully logged in
+2025-05-21 19:46:09,191 INFO pullCatalog Requesting GP catalog
+2025-05-21 19:46:13,461 INFO pullCatalog Received GP catalog
+2025-05-21 19:46:13,461 INFO pullCatalog Logging out
+2025-05-21 19:46:13,830 INFO pullCatalog Logged out
+2025-05-21 19:46:13,992 INFO main Server ready!
+2025-05-21 19:47:14,598 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60633.09713337375, 'exposure_end_mjd': 60633.09748059596, 'boresight_ra': 59.2603658355, 'boresight_dec': -48.6722040564, 'historical': True}
+2025-05-21 19:48:00,983 INFO pullCatalog Logging in
+2025-05-21 19:48:02,181 INFO pullCatalog Successfully logged in
+2025-05-21 19:48:02,182 INFO pullCatalog Requesting GP catalog
+2025-05-21 19:48:02,560 INFO pullCatalog Received GP catalog
+2025-05-21 19:48:02,561 INFO pullCatalog Logging out
+2025-05-21 19:48:02,935 INFO pullCatalog Logged out
+2025-05-21 19:48:35,823 INFO web_log 127.0.0.1 [21/May/2025:11:47:09 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-21 19:48:35,823 INFO web_log 127.0.0.1 [21/May/2025:11:47:09 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-21 19:48:35,837 INFO main {}
+2025-05-21 19:48:35,838 INFO web_log 127.0.0.1 [21/May/2025:11:48:35 -0800] "GET /visit_cache HTTP/1.1" 200 237 "-" "python-requests/2.32.3"
+2025-05-21 19:48:35,838 INFO web_log 127.0.0.1 [21/May/2025:11:48:35 -0800] "GET /visit_cache HTTP/1.1" 200 237 "-" "python-requests/2.32.3"
+2025-05-21 19:48:35,845 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4569, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}, {'diasource_id': 4568, 'bbox': [[38, 7], [39, 8], [39, 7], [38, 8]]}]}
+2025-05-21 19:48:35,847 INFO web_log 127.0.0.1 [21/May/2025:11:48:35 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 230 "-" "python-requests/2.32.3"
+2025-05-21 19:48:35,847 INFO web_log 127.0.0.1 [21/May/2025:11:48:35 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 230 "-" "python-requests/2.32.3"
+2025-05-21 19:48:35,851 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-05-21 19:48:35,852 INFO web_log 127.0.0.1 [21/May/2025:11:48:35 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-21 19:48:35,852 INFO web_log 127.0.0.1 [21/May/2025:11:48:35 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-21 19:48:45,534 INFO main Shutting Down!
+2025-05-21 19:48:51,998 INFO pullCatalog Logging in
+2025-05-21 19:48:52,819 INFO pullCatalog Successfully logged in
+2025-05-21 19:48:52,819 INFO pullCatalog Requesting GP catalog
+2025-05-21 19:49:11,562 INFO pullCatalog Received GP catalog
+2025-05-21 19:49:11,562 INFO pullCatalog Logging out
+2025-05-21 19:49:11,906 INFO pullCatalog Logged out
+2025-05-21 19:49:12,070 INFO main Server ready!
+2025-05-21 19:49:49,885 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60633.09713337375, 'exposure_end_mjd': 60633.09748059596, 'boresight_ra': 59.2603658355, 'boresight_dec': -48.6722040564, 'historical': True}
+2025-05-21 19:50:51,585 INFO pullCatalog Logging in
+2025-05-21 19:50:52,546 INFO pullCatalog Successfully logged in
+2025-05-21 19:50:52,549 INFO pullCatalog Requesting GP catalog
+2025-05-21 19:50:52,884 INFO pullCatalog Received GP catalog
+2025-05-21 19:50:52,885 INFO pullCatalog Logging out
+2025-05-21 19:50:53,285 INFO pullCatalog Logged out
+2025-05-21 19:51:21,139 INFO main Shutting Down!
+2025-05-21 19:51:23,052 INFO pullCatalog Logging in
+2025-05-21 19:51:26,052 INFO pullCatalog Successfully logged in
+2025-05-21 19:51:26,052 INFO pullCatalog Requesting GP catalog
+2025-05-21 19:51:47,687 INFO pullCatalog Received GP catalog
+2025-05-21 19:51:47,687 INFO pullCatalog Logging out
+2025-05-21 19:51:48,048 INFO pullCatalog Logged out
+2025-05-21 19:51:48,227 INFO main Server ready!
+2025-05-21 19:51:56,116 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60633.09713337375, 'exposure_end_mjd': 60633.09748059596, 'boresight_ra': 59.2603658355, 'boresight_dec': -48.6722040564, 'historical': True}
+2025-05-21 19:52:02,974 INFO pullCatalog Logging in
+2025-05-21 19:52:03,799 INFO pullCatalog Successfully logged in
+2025-05-21 19:52:03,801 INFO pullCatalog Requesting GP catalog
+2025-05-21 19:52:53,353 INFO pullCatalog Received GP catalog
+2025-05-21 19:52:53,355 INFO pullCatalog Logging out
+2025-05-21 19:52:53,810 INFO pullCatalog Logged out
+2025-05-21 19:53:33,771 INFO web_log 127.0.0.1 [21/May/2025:11:51:53 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-21 19:53:33,771 INFO web_log 127.0.0.1 [21/May/2025:11:51:53 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-21 19:53:33,775 INFO main {}
+2025-05-21 19:53:33,776 INFO web_log 127.0.0.1 [21/May/2025:11:53:33 -0800] "GET /visit_cache HTTP/1.1" 200 557 "-" "python-requests/2.32.3"
+2025-05-21 19:53:33,776 INFO web_log 127.0.0.1 [21/May/2025:11:53:33 -0800] "GET /visit_cache HTTP/1.1" 200 557 "-" "python-requests/2.32.3"
+2025-05-21 19:53:33,778 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4569, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}, {'diasource_id': 4568, 'bbox': [[38, 7], [39, 8], [39, 7], [38, 8]]}]}
+2025-05-21 19:53:33,780 INFO web_log 127.0.0.1 [21/May/2025:11:53:33 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 230 "-" "python-requests/2.32.3"
+2025-05-21 19:53:33,780 INFO web_log 127.0.0.1 [21/May/2025:11:53:33 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 230 "-" "python-requests/2.32.3"
+2025-05-21 19:53:33,782 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-05-21 19:53:33,783 INFO web_log 127.0.0.1 [21/May/2025:11:53:33 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-21 19:53:33,783 INFO web_log 127.0.0.1 [21/May/2025:11:53:33 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-21 21:32:10,798 INFO main Shutting Down!
+2025-05-21 21:32:16,353 INFO pullCatalog Logging in
+2025-05-21 21:32:17,302 INFO pullCatalog Successfully logged in
+2025-05-21 21:32:17,302 INFO pullCatalog Requesting GP catalog
+2025-05-21 21:32:38,051 INFO pullCatalog Received GP catalog
+2025-05-21 21:32:38,051 INFO pullCatalog Logging out
+2025-05-21 21:32:38,344 INFO pullCatalog Logged out
+2025-05-21 21:32:38,516 INFO main Server ready!
+2025-05-21 21:32:46,581 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60633.09713337375, 'exposure_end_mjd': 60633.09748059596, 'boresight_ra': 59.2603658355, 'boresight_dec': -48.6722040564, 'historical': True}
+2025-05-21 21:32:47,769 INFO pullCatalog Logging in
+2025-05-21 21:32:48,679 INFO pullCatalog Successfully logged in
+2025-05-21 21:32:48,680 INFO pullCatalog Requesting GP catalog
+2025-05-21 21:33:36,896 INFO pullCatalog Received GP catalog
+2025-05-21 21:33:36,896 INFO pullCatalog Logging out
+2025-05-21 21:33:37,258 INFO pullCatalog Logged out
+2025-05-21 21:33:48,399 INFO web_log 127.0.0.1 [21/May/2025:13:32:43 -0800] "PUT /visit_cache HTTP/1.1" 200 210 "-" "python-requests/2.32.3"
+2025-05-21 21:33:48,399 INFO web_log 127.0.0.1 [21/May/2025:13:32:43 -0800] "PUT /visit_cache HTTP/1.1" 200 210 "-" "python-requests/2.32.3"
+2025-05-21 21:33:48,406 INFO main {}
+2025-05-21 21:33:48,406 INFO web_log 127.0.0.1 [21/May/2025:13:33:48 -0800] "GET /visit_cache HTTP/1.1" 200 557 "-" "python-requests/2.32.3"
+2025-05-21 21:33:48,406 INFO web_log 127.0.0.1 [21/May/2025:13:33:48 -0800] "GET /visit_cache HTTP/1.1" 200 557 "-" "python-requests/2.32.3"
+2025-05-21 21:33:48,408 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4569, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}, {'diasource_id': 4568, 'bbox': [[38, 7], [39, 8], [39, 7], [38, 8]]}]}
+2025-05-21 21:33:48,411 INFO web_log 127.0.0.1 [21/May/2025:13:33:48 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 230 "-" "python-requests/2.32.3"
+2025-05-21 21:33:48,411 INFO web_log 127.0.0.1 [21/May/2025:13:33:48 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 230 "-" "python-requests/2.32.3"
+2025-05-21 21:33:48,414 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-05-21 21:33:48,415 INFO web_log 127.0.0.1 [21/May/2025:13:33:48 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-21 21:33:48,415 INFO web_log 127.0.0.1 [21/May/2025:13:33:48 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-21 21:42:06,836 INFO main Shutting Down!
+2025-05-21 21:42:10,255 INFO pullCatalog Logging in
+2025-05-21 21:42:11,210 INFO pullCatalog Successfully logged in
+2025-05-21 21:42:11,211 INFO pullCatalog Requesting GP catalog
+2025-05-21 21:42:56,379 INFO pullCatalog Logging in
+2025-05-21 21:42:57,195 INFO pullCatalog Successfully logged in
+2025-05-21 21:42:57,195 INFO pullCatalog Requesting GP catalog
+2025-05-21 21:43:01,716 INFO pullCatalog Received GP catalog
+2025-05-21 21:43:01,717 INFO pullCatalog Logging out
+2025-05-21 21:43:02,060 INFO pullCatalog Logged out
+2025-05-21 21:43:02,228 INFO main Server ready!
+2025-05-21 21:46:22,527 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60633.09713337375, 'exposure_end_mjd': 60633.09748059596, 'boresight_ra': 59.2603658355, 'boresight_dec': -48.6722040564, 'historical': True}
+2025-05-21 21:46:23,676 INFO pullCatalog Logging in
+2025-05-21 21:46:24,614 INFO pullCatalog Successfully logged in
+2025-05-21 21:46:24,614 INFO pullCatalog Requesting GP catalog
+2025-05-21 21:46:34,936 INFO pullCatalog Received GP catalog
+2025-05-21 21:46:34,937 INFO pullCatalog Logging out
+2025-05-21 21:46:35,261 INFO pullCatalog Logged out
+2025-05-21 21:46:45,744 INFO web_log 127.0.0.1 [21/May/2025:13:46:19 -0800] "PUT /visit_cache HTTP/1.1" 200 210 "-" "python-requests/2.32.3"
+2025-05-21 21:46:45,744 INFO web_log 127.0.0.1 [21/May/2025:13:46:19 -0800] "PUT /visit_cache HTTP/1.1" 200 210 "-" "python-requests/2.32.3"
+2025-05-21 21:46:45,751 INFO main {}
+2025-05-21 21:46:45,752 INFO web_log 127.0.0.1 [21/May/2025:13:46:45 -0800] "GET /visit_cache HTTP/1.1" 200 558 "-" "python-requests/2.32.3"
+2025-05-21 21:46:45,752 INFO web_log 127.0.0.1 [21/May/2025:13:46:45 -0800] "GET /visit_cache HTTP/1.1" 200 558 "-" "python-requests/2.32.3"
+2025-05-21 21:46:45,754 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4569, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}, {'diasource_id': 4568, 'bbox': [[38, 7], [39, 8], [39, 7], [38, 8]]}], 'historical': True}
+2025-05-21 21:46:45,754 INFO web_log 127.0.0.1 [21/May/2025:13:46:45 -0800] "PUT /diasource_allow_list HTTP/1.1" 404 214 "-" "python-requests/2.32.3"
+2025-05-21 21:46:45,754 INFO web_log 127.0.0.1 [21/May/2025:13:46:45 -0800] "PUT /diasource_allow_list HTTP/1.1" 404 214 "-" "python-requests/2.32.3"
+2025-05-21 21:46:45,760 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-05-21 21:46:45,763 INFO web_log 127.0.0.1 [21/May/2025:13:46:45 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-21 21:46:45,763 INFO web_log 127.0.0.1 [21/May/2025:13:46:45 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-21 23:15:15,839 INFO main {'visit_id': 2024112300242, 'exposure_start_mjd': 60638.14213799195, 'exposure_end_mjd': 60638.14248521417, 'boresight_ra': 37.44, 'boresight_dec': 7.29}
+2025-05-21 23:15:18,525 INFO web_log 127.0.0.1 [21/May/2025:15:15:02 -0800] "PUT /visit_cache HTTP/1.1" 200 208 "-" "python-requests/2.32.3"
+2025-05-21 23:15:18,525 INFO web_log 127.0.0.1 [21/May/2025:15:15:02 -0800] "PUT /visit_cache HTTP/1.1" 200 208 "-" "python-requests/2.32.3"
+2025-05-21 23:15:21,346 INFO main {'visit_id': 2024112300242, 'exposure_start_mjd': 60638.14213799195, 'exposure_end_mjd': 60638.14248521417, 'boresight_ra': 37.44, 'boresight_dec': 7.29, 'historical': True}
+2025-05-21 23:15:22,366 INFO pullCatalog Logging in
+2025-05-21 23:15:23,403 INFO pullCatalog Successfully logged in
+2025-05-21 23:15:23,403 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:16:07,849 INFO pullCatalog Received GP catalog
+2025-05-21 23:16:07,850 INFO pullCatalog Logging out
+2025-05-21 23:16:08,142 INFO pullCatalog Logged out
+2025-05-21 23:16:17,758 INFO web_log 127.0.0.1 [21/May/2025:15:15:18 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:16:17,758 INFO web_log 127.0.0.1 [21/May/2025:15:15:18 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:16:18,548 INFO main {'visit_id': 2024111800093, 'exposure_start_mjd': 60633.09713337375, 'exposure_end_mjd': 60633.09748059596, 'boresight_ra': 59.2603658355, 'boresight_dec': -48.6722040564, 'historical': True}
+2025-05-21 23:16:24,214 INFO pullCatalog Logging in
+2025-05-21 23:16:25,388 INFO pullCatalog Successfully logged in
+2025-05-21 23:16:25,388 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:17:12,415 INFO pullCatalog Received GP catalog
+2025-05-21 23:17:12,422 INFO pullCatalog Logging out
+2025-05-21 23:17:12,848 INFO pullCatalog Logged out
+2025-05-21 23:17:24,159 INFO web_log 127.0.0.1 [21/May/2025:15:16:17 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:17:24,159 INFO web_log 127.0.0.1 [21/May/2025:15:16:17 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:17:30,532 INFO main Shutting Down!
+2025-05-21 23:17:38,206 INFO pullCatalog Logging in
+2025-05-21 23:17:39,009 INFO pullCatalog Successfully logged in
+2025-05-21 23:17:39,010 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:17:59,795 INFO pullCatalog Received GP catalog
+2025-05-21 23:17:59,795 INFO pullCatalog Logging out
+2025-05-21 23:18:00,147 INFO pullCatalog Logged out
+2025-05-21 23:18:00,328 INFO main Server ready!
+2025-05-21 23:18:05,900 INFO main {'visit_id': 2024112300242, 'exposure_start_mjd': 60638.14213799195, 'exposure_end_mjd': 60638.14248521417, 'boresight_ra': 37.44, 'boresight_dec': 7.29}
+2025-05-21 23:18:07,548 INFO web_log 127.0.0.1 [21/May/2025:15:18:05 -0800] "PUT /visit_cache HTTP/1.1" 200 208 "-" "python-requests/2.32.3"
+2025-05-21 23:18:07,548 INFO web_log 127.0.0.1 [21/May/2025:15:18:05 -0800] "PUT /visit_cache HTTP/1.1" 200 208 "-" "python-requests/2.32.3"
+2025-05-21 23:18:07,551 INFO main {'visit_id': 2024112300242, 'exposure_start_mjd': 60638.14213799195, 'exposure_end_mjd': 60638.14248521417, 'boresight_ra': 37.44, 'boresight_dec': 7.29, 'historical': True}
+2025-05-21 23:18:07,554 INFO pullCatalog Logging in
+2025-05-21 23:18:08,383 INFO pullCatalog Successfully logged in
+2025-05-21 23:18:08,383 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:18:17,430 INFO pullCatalog Received GP catalog
+2025-05-21 23:18:17,430 INFO pullCatalog Logging out
+2025-05-21 23:18:17,753 INFO pullCatalog Logged out
+2025-05-21 23:18:20,841 INFO web_log 127.0.0.1 [21/May/2025:15:18:07 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:18:20,841 INFO web_log 127.0.0.1 [21/May/2025:15:18:07 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:18:20,848 INFO main {'visit_id': 2024111800093, 'exposure_start_mjd': 60633.09713337375, 'exposure_end_mjd': 60633.09748059596, 'boresight_ra': 59.2603658355, 'boresight_dec': -48.6722040564, 'historical': True}
+2025-05-21 23:18:20,849 INFO pullCatalog Logging in
+2025-05-21 23:18:21,790 INFO pullCatalog Successfully logged in
+2025-05-21 23:18:21,790 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:19:11,835 INFO pullCatalog Received GP catalog
+2025-05-21 23:19:11,836 INFO pullCatalog Logging out
+2025-05-21 23:19:12,372 INFO pullCatalog Logged out
+2025-05-21 23:19:15,827 INFO web_log 127.0.0.1 [21/May/2025:15:18:20 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:19:15,827 INFO web_log 127.0.0.1 [21/May/2025:15:18:20 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:19:15,831 INFO main {'visit_id': 2024112300225, 'exposure_start_mjd': 60638.12818957747, 'exposure_end_mjd': 60638.12853679968, 'boresight_ra': 38.1218149812, 'boresight_dec': 6.5492319878, 'historical': True}
+2025-05-21 23:19:15,832 INFO pullCatalog Logging in
+2025-05-21 23:19:16,766 INFO pullCatalog Successfully logged in
+2025-05-21 23:19:16,766 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:19:27,573 INFO pullCatalog Received GP catalog
+2025-05-21 23:19:27,573 INFO pullCatalog Logging out
+2025-05-21 23:19:27,940 INFO pullCatalog Logged out
+2025-05-21 23:19:31,021 INFO web_log 127.0.0.1 [21/May/2025:15:19:15 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:19:31,021 INFO web_log 127.0.0.1 [21/May/2025:15:19:15 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:19:31,030 INFO main {'visit_id': 2024110900199, 'exposure_start_mjd': 60624.31011373839, 'exposure_end_mjd': 60624.31046096061, 'boresight_ra': 52.9077935265, 'boresight_dec': -28.1504698065, 'historical': True}
+2025-05-21 23:19:31,031 INFO pullCatalog Logging in
+2025-05-21 23:19:31,932 INFO pullCatalog Successfully logged in
+2025-05-21 23:19:31,933 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:19:32,397 INFO pullCatalog Received GP catalog
+2025-05-21 23:19:32,397 INFO pullCatalog Logging out
+2025-05-21 23:19:32,854 INFO pullCatalog Logged out
+2025-05-21 23:19:32,857 INFO web_log 127.0.0.1 [21/May/2025:15:19:31 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:19:32,857 INFO web_log 127.0.0.1 [21/May/2025:15:19:31 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:19:32,860 INFO main {'visit_id': 2024111200285, 'exposure_start_mjd': 60627.265859282394, 'exposure_end_mjd': 60627.26620650461, 'boresight_ra': 53.3278182443, 'boresight_dec': -28.0877572288, 'historical': True}
+2025-05-21 23:19:32,860 INFO pullCatalog Logging in
+2025-05-21 23:19:33,704 INFO pullCatalog Successfully logged in
+2025-05-21 23:19:33,705 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:19:34,028 INFO pullCatalog Received GP catalog
+2025-05-21 23:19:34,028 INFO pullCatalog Logging out
+2025-05-21 23:19:34,493 INFO pullCatalog Logged out
+2025-05-21 23:19:34,496 INFO web_log 127.0.0.1 [21/May/2025:15:19:32 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:19:34,496 INFO web_log 127.0.0.1 [21/May/2025:15:19:32 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:19:34,499 INFO main {'visit_id': 2024111600306, 'exposure_start_mjd': 60631.339154479196, 'exposure_end_mjd': 60631.33950170141, 'boresight_ra': 53.0180581518, 'boresight_dec': -27.952589709}
+2025-05-21 23:19:36,029 INFO web_log 127.0.0.1 [21/May/2025:15:19:34 -0800] "PUT /visit_cache HTTP/1.1" 200 208 "-" "python-requests/2.32.3"
+2025-05-21 23:19:36,029 INFO web_log 127.0.0.1 [21/May/2025:15:19:34 -0800] "PUT /visit_cache HTTP/1.1" 200 208 "-" "python-requests/2.32.3"
+2025-05-21 23:19:36,032 INFO main {}
+2025-05-21 23:19:36,032 INFO web_log 127.0.0.1 [21/May/2025:15:19:36 -0800] "GET /visit_cache HTTP/1.1" 200 12366 "-" "python-requests/2.32.3"
+2025-05-21 23:19:36,032 INFO web_log 127.0.0.1 [21/May/2025:15:19:36 -0800] "GET /visit_cache HTTP/1.1" 200 12366 "-" "python-requests/2.32.3"
+2025-05-21 23:19:36,034 INFO main {'visit_id': 2024111600306, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4569, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}, {'diasource_id': 4568, 'bbox': [[38, 7], [39, 8], [39, 7], [38, 8]]}], 'historical': True}
+2025-05-21 23:19:36,034 INFO web_log 127.0.0.1 [21/May/2025:15:19:36 -0800] "PUT /diasource_allow_list HTTP/1.1" 404 223 "-" "python-requests/2.32.3"
+2025-05-21 23:19:36,034 INFO web_log 127.0.0.1 [21/May/2025:15:19:36 -0800] "PUT /diasource_allow_list HTTP/1.1" 404 223 "-" "python-requests/2.32.3"
+2025-05-21 23:19:36,036 INFO main {'visit_id': 2024111200285, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}], 'historical': True}
+2025-05-21 23:19:36,036 INFO web_log 127.0.0.1 [21/May/2025:15:19:36 -0800] "PUT /diasource_allow_list HTTP/1.1" 404 223 "-" "python-requests/2.32.3"
+2025-05-21 23:19:36,036 INFO web_log 127.0.0.1 [21/May/2025:15:19:36 -0800] "PUT /diasource_allow_list HTTP/1.1" 404 223 "-" "python-requests/2.32.3"
+2025-05-21 23:20:35,150 INFO main {'visit_id': 2024112300242, 'exposure_start_mjd': 60638.14213799195, 'exposure_end_mjd': 60638.14248521417, 'boresight_ra': 37.44, 'boresight_dec': 7.29}
+2025-05-21 23:20:35,151 INFO web_log 127.0.0.1 [21/May/2025:15:20:35 -0800] "PUT /visit_cache HTTP/1.1" 200 189 "-" "python-requests/2.32.3"
+2025-05-21 23:20:35,151 INFO web_log 127.0.0.1 [21/May/2025:15:20:35 -0800] "PUT /visit_cache HTTP/1.1" 200 189 "-" "python-requests/2.32.3"
+2025-05-21 23:20:35,154 INFO main {'visit_id': 2024112300242, 'exposure_start_mjd': 60638.14213799195, 'exposure_end_mjd': 60638.14248521417, 'boresight_ra': 37.44, 'boresight_dec': 7.29, 'historical': True}
+2025-05-21 23:20:35,156 INFO pullCatalog Logging in
+2025-05-21 23:20:36,517 INFO pullCatalog Successfully logged in
+2025-05-21 23:20:36,517 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:21:17,881 INFO pullCatalog Received GP catalog
+2025-05-21 23:21:17,881 INFO pullCatalog Logging out
+2025-05-21 23:21:18,141 INFO pullCatalog Logged out
+2025-05-21 23:21:21,187 INFO web_log 127.0.0.1 [21/May/2025:15:20:35 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:21:21,187 INFO web_log 127.0.0.1 [21/May/2025:15:20:35 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:21:21,192 INFO main {'visit_id': 2024111800093, 'exposure_start_mjd': 60633.09713337375, 'exposure_end_mjd': 60633.09748059596, 'boresight_ra': 59.2603658355, 'boresight_dec': -48.6722040564, 'historical': True}
+2025-05-21 23:21:21,193 INFO pullCatalog Logging in
+2025-05-21 23:21:21,963 INFO pullCatalog Successfully logged in
+2025-05-21 23:21:21,964 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:22:09,333 INFO pullCatalog Received GP catalog
+2025-05-21 23:22:09,334 INFO pullCatalog Logging out
+2025-05-21 23:22:09,836 INFO pullCatalog Logged out
+2025-05-21 23:22:13,380 INFO web_log 127.0.0.1 [21/May/2025:15:21:21 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:22:13,380 INFO web_log 127.0.0.1 [21/May/2025:15:21:21 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:22:13,387 INFO main {'visit_id': 2024112300225, 'exposure_start_mjd': 60638.12818957747, 'exposure_end_mjd': 60638.12853679968, 'boresight_ra': 38.1218149812, 'boresight_dec': 6.5492319878, 'historical': True}
+2025-05-21 23:22:13,388 INFO pullCatalog Logging in
+2025-05-21 23:22:14,241 INFO pullCatalog Successfully logged in
+2025-05-21 23:22:14,242 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:22:23,984 INFO pullCatalog Received GP catalog
+2025-05-21 23:22:23,985 INFO pullCatalog Logging out
+2025-05-21 23:22:24,382 INFO pullCatalog Logged out
+2025-05-21 23:22:27,484 INFO web_log 127.0.0.1 [21/May/2025:15:22:13 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:22:27,484 INFO web_log 127.0.0.1 [21/May/2025:15:22:13 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:22:27,489 INFO main {'visit_id': 2024110900199, 'exposure_start_mjd': 60624.31011373839, 'exposure_end_mjd': 60624.31046096061, 'boresight_ra': 52.9077935265, 'boresight_dec': -28.1504698065, 'historical': True}
+2025-05-21 23:22:27,490 INFO pullCatalog Logging in
+2025-05-21 23:22:28,356 INFO pullCatalog Successfully logged in
+2025-05-21 23:22:28,356 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:22:28,645 INFO pullCatalog Received GP catalog
+2025-05-21 23:22:28,646 INFO pullCatalog Logging out
+2025-05-21 23:22:28,955 INFO pullCatalog Logged out
+2025-05-21 23:22:28,958 INFO web_log 127.0.0.1 [21/May/2025:15:22:27 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:22:28,958 INFO web_log 127.0.0.1 [21/May/2025:15:22:27 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:22:28,971 INFO main {'visit_id': 2024111200285, 'exposure_start_mjd': 60627.265859282394, 'exposure_end_mjd': 60627.26620650461, 'boresight_ra': 53.3278182443, 'boresight_dec': -28.0877572288, 'historical': True}
+2025-05-21 23:22:28,973 INFO pullCatalog Logging in
+2025-05-21 23:22:29,906 INFO pullCatalog Successfully logged in
+2025-05-21 23:22:29,907 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:22:30,238 INFO pullCatalog Received GP catalog
+2025-05-21 23:22:30,239 INFO pullCatalog Logging out
+2025-05-21 23:22:31,084 INFO pullCatalog Logged out
+2025-05-21 23:22:31,087 INFO web_log 127.0.0.1 [21/May/2025:15:22:28 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:22:31,087 INFO web_log 127.0.0.1 [21/May/2025:15:22:28 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:22:31,092 INFO main {'visit_id': 2024111600306, 'exposure_start_mjd': 60631.339154479196, 'exposure_end_mjd': 60631.33950170141, 'boresight_ra': 53.0180581518, 'boresight_dec': -27.952589709}
+2025-05-21 23:22:31,092 INFO web_log 127.0.0.1 [21/May/2025:15:22:31 -0800] "PUT /visit_cache HTTP/1.1" 200 189 "-" "python-requests/2.32.3"
+2025-05-21 23:22:31,092 INFO web_log 127.0.0.1 [21/May/2025:15:22:31 -0800] "PUT /visit_cache HTTP/1.1" 200 189 "-" "python-requests/2.32.3"
+2025-05-21 23:22:31,099 INFO main {}
+2025-05-21 23:22:31,100 INFO web_log 127.0.0.1 [21/May/2025:15:22:31 -0800] "GET /visit_cache HTTP/1.1" 200 12368 "-" "python-requests/2.32.3"
+2025-05-21 23:22:31,100 INFO web_log 127.0.0.1 [21/May/2025:15:22:31 -0800] "GET /visit_cache HTTP/1.1" 200 12368 "-" "python-requests/2.32.3"
+2025-05-21 23:22:31,105 INFO main {'visit_id': 2024111600306, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4569, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}, {'diasource_id': 4568, 'bbox': [[38, 7], [39, 8], [39, 7], [38, 8]]}], 'historical': True}
+2025-05-21 23:22:31,106 INFO web_log 127.0.0.1 [21/May/2025:15:22:31 -0800] "PUT /diasource_allow_list HTTP/1.1" 404 223 "-" "python-requests/2.32.3"
+2025-05-21 23:22:31,106 INFO web_log 127.0.0.1 [21/May/2025:15:22:31 -0800] "PUT /diasource_allow_list HTTP/1.1" 404 223 "-" "python-requests/2.32.3"
+2025-05-21 23:22:31,109 INFO main {'visit_id': 2024111200285, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}], 'historical': True}
+2025-05-21 23:22:31,110 INFO web_log 127.0.0.1 [21/May/2025:15:22:31 -0800] "PUT /diasource_allow_list HTTP/1.1" 404 223 "-" "python-requests/2.32.3"
+2025-05-21 23:22:31,110 INFO web_log 127.0.0.1 [21/May/2025:15:22:31 -0800] "PUT /diasource_allow_list HTTP/1.1" 404 223 "-" "python-requests/2.32.3"
+2025-05-21 23:27:04,068 INFO main Shutting Down!
+2025-05-21 23:27:09,141 INFO pullCatalog Logging in
+2025-05-21 23:27:10,282 INFO pullCatalog Successfully logged in
+2025-05-21 23:27:10,282 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:27:14,312 INFO pullCatalog Received GP catalog
+2025-05-21 23:27:14,313 INFO pullCatalog Logging out
+2025-05-21 23:27:14,688 INFO pullCatalog Logged out
+2025-05-21 23:27:16,818 INFO main Server ready!
+2025-05-21 23:28:44,161 INFO main {'visit_id': 2024112300242, 'exposure_start_mjd': 60638.14213799195, 'exposure_end_mjd': 60638.14248521417, 'boresight_ra': 37.44, 'boresight_dec': 7.29, 'historical': True}
+2025-05-21 23:28:44,378 INFO pullCatalog Logging in
+2025-05-21 23:28:45,584 INFO pullCatalog Successfully logged in
+2025-05-21 23:28:45,584 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:29:29,072 INFO pullCatalog Received GP catalog
+2025-05-21 23:29:29,073 INFO pullCatalog Logging out
+2025-05-21 23:29:29,441 INFO pullCatalog Logged out
+2025-05-21 23:29:36,257 INFO web_log 127.0.0.1 [21/May/2025:15:28:44 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:29:36,257 INFO web_log 127.0.0.1 [21/May/2025:15:28:44 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:29:36,266 INFO main {'visit_id': 2024112300242, 'exposure_start_mjd': 60638.14213799195, 'exposure_end_mjd': 60638.14248521417, 'boresight_ra': 37.44, 'boresight_dec': 7.29, 'historical': True}
+2025-05-21 23:29:36,268 INFO pullCatalog Logging in
+2025-05-21 23:29:37,070 INFO pullCatalog Successfully logged in
+2025-05-21 23:29:37,071 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:30:18,690 INFO pullCatalog Received GP catalog
+2025-05-21 23:30:18,691 INFO pullCatalog Logging out
+2025-05-21 23:30:19,443 INFO pullCatalog Logged out
+2025-05-21 23:30:26,154 INFO web_log 127.0.0.1 [21/May/2025:15:29:36 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:30:26,154 INFO web_log 127.0.0.1 [21/May/2025:15:29:36 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:30:26,160 INFO main {'visit_id': 2024111800093, 'exposure_start_mjd': 60633.09713337375, 'exposure_end_mjd': 60633.09748059596, 'boresight_ra': 59.2603658355, 'boresight_dec': -48.6722040564, 'historical': True}
+2025-05-21 23:30:26,161 INFO pullCatalog Logging in
+2025-05-21 23:30:26,956 INFO pullCatalog Successfully logged in
+2025-05-21 23:30:26,957 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:30:36,030 INFO pullCatalog Received GP catalog
+2025-05-21 23:30:36,030 INFO pullCatalog Logging out
+2025-05-21 23:30:36,542 INFO pullCatalog Logged out
+2025-05-21 23:30:52,358 INFO web_log 127.0.0.1 [21/May/2025:15:30:26 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:30:52,358 INFO web_log 127.0.0.1 [21/May/2025:15:30:26 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:30:52,365 INFO main {'visit_id': 2024112300225, 'exposure_start_mjd': 60638.12818957747, 'exposure_end_mjd': 60638.12853679968, 'boresight_ra': 38.1218149812, 'boresight_dec': 6.5492319878, 'historical': True}
+2025-05-21 23:30:52,368 INFO pullCatalog Logging in
+2025-05-21 23:30:53,344 INFO pullCatalog Successfully logged in
+2025-05-21 23:30:53,345 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:31:33,284 INFO pullCatalog Received GP catalog
+2025-05-21 23:31:33,285 INFO pullCatalog Logging out
+2025-05-21 23:31:33,688 INFO pullCatalog Logged out
+2025-05-21 23:31:48,617 INFO web_log 127.0.0.1 [21/May/2025:15:30:52 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:31:48,617 INFO web_log 127.0.0.1 [21/May/2025:15:30:52 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:31:48,624 INFO main {'visit_id': 2024110900199, 'exposure_start_mjd': 60624.31011373839, 'exposure_end_mjd': 60624.31046096061, 'boresight_ra': 52.9077935265, 'boresight_dec': -28.1504698065, 'historical': True}
+2025-05-21 23:31:48,625 INFO pullCatalog Logging in
+2025-05-21 23:31:50,376 INFO pullCatalog Successfully logged in
+2025-05-21 23:31:50,376 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:31:50,873 INFO pullCatalog Received GP catalog
+2025-05-21 23:31:50,873 INFO pullCatalog Logging out
+2025-05-21 23:31:51,407 INFO pullCatalog Logged out
+2025-05-21 23:31:51,418 INFO web_log 127.0.0.1 [21/May/2025:15:31:48 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:31:51,418 INFO web_log 127.0.0.1 [21/May/2025:15:31:48 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:31:51,425 INFO main {'visit_id': 2024111200285, 'exposure_start_mjd': 60627.265859282394, 'exposure_end_mjd': 60627.26620650461, 'boresight_ra': 53.3278182443, 'boresight_dec': -28.0877572288, 'historical': True}
+2025-05-21 23:31:51,426 INFO pullCatalog Logging in
+2025-05-21 23:31:52,425 INFO pullCatalog Successfully logged in
+2025-05-21 23:31:52,425 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:31:52,835 INFO pullCatalog Received GP catalog
+2025-05-21 23:31:52,836 INFO pullCatalog Logging out
+2025-05-21 23:31:53,244 INFO pullCatalog Logged out
+2025-05-21 23:31:53,250 INFO web_log 127.0.0.1 [21/May/2025:15:31:51 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:31:53,250 INFO web_log 127.0.0.1 [21/May/2025:15:31:51 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:31:53,259 INFO main {'visit_id': 2024111600306, 'exposure_start_mjd': 60631.339154479196, 'exposure_end_mjd': 60631.33950170141, 'boresight_ra': 53.0180581518, 'boresight_dec': -27.952589709, 'historical': True}
+2025-05-21 23:31:53,265 INFO pullCatalog Logging in
+2025-05-21 23:31:54,357 INFO pullCatalog Successfully logged in
+2025-05-21 23:31:54,358 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:31:54,786 INFO pullCatalog Received GP catalog
+2025-05-21 23:31:54,787 INFO pullCatalog Logging out
+2025-05-21 23:31:55,199 INFO pullCatalog Logged out
+2025-05-21 23:31:55,204 INFO web_log 127.0.0.1 [21/May/2025:15:31:53 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:31:55,204 INFO web_log 127.0.0.1 [21/May/2025:15:31:53 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:31:55,209 INFO main {}
+2025-05-21 23:31:55,211 INFO web_log 127.0.0.1 [21/May/2025:15:31:55 -0800] "GET /visit_cache HTTP/1.1" 200 12099 "-" "python-requests/2.32.3"
+2025-05-21 23:31:55,211 INFO web_log 127.0.0.1 [21/May/2025:15:31:55 -0800] "GET /visit_cache HTTP/1.1" 200 12099 "-" "python-requests/2.32.3"
+2025-05-21 23:31:55,223 INFO main {'visit_id': 2024111600306, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4569, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}, {'diasource_id': 4568, 'bbox': [[38, 7], [39, 8], [39, 7], [38, 8]]}], 'historical': True}
+2025-05-21 23:36:22,869 INFO main Shutting Down!
+2025-05-21 23:36:48,634 INFO pullCatalog Logging in
+2025-05-21 23:36:49,601 INFO pullCatalog Successfully logged in
+2025-05-21 23:36:49,605 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:36:53,539 INFO pullCatalog Received GP catalog
+2025-05-21 23:36:53,539 INFO pullCatalog Logging out
+2025-05-21 23:36:53,898 INFO pullCatalog Logged out
+2025-05-21 23:36:56,019 INFO main Server ready!
+2025-05-21 23:37:10,138 INFO main {'visit_id': 2024112300242, 'exposure_start_mjd': 60638.14213799195, 'exposure_end_mjd': 60638.14248521417, 'boresight_ra': 37.44, 'boresight_dec': 7.29, 'historical': True}
+2025-05-21 23:37:10,349 INFO pullCatalog Logging in
+2025-05-21 23:37:11,952 INFO pullCatalog Successfully logged in
+2025-05-21 23:37:11,952 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:37:47,876 INFO pullCatalog Received GP catalog
+2025-05-21 23:37:47,879 INFO pullCatalog Logging out
+2025-05-21 23:37:48,182 INFO pullCatalog Logged out
+2025-05-21 23:37:55,090 INFO web_log 127.0.0.1 [21/May/2025:15:37:10 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:37:55,090 INFO web_log 127.0.0.1 [21/May/2025:15:37:10 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:37:55,098 INFO main {'visit_id': 2024112300242, 'exposure_start_mjd': 60638.14213799195, 'exposure_end_mjd': 60638.14248521417, 'boresight_ra': 37.44, 'boresight_dec': 7.29, 'historical': True}
+2025-05-21 23:37:55,098 INFO web_log 127.0.0.1 [21/May/2025:15:37:55 -0800] "PUT /visit_cache HTTP/1.1" 200 189 "-" "python-requests/2.32.3"
+2025-05-21 23:37:55,098 INFO web_log 127.0.0.1 [21/May/2025:15:37:55 -0800] "PUT /visit_cache HTTP/1.1" 200 189 "-" "python-requests/2.32.3"
+2025-05-21 23:37:55,101 INFO main {'visit_id': 2024111800093, 'exposure_start_mjd': 60633.09713337375, 'exposure_end_mjd': 60633.09748059596, 'boresight_ra': 59.2603658355, 'boresight_dec': -48.6722040564, 'historical': True}
+2025-05-21 23:37:55,102 INFO pullCatalog Logging in
+2025-05-21 23:37:55,898 INFO pullCatalog Successfully logged in
+2025-05-21 23:37:55,899 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:38:43,896 INFO pullCatalog Received GP catalog
+2025-05-21 23:38:43,899 INFO pullCatalog Logging out
+2025-05-21 23:38:44,362 INFO pullCatalog Logged out
+2025-05-21 23:38:51,884 INFO web_log 127.0.0.1 [21/May/2025:15:37:55 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:38:51,884 INFO web_log 127.0.0.1 [21/May/2025:15:37:55 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:38:51,890 INFO main {'visit_id': 2024112300225, 'exposure_start_mjd': 60638.12818957747, 'exposure_end_mjd': 60638.12853679968, 'boresight_ra': 38.1218149812, 'boresight_dec': 6.5492319878, 'historical': True}
+2025-05-21 23:38:51,892 INFO pullCatalog Logging in
+2025-05-21 23:38:52,687 INFO pullCatalog Successfully logged in
+2025-05-21 23:38:52,687 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:39:00,308 INFO pullCatalog Received GP catalog
+2025-05-21 23:39:00,310 INFO pullCatalog Logging out
+2025-05-21 23:39:00,673 INFO pullCatalog Logged out
+2025-05-21 23:39:07,795 INFO web_log 127.0.0.1 [21/May/2025:15:38:51 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:39:07,795 INFO web_log 127.0.0.1 [21/May/2025:15:38:51 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:39:07,801 INFO main {'visit_id': 2024110900199, 'exposure_start_mjd': 60624.31011373839, 'exposure_end_mjd': 60624.31046096061, 'boresight_ra': 52.9077935265, 'boresight_dec': -28.1504698065, 'historical': True}
+2025-05-21 23:39:07,804 INFO pullCatalog Logging in
+2025-05-21 23:39:08,810 INFO pullCatalog Successfully logged in
+2025-05-21 23:39:08,811 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:39:09,579 INFO pullCatalog Received GP catalog
+2025-05-21 23:39:09,579 INFO pullCatalog Logging out
+2025-05-21 23:39:09,930 INFO pullCatalog Logged out
+2025-05-21 23:39:09,936 INFO web_log 127.0.0.1 [21/May/2025:15:39:07 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:39:09,936 INFO web_log 127.0.0.1 [21/May/2025:15:39:07 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:39:09,942 INFO main {'visit_id': 2024111200285, 'exposure_start_mjd': 60627.265859282394, 'exposure_end_mjd': 60627.26620650461, 'boresight_ra': 53.3278182443, 'boresight_dec': -28.0877572288, 'historical': True}
+2025-05-21 23:39:09,945 INFO pullCatalog Logging in
+2025-05-21 23:39:10,778 INFO pullCatalog Successfully logged in
+2025-05-21 23:39:10,778 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:39:11,136 INFO pullCatalog Received GP catalog
+2025-05-21 23:39:11,137 INFO pullCatalog Logging out
+2025-05-21 23:39:11,445 INFO pullCatalog Logged out
+2025-05-21 23:39:11,455 INFO web_log 127.0.0.1 [21/May/2025:15:39:09 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:39:11,455 INFO web_log 127.0.0.1 [21/May/2025:15:39:09 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:39:11,466 INFO main {'visit_id': 2024111600306, 'exposure_start_mjd': 60631.339154479196, 'exposure_end_mjd': 60631.33950170141, 'boresight_ra': 53.0180581518, 'boresight_dec': -27.952589709, 'historical': True}
+2025-05-21 23:39:11,467 INFO pullCatalog Logging in
+2025-05-21 23:39:12,344 INFO pullCatalog Successfully logged in
+2025-05-21 23:39:12,344 INFO pullCatalog Requesting GP catalog
+2025-05-21 23:39:12,714 INFO pullCatalog Received GP catalog
+2025-05-21 23:39:12,718 INFO pullCatalog Logging out
+2025-05-21 23:39:13,008 INFO pullCatalog Logged out
+2025-05-21 23:39:13,014 INFO web_log 127.0.0.1 [21/May/2025:15:39:11 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:39:13,014 INFO web_log 127.0.0.1 [21/May/2025:15:39:11 -0800] "PUT /visit_cache HTTP/1.1" 200 219 "-" "python-requests/2.32.3"
+2025-05-21 23:39:13,025 INFO main {}
+2025-05-21 23:39:13,028 INFO web_log 127.0.0.1 [21/May/2025:15:39:13 -0800] "GET /visit_cache HTTP/1.1" 200 12166 "-" "python-requests/2.32.3"
+2025-05-21 23:39:13,028 INFO web_log 127.0.0.1 [21/May/2025:15:39:13 -0800] "GET /visit_cache HTTP/1.1" 200 12166 "-" "python-requests/2.32.3"
+2025-05-21 23:39:13,033 INFO main {'visit_id': 2024111600306, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4569, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}, {'diasource_id': 4568, 'bbox': [[38, 7], [39, 8], [39, 7], [38, 8]]}], 'historical': True}

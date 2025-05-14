@@ -63,7 +63,7 @@ class SattleConfig:
 
     search_buffer = Field(
         dtype=float,
-        default=1680.0,
+        default=480.0,
         doc="Search radius buffer in arcseconds/s. Based on estimated 4 degrees "
             "distance travelled in 30 seconds, which is 480 arcseconds"
             " per second.",
@@ -105,7 +105,7 @@ class SattleTask:
             The end time of the exposure in MJD.
         boresight_ra: `float`
             The RA coordinate of the boresight of a given exposure in degrees.
-        boresight_dec:  `float`
+        boresight_dec: `float`
             The Dec coordinate of the boresight of a given exposure in degrees.
 
         Returns
@@ -134,6 +134,11 @@ class SattleTask:
         satellite_positions = [[], []]  # [ra_list, dec_list]
         unique_satellites = set()
 
+        #TODO: Need a deduplicator in here somewhere for the historical
+        # queries.
+        # not super important at the moment. It will make sure only
+        # the closet in time satellites are used.
+
         for tle_data in tles:
             tle = sattle.TleType()
             sattle.parse_elements(tle_data.line1, tle_data.line2, tle)
@@ -144,29 +149,7 @@ class SattleTask:
                 satellite_positions[1].append(list(out.dec))
                 unique_satellites.add(tle.norad_number)
 
-        return satellite_positions
-
-        satellite_ra = []
-        satellite_dec = []
-        satellite_list = []
-        for single_tle in tles:
-
-            tle = sattle.TleType()
-            sattle.parse_elements(single_tle.line1, single_tle.line2, tle)
-
-            out = sattle.calc_sat(inputs, tle)
-            if any(out.ra) and any(out.dec):
-                print("Time difference in "
-                      "hours: " + str((time_start - Time(tle.epoch, format='jd')).sec/60/60))
-
-                # TODO: Remove print in sattle.so
-                satellite_ra.append(list(out.ra))
-                satellite_dec.append(list(out.dec))
-                if tle.norad_number not in satellite_list:
-                    satellite_list.append(tle.norad_number)
-
-        satellite_positions = [satellite_ra, satellite_dec]
-
+        logging.info(f"Number of satellites found in {visit_id}: {len(satellite_positions[0])}")
         return satellite_positions
 
 
@@ -435,7 +418,7 @@ class SattleFilterTask:
                 print(corner1[0][i], corner2[1][i], corner2[0][i], corner2[1][i], corner3[0][i],
                       corner2[1][i], corner4[0][i], corner4[1][i])
         # TODO: This is for testing only, remove once unit tests done
-        with open('2024112600107_long_satellites.txt', 'w') as file:
+        with open('2024111800093_long_satellites.txt', 'w') as file:
             for item in tracks:
                 file.write(f"{item}\n")
 

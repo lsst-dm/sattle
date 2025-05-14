@@ -1,0 +1,24 @@
+2025-05-09 00:17:06,458 INFO web_log 127.0.0.1 [08/May/2025:15:58:04 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-09 00:17:06,458 INFO web_log 127.0.0.1 [08/May/2025:15:58:04 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-09 00:17:06,477 INFO main {}
+2025-05-09 00:17:06,478 INFO web_log 127.0.0.1 [08/May/2025:16:17:06 -0800] "GET /visit_cache HTTP/1.1" 200 14017 "-" "python-requests/2.32.3"
+2025-05-09 00:17:06,478 INFO web_log 127.0.0.1 [08/May/2025:16:17:06 -0800] "GET /visit_cache HTTP/1.1" 200 14017 "-" "python-requests/2.32.3"
+2025-05-09 00:17:06,484 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4569, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}, {'diasource_id': 4568, 'bbox': [[38, 7], [39, 8], [39, 7], [38, 8]]}]}
+2025-05-09 00:17:06,492 INFO web_log 127.0.0.1 [08/May/2025:16:17:06 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-09 00:17:06,492 INFO web_log 127.0.0.1 [08/May/2025:16:17:06 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-09 00:17:06,501 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-05-09 00:17:06,506 INFO web_log 127.0.0.1 [08/May/2025:16:17:06 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-09 00:17:06,506 INFO web_log 127.0.0.1 [08/May/2025:16:17:06 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-09 21:52:30,034 INFO pullCatalog Logging in
+2025-05-09 21:52:30,978 INFO pullCatalog Successfully logged in
+2025-05-09 21:52:30,979 INFO pullCatalog Requesting GP catalog
+2025-05-09 21:52:33,299 INFO pullCatalog Received GP catalog
+2025-05-09 21:52:33,299 INFO pullCatalog Logging out
+2025-05-09 21:52:33,679 INFO pullCatalog Logged out
+2025-05-09 22:04:23,793 INFO pullCatalog Logging in
+2025-05-09 22:04:25,103 INFO pullCatalog Successfully logged in
+2025-05-09 22:04:25,103 INFO pullCatalog Requesting GP catalog
+2025-05-09 22:04:28,539 INFO pullCatalog Received GP catalog
+2025-05-09 22:04:28,539 INFO pullCatalog Logging out
+2025-05-09 22:04:29,286 INFO pullCatalog Logged out
+2025-05-09 23:07:41,931 INFO main Server ready!

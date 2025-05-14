@@ -1,0 +1,99 @@
+2025-05-15 19:57:53,487 INFO pullCatalog Logging in
+2025-05-15 19:57:54,449 INFO pullCatalog Successfully logged in
+2025-05-15 19:57:54,449 INFO pullCatalog Requesting GP catalog
+2025-05-15 19:57:56,919 INFO pullCatalog Received GP catalog
+2025-05-15 19:57:56,919 INFO pullCatalog Logging out
+2025-05-15 19:57:57,347 INFO pullCatalog Logged out
+2025-05-15 19:58:04,335 INFO main Server ready!
+2025-05-15 20:01:31,794 INFO main Shutting Down!
+2025-05-15 20:01:43,514 INFO pullCatalog Logging in
+2025-05-15 20:01:44,510 INFO pullCatalog Successfully logged in
+2025-05-15 20:01:44,511 INFO pullCatalog Requesting GP catalog
+2025-05-15 20:01:48,250 INFO pullCatalog Received GP catalog
+2025-05-15 20:01:48,251 INFO pullCatalog Logging out
+2025-05-15 20:01:50,007 INFO pullCatalog Logged out
+2025-05-15 20:03:41,269 INFO pullCatalog Logging in
+2025-05-15 20:03:42,387 INFO pullCatalog Successfully logged in
+2025-05-15 20:03:42,388 INFO pullCatalog Requesting GP catalog
+2025-05-15 20:03:44,778 INFO pullCatalog Received GP catalog
+2025-05-15 20:03:44,779 INFO pullCatalog Logging out
+2025-05-15 20:03:45,146 INFO pullCatalog Logged out
+2025-05-15 20:04:43,496 INFO pullCatalog Logging in
+2025-05-15 20:04:44,407 INFO pullCatalog Successfully logged in
+2025-05-15 20:04:44,407 INFO pullCatalog Requesting GP catalog
+2025-05-15 20:04:46,735 INFO pullCatalog Received GP catalog
+2025-05-15 20:04:46,735 INFO pullCatalog Logging out
+2025-05-15 20:04:47,203 INFO pullCatalog Logged out
+2025-05-15 20:08:02,201 INFO pullCatalog Logging in
+2025-05-15 20:08:03,211 INFO pullCatalog Successfully logged in
+2025-05-15 20:08:03,212 INFO pullCatalog Requesting GP catalog
+2025-05-15 20:08:06,310 INFO pullCatalog Received GP catalog
+2025-05-15 20:08:06,310 INFO pullCatalog Logging out
+2025-05-15 20:08:06,681 INFO pullCatalog Logged out
+2025-05-15 20:10:07,071 INFO pullCatalog Logging in
+2025-05-15 20:10:08,062 INFO pullCatalog Successfully logged in
+2025-05-15 20:10:08,063 INFO pullCatalog Requesting GP catalog
+2025-05-15 20:10:10,732 INFO pullCatalog Received GP catalog
+2025-05-15 20:10:10,732 INFO pullCatalog Logging out
+2025-05-15 20:10:11,071 INFO pullCatalog Logged out
+2025-05-15 20:12:12,927 INFO pullCatalog Logging in
+2025-05-15 20:12:14,051 INFO pullCatalog Successfully logged in
+2025-05-15 20:12:14,052 INFO pullCatalog Requesting GP catalog
+2025-05-15 20:12:18,154 INFO pullCatalog Received GP catalog
+2025-05-15 20:12:18,154 INFO pullCatalog Logging out
+2025-05-15 20:12:18,508 INFO pullCatalog Logged out
+2025-05-15 20:12:27,259 INFO main Server ready!
+2025-05-15 20:13:09,874 INFO main Shutting Down!
+2025-05-15 20:13:17,526 INFO pullCatalog Logging in
+2025-05-15 20:13:18,398 INFO pullCatalog Successfully logged in
+2025-05-15 20:13:18,399 INFO pullCatalog Requesting GP catalog
+2025-05-15 20:13:20,871 INFO pullCatalog Received GP catalog
+2025-05-15 20:13:20,871 INFO pullCatalog Logging out
+2025-05-15 20:13:21,261 INFO pullCatalog Logged out
+2025-05-15 20:13:29,979 INFO main Server ready!
+2025-05-15 20:32:28,012 INFO main Shutting Down!
+2025-05-15 20:32:33,377 INFO pullCatalog Logging in
+2025-05-15 20:32:34,723 INFO pullCatalog Successfully logged in
+2025-05-15 20:32:34,724 INFO pullCatalog Requesting GP catalog
+2025-05-15 20:32:44,555 INFO pullCatalog Received GP catalog
+2025-05-15 20:32:44,555 INFO pullCatalog Logging out
+2025-05-15 20:32:44,931 INFO pullCatalog Logged out
+2025-05-15 20:33:26,497 INFO pullCatalog Logging in
+2025-05-15 20:33:28,787 INFO pullCatalog Successfully logged in
+2025-05-15 20:33:28,788 INFO pullCatalog Requesting GP catalog
+2025-05-15 20:33:31,358 INFO pullCatalog Received GP catalog
+2025-05-15 20:33:31,358 INFO pullCatalog Logging out
+2025-05-15 20:33:31,697 INFO pullCatalog Logged out
+2025-05-15 20:33:33,453 INFO main Server ready!
+2025-05-15 20:34:00,184 INFO main Shutting Down!
+2025-05-15 20:34:21,979 INFO pullCatalog Logging in
+2025-05-15 20:34:22,990 INFO pullCatalog Successfully logged in
+2025-05-15 20:34:22,991 INFO pullCatalog Requesting GP catalog
+2025-05-15 20:34:25,431 INFO pullCatalog Received GP catalog
+2025-05-15 20:34:25,431 INFO pullCatalog Logging out
+2025-05-15 20:34:25,783 INFO pullCatalog Logged out
+2025-05-15 20:34:27,540 INFO main Server ready!
+2025-05-15 20:35:32,792 INFO main Shutting Down!
+2025-05-15 20:35:36,734 INFO pullCatalog Logging in
+2025-05-15 20:35:37,814 INFO pullCatalog Successfully logged in
+2025-05-15 20:35:37,814 INFO pullCatalog Requesting GP catalog
+2025-05-15 20:35:43,882 INFO pullCatalog Received GP catalog
+2025-05-15 20:35:43,882 INFO pullCatalog Logging out
+2025-05-15 20:35:44,166 INFO pullCatalog Logged out
+2025-05-15 20:35:45,894 INFO main Server ready!
+2025-05-15 20:36:07,520 INFO main Shutting Down!
+2025-05-15 20:36:14,470 INFO pullCatalog Logging in
+2025-05-15 20:36:15,523 INFO pullCatalog Successfully logged in
+2025-05-15 20:36:15,523 INFO pullCatalog Requesting GP catalog
+2025-05-15 20:36:18,735 INFO pullCatalog Received GP catalog
+2025-05-15 20:36:18,735 INFO pullCatalog Logging out
+2025-05-15 20:36:19,112 INFO pullCatalog Logged out
+2025-05-15 20:36:20,835 INFO main Server ready!
+2025-05-15 20:37:10,829 INFO main Shutting Down!
+2025-05-15 20:37:17,853 INFO pullCatalog Logging in
+2025-05-15 20:37:18,989 INFO pullCatalog Successfully logged in
+2025-05-15 20:37:18,990 INFO pullCatalog Requesting GP catalog
+2025-05-15 20:37:22,033 INFO pullCatalog Received GP catalog
+2025-05-15 20:37:22,033 INFO pullCatalog Logging out
+2025-05-15 20:37:22,360 INFO pullCatalog Logged out
+2025-05-15 20:37:24,098 INFO main Server ready!

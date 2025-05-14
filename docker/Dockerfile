@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Clone required repositories from github
-RUN git clone --branch tickets/DM-49713 https://github.com/lsst-dm/sattle.git /app/sattle
+RUN git clone --branch tickets/DM-50744 --single-branch --depth 1 https://github.com/lsst-dm/sattle.git /app/sattle
 RUN git clone https://github.com/Bill-Gray/lunar.git /app/lunar
 RUN git clone https://github.com/Bill-Gray/sat_code.git /app/sat_code
 

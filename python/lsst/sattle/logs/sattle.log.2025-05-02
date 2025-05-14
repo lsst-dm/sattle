@@ -1,0 +1,47 @@
+2025-05-02 20:10:08,381 INFO main Shutting Down!
+2025-05-02 20:10:27,706 INFO main Server ready!
+2025-05-02 20:10:32,866 INFO main Shutting Down!
+2025-05-02 20:11:40,275 INFO main Server ready!
+2025-05-02 20:11:44,635 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60641.04957530673, 'exposure_end_mjd': 60641.049922528946, 'boresight_ra': 38.3951559125, 'boresight_dec': 7.1126590888}
+2025-05-02 20:14:19,175 INFO main Shutting Down!
+2025-05-02 20:15:17,028 INFO main Server ready!
+2025-05-02 20:15:46,974 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60638.14213550567, 'exposure_end_mjd': 60638.14263550567, 'boresight_ra': 37.44, 'boresight_dec': 7.29}
+2025-05-02 20:16:43,762 INFO main Shutting Down!
+2025-05-02 20:17:35,910 INFO main Server ready!
+2025-05-02 20:17:40,498 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60641.04957530673, 'exposure_end_mjd': 60641.049922528946, 'boresight_ra': 38.3951559125, 'boresight_dec': 7.1126590888}
+2025-05-02 20:17:40,576 INFO web_log 127.0.0.1 [02/May/2025:12:17:40 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-02 20:17:40,576 INFO web_log 127.0.0.1 [02/May/2025:12:17:40 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-02 20:17:40,578 INFO main {}
+2025-05-02 20:17:40,578 INFO web_log 127.0.0.1 [02/May/2025:12:17:40 -0800] "GET /visit_cache HTTP/1.1" 200 397 "-" "python-requests/2.32.3"
+2025-05-02 20:17:40,578 INFO web_log 127.0.0.1 [02/May/2025:12:17:40 -0800] "GET /visit_cache HTTP/1.1" 200 397 "-" "python-requests/2.32.3"
+2025-05-02 20:17:40,579 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-05-02 20:17:40,581 INFO web_log 127.0.0.1 [02/May/2025:12:17:40 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-02 20:17:40,581 INFO web_log 127.0.0.1 [02/May/2025:12:17:40 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-02 20:17:40,582 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-05-02 20:17:40,583 INFO web_log 127.0.0.1 [02/May/2025:12:17:40 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-02 20:17:40,583 INFO web_log 127.0.0.1 [02/May/2025:12:17:40 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-02 21:39:03,870 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60641.04957530673, 'exposure_end_mjd': 60641.049922528946, 'boresight_ra': 38.3951559125, 'boresight_dec': 7.1126590888}
+2025-05-02 21:39:03,871 INFO web_log 127.0.0.1 [02/May/2025:13:39:03 -0800] "PUT /visit_cache HTTP/1.1" 200 180 "-" "python-requests/2.32.3"
+2025-05-02 21:39:03,871 INFO web_log 127.0.0.1 [02/May/2025:13:39:03 -0800] "PUT /visit_cache HTTP/1.1" 200 180 "-" "python-requests/2.32.3"
+2025-05-02 21:39:03,873 INFO main {}
+2025-05-02 21:39:03,873 INFO web_log 127.0.0.1 [02/May/2025:13:39:03 -0800] "GET /visit_cache HTTP/1.1" 200 397 "-" "python-requests/2.32.3"
+2025-05-02 21:39:03,873 INFO web_log 127.0.0.1 [02/May/2025:13:39:03 -0800] "GET /visit_cache HTTP/1.1" 200 397 "-" "python-requests/2.32.3"
+2025-05-02 21:39:03,875 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-05-02 21:39:03,877 INFO web_log 127.0.0.1 [02/May/2025:13:39:03 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-02 21:39:03,877 INFO web_log 127.0.0.1 [02/May/2025:13:39:03 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-02 21:39:03,878 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-05-02 21:39:03,879 INFO web_log 127.0.0.1 [02/May/2025:13:39:03 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-02 21:39:03,879 INFO web_log 127.0.0.1 [02/May/2025:13:39:03 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-02 21:39:07,067 INFO main Shutting Down!
+2025-05-02 21:43:09,213 INFO main Server ready!
+2025-05-02 21:43:14,997 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60641.04957530673, 'exposure_end_mjd': 60641.049922528946, 'boresight_ra': 38.3951559125, 'boresight_dec': 7.1126590888}
+2025-05-02 21:43:18,188 INFO web_log 127.0.0.1 [02/May/2025:13:43:14 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-02 21:43:18,188 INFO web_log 127.0.0.1 [02/May/2025:13:43:14 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-02 21:43:18,193 INFO main {}
+2025-05-02 21:43:18,193 INFO web_log 127.0.0.1 [02/May/2025:13:43:18 -0800] "GET /visit_cache HTTP/1.1" 200 397 "-" "python-requests/2.32.3"
+2025-05-02 21:43:18,193 INFO web_log 127.0.0.1 [02/May/2025:13:43:18 -0800] "GET /visit_cache HTTP/1.1" 200 397 "-" "python-requests/2.32.3"
+2025-05-02 21:43:18,195 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-05-02 21:46:12,389 INFO web_log 127.0.0.1 [02/May/2025:13:43:18 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-02 21:46:12,389 INFO web_log 127.0.0.1 [02/May/2025:13:43:18 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-02 21:47:38,257 INFO main Shutting Down!
+2025-05-02 21:47:50,468 INFO main Server ready!
