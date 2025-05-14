@@ -7,9 +7,11 @@ import logging
 import logging.config
 import requests
 from astropy.time import Time
+import datetime
 
 from .constants import LOGGING
 from lsst.sattle import sattlePy
+from lsst.sattle.pullCatalog import SatCatFetcher
 
 TEST_TLE_PARAMS = {
     "latitude": -30.244633333333333,
@@ -24,6 +26,27 @@ TEST_TLE_PARAMS = {
     "is_illuminated": True, }
 
 
+def tle_time_to_jd(tle_time_str):
+    """Convert TLE time format (YYDDD.DDDDDDDD) to Julian Date
+    """
+    year = int(tle_time_str[:2])
+    days = float(tle_time_str[2:])
+
+    if year < 57:
+        year += 2000
+    else:
+        year += 1900
+
+    base_date = datetime.datetime(year, 1, 1)
+    time_delta = datetime.timedelta(
+        days=(days - 1))
+    date_time = base_date + time_delta
+
+    return Time(date_time, scale='utc').jd
+
+
+# Change name to read tles
+def read_tles(tle_source, filename=None, url=None, write_file=None, params=None):
 # Change nqame to read tles
 def read_tles(tle_source, filename=None, write_file=False, params=None):
     """Read TLEs from a source.
@@ -123,6 +146,28 @@ def read_tles(tle_source, filename=None, write_file=False, params=None):
                     i += 2  # Move to the next pair of lines
                 else:
                     i += 1  # Skip to the next line if not a valid pair
+
+    elif tle_source == 'catalog':
+        scf = SatCatFetcher(eltype="gp")
+        omm, _ = scf.fetch_catalogs()
+
+        # Extract TLE lines from the catalog
+        tle_entries = [(entry['TLE_LINE1'], entry['TLE_LINE2'])
+                       for entry in omm
+                       if 'TLE_LINE1' in entry and 'TLE_LINE2' in entry]
+
+        for line1, line2 in tle_entries:
+            tle = TLE(line1.strip(), line2.strip())
+            tles.append(tle)
+            epoch = tle_time_to_jd(line1[18:32])
+            now_utc = datetime.datetime.utcnow()
+            time_now = Time(now_utc, format='datetime', scale='utc')
+            current_jd = time_now.jd
+            current_epoch_delta = abs(epoch - current_jd)*24
+            print("Epoch difference in hours: " + str(current_epoch_delta))
+
+    else:
+        raise ValueError(f"Invalid tle_source: {tle_source}. Please provide TLE source (catalog, sat_code, tle_file)")
 
     # TODO: remove in final product, used for testing only
     if write_file:
@@ -350,7 +395,7 @@ def main():
     visit_satellite_cache = defaultdict(dict)
     # TODO: Adjust for the real catalog. This is currently in place
     # to insure satchecker is bootstrapped in.
-    tles = read_tles('satchecker_query', params=TEST_TLE_PARAMS)
+    tles = read_tles('catalog', params=TLE_PARAMS)
     sattleTask = sattlePy.SattleTask()
 
     loop = asyncio.get_event_loop()

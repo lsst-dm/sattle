@@ -22,3 +22,4 @@
 from . import sattle
 from .sattlePy import *
 from .app import *
+from .pullCatalog import *
