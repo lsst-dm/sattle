@@ -45,9 +45,48 @@ def tle_time_to_jd(tle_time_str):
     return Time(date_time, scale='utc').jd
 
 
+def format_date_for_catalog(mjd):
+    """Convert MJD to the required catalog query format
+
+    Inputs:
+        mjd (float): Modified Julian Date
+
+    Returns:
+        str: Formatted date string in the form %3E2024-11-22T22:40:30%2C%3C2024-11-23T3:20:30
+    """
+
+    t = Time(mjd, format='mjd')
+
+    # Create a window around the observation time
+    start_time = t - 0.1833  # 2 hours before (2/24 days)
+    end_time = t + 0.1833  # 2 hours after
+
+    start_str = start_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
+    end_str = end_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
+
+    return f"%3E{start_str}%2C%3C{end_str}"
+
+
+def get_current_tle_time():
+    now = datetime.datetime.now(datetime.timezone.utc)
+    # Get year in YY format
+    year = now.year % 100
+
+    # Get day of year (1-366) and fractional part of the day
+    day_of_year = now.timetuple().tm_yday
+
+    # Calculate fractional part of day
+    fractional_day = (now.hour * 3600 + now.minute * 60 + now.second) / 86400.0
+
+    # Format as YYDDD.DDDDDDDD
+    # Multiply year by 1000 to shift it left
+    # Add the day and fractional part
+    tle_time = (year * 1000) + float(day_of_year) + fractional_day
+
+    return tle_time
+
+
 # Change name to read tles
-def read_tles(tle_source, filename=None, url=None, write_file=None, params=None):
-# Change nqame to read tles
 def read_tles(tle_source, filename=None, write_file=False, params=None):
     """Read TLEs from a source.
 
@@ -58,17 +97,17 @@ def read_tles(tle_source, filename=None, write_file=False, params=None):
         filename: `str`
             If tle_source is 'tle_file', this is the path to the file.
         write_file: `bool`
-            If write file is set, the output of the tle retrieval will
-            be written to a file.
-        params: `float`
-            Dictionary of parameters to be used for the tle retrieval when
-            using satchecker as a tle source.
-
-        Returns
-        -------
-        tles: `list`
             A list of tles which will be added to the satellite cache.
     """
+        tles: `list`
+        -------
+        Returns
+            using satchecker as a tle source.
+
+            Dictionary of parameters to be used for the tle retrieval when
+        params: `float`
+            be written to a file.
+            If write file is set, the output of the tle retrieval will
     tles = []
 
     # TODO: Currently this requires manual input of ra/dec. Make this read
@@ -149,22 +188,36 @@ def read_tles(tle_source, filename=None, write_file=False, params=None):
 
     elif tle_source == 'catalog':
         scf = SatCatFetcher(eltype="gp")
-        omm, _ = scf.fetch_catalogs()
+        # If a date is provided, use that date, otherwise use the current date
+        # This allows us to use historical catalogs
+        if date:
+            formated_date = format_date_for_catalog(date)
+            omm, _ = scf.fetch_catalogs(source='gp_history', epoch=formated_date)
+            print("Using historical catalog for date: " + date + "")
+        else:
+            # Defaults to pulling the current catalog
+            omm, _ = scf.fetch_catalogs()
+            print("Using current catalog")
 
         # Extract TLE lines from the catalog
         tle_entries = [(entry['TLE_LINE1'], entry['TLE_LINE2'])
                        for entry in omm
                        if 'TLE_LINE1' in entry and 'TLE_LINE2' in entry]
-
+        long_delta = 0
+        short_delta = 0
         for line1, line2 in tle_entries:
             tle = TLE(line1.strip(), line2.strip())
             tles.append(tle)
-            epoch = tle_time_to_jd(line1[18:32])
-            now_utc = datetime.datetime.utcnow()
-            time_now = Time(now_utc, format='datetime', scale='utc')
-            current_jd = time_now.jd
-            current_epoch_delta = abs(epoch - current_jd)*24
-            print("Epoch difference in hours: " + str(current_epoch_delta))
+            time_delta = (get_current_tle_time()-float(line1[18:32]))*24.0
+            print("Epoch difference in hours: " + str((get_current_tle_time()-float(line1[18:32]))*24.0))
+            if time_delta > 12.0:
+                long_delta += 1
+            else:
+                short_delta += 1
+
+        print("The number of satellites with long deltas is " + str(long_delta))
+        print(
+            "The number of satellites with short deltas is " + str(short_delta))
 
     else:
         raise ValueError(f"Invalid tle_source: {tle_source}. Please provide TLE source (catalog, sat_code, tle_file)")
@@ -224,8 +277,9 @@ async def tle_update(visit_satellite_cache, tles):
         try:
             await asyncio.sleep(interval)
             # this is a placeholder as satchecker will not be the default,
-            # nor will the TLE params be the default
-            tles = read_tles('satchecker', params=TEST_TLE_PARAMS)  # noqa
+            # nore will the TLE params be the default
+            # This needs to be changed for better use when satchecker is used
+            tles = read_tles('catalog')  # noqa
 
         except Exception as e:
             # So you can observe on disconnects and such.
@@ -288,7 +342,6 @@ async def visit_handler(request):
                         'boresight_ra', 'boresight_dec']
 
     cache = request.app['visit_satellite_cache']
-    tles = request.app['tles']
     sattleTask = request.app['sattleTask']
 
     for col in expected_columns:
@@ -296,11 +349,20 @@ async def visit_handler(request):
             msg = f"Missing column {col}."
             return web.Response(status=400, text=msg)
 
-    if data['visit_id'] in cache:
+    is_historical = data.get('historical', False)
+    cache_key = f"{data['visit_id']}_historical" if is_historical else data['visit_id']
+
+    if cache_key in cache:
         msg = f"Visit {data['visit_id']} already loaded."
         return web.Response(status=200, text=msg)
 
     try:
+        # For re-runs
+        if is_historical:
+            tles = read_tles('catalog', date=str(data['exposure_start_mjd']))
+        else:
+            tles = request.app['tles']
+
         matched_satellites = sattleTask.run(visit_id=data['visit_id'],
                                             exposure_start_mjd=data['exposure_start_mjd'],
                                             exposure_end_mjd=data['exposure_end_mjd'],
@@ -310,11 +372,9 @@ async def visit_handler(request):
 
         # TODO: make sure this works as expected with no results
 
-        cache[data['visit_id']]['matched_satellites'] = matched_satellites
-        cache[data['visit_id']]['compute_time'] = time()
-        print(cache[data['visit_id']])
-
-        # consider local logging
+        cache[cache_key]['matched_satellites'] = matched_satellites
+        cache[cache_key]['compute_time'] = time()
+        print(cache[cache_key])
 
     except Exception as e:
         # So you can observe on disconnects and such.
@@ -322,8 +382,7 @@ async def visit_handler(request):
         # TODO: pass exception text
         msg = 'failed to compute'
         return web.Response(status=500, text=msg)
-
-    msg = f"Successfully cached satellites for visit {data['visit_id']}"
+    msg = f"Successfully cached satellites for visit {cache_key}"
     return web.Response(status=200, text=msg)
 
 
@@ -342,11 +401,17 @@ async def diasource_handler(request):
     visit_id = data['visit_id']
     detector_id = data['detector_id']
 
+    is_historical = data.get('historical', False)
+
+    # Create the same cache key format as used in visit_handler
+    cache_key = f"{data['visit_id']}_historical" if is_historical else data[
+        'visit_id']
+
     cache = request.app['visit_satellite_cache']
 
-    if visit_id not in cache:
+    if cache_key not in cache:
         # TODO: consider if we can try again to compute the satellites
-        msg = f"Provided visit {visit_id} not present in cache!."
+        msg = f"Provided visit {cache_key} not present in cache!."
         return web.Response(status=404, text=msg)
 
     try:
@@ -356,7 +421,7 @@ async def diasource_handler(request):
     except Exception as e:
         # So you can observe on disconnects and such.
         logging.exception(e)
-        msg = f"Failed computing allow_list for visit {visit_id}, detector {detector_id}"
+        msg = f"Failed computing allow_list for visit {cache_key}, detector {detector_id}"
         return web.Response(status=400, text=msg)
 
     data = {'visit_id': visit_id,
@@ -387,6 +452,9 @@ async def build_server(address, port, visit_satellite_cache, tles, sattleTask):
 
 
 def main():
+    import pydevd_pycharm
+    pydevd_pycharm.settrace('localhost', port=8888, stdoutToServer=True,
+                            stderrToServer=True)
     logging.config.dictConfig(LOGGING)
 
     HOST = '0.0.0.0'
@@ -395,6 +463,7 @@ def main():
     visit_satellite_cache = defaultdict(dict)
     # TODO: Adjust for the real catalog. This is currently in place
     # to insure satchecker is bootstrapped in.
+    # Always load in the current catalog.
     tles = read_tles('catalog')
     sattleTask = sattlePy.SattleTask()
 
@@ -403,6 +472,7 @@ def main():
     logging.info("Server ready!")
 
     task = loop.create_task(cache_update(visit_satellite_cache, tles)) # noqa
+    # We need a seperate historical cache
     tle_task = loop.create_task(tle_update(visit_satellite_cache, tles)) # noqa
     try:
         loop.run_forever()

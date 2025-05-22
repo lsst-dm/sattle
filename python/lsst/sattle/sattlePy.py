@@ -64,7 +64,7 @@ class SattleConfig:
 
     search_buffer = Field(
         dtype=float,
-        default=1680.0,
+        default=480.0,
         doc="Search radius buffer in arcseconds/s. Based on estimated 4 degrees "
             "distance travelled in 30 seconds, which is 480 arcseconds"
             " per second.",
@@ -106,7 +106,7 @@ class SattleTask:
             The end time of the exposure in MJD.
         boresight_ra: `float`
             The RA coordinate of the boresight of a given exposure in degrees.
-        boresight_dec:  `float`
+        boresight_dec: `float`
             The Dec coordinate of the boresight of a given exposure in degrees.
 
         Returns
@@ -134,6 +134,10 @@ class SattleTask:
 
         satellite_positions = [[], []]  # [ra_list, dec_list]
         unique_satellites = set()
+
+        #TODO: Need a deduplicator in here somewhere for the historical queries.
+        # not super important at the moment. It will make sure only
+        # the closet in time satellites are used.
 
         for tle_data in tles:
             tle = sattle.TleType()
@@ -436,7 +440,7 @@ class SattleFilterTask:
                 print(corner1[0][i], corner2[1][i], corner2[0][i], corner2[1][i], corner3[0][i],
                       corner2[1][i], corner4[0][i], corner4[1][i])
         # TODO: This is for testing only, remove once unit tests done
-        with open('2024112600107_long_satellites.txt', 'w') as file:
+        with open('2024111800093_long_satellites.txt', 'w') as file:
             for item in tracks:
                 file.write(f"{item}\n")
 

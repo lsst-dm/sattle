@@ -30,19 +30,22 @@ class SatCatFetcher:
     This class provides functionality to retrieve satellite catalogs, including
     GP (General Perturbations) data and optional folder-specific data.
 
-    Args:
-        username (str, optional): Space-track.org username. If not provided, will use environment variable.
-        password (str, optional): Space-track.org password. If not provided, will use environment variable.
-        eltype (str): Type of elements to fetch ('elset' or other).
+    Parameters
+    ----------
+        eltype: 'str'
+         Type of elements to fetch ('elset' or other).
+    Returns
+    -------
+        omm_dict: 'dict'
+            Dictionary containing satellite catalog data.
+        self._last_satf_data: 'str'
+            String containing the last downloaded file.
+    _______
     """
     BASE_URL = "https://www.space-track.org"
     FOLDERS = {"elset": 10}
 
     def __init__(self, eltype: str = "gp"):
-        import pydevd_pycharm
-        pydevd_pycharm.settrace('localhost', port=8888, stdoutToServer=True,
-                                stderrToServer=True)
-
         self._username = os.getenv( 'SPACETRACK_USER')
         self._password = os.getenv('SPACETRACK_PASSWORD')
 
@@ -60,8 +63,9 @@ class SatCatFetcher:
         self._last_satf_data = ""
         self._logger = logging.getLogger(str(__class__))
 
-    def fetch_catalogs(self) -> tuple[dict[str, Any], str]:
+    def fetch_catalogs(self, source="gp", epoch="%3Enow-30") -> tuple[dict[str, Any], str]:
         self._logger.info("Logging in")
+
         login_url = f"{self.BASE_URL}/ajaxauth/login"
         login_data = {"identity": self._username, "password": self._password}
         login_resp = requests.post(login_url, data=login_data)
@@ -73,9 +77,9 @@ class SatCatFetcher:
             self.BASE_URL,
             "basicspacedata",
             "query",
-            "class", "gp",
+            "class", source,
             "decay_date", "null-val",
-            "epoch", "%3Enow-30",
+            "epoch", epoch,
             "orderby", "norad_cat_id",
             "format", "json",
         ])
