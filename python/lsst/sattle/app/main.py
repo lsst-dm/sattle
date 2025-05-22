@@ -395,7 +395,7 @@ def main():
     visit_satellite_cache = defaultdict(dict)
     # TODO: Adjust for the real catalog. This is currently in place
     # to insure satchecker is bootstrapped in.
-    tles = read_tles('catalog', params=TLE_PARAMS)
+    tles = read_tles('catalog')
     sattleTask = sattlePy.SattleTask()
 
     loop = asyncio.get_event_loop()
