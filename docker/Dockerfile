@@ -46,7 +46,7 @@ RUN c++ -O3 -Wall -shared -std=c++11 $(python3 -m pybind11 --includes) \
     -fPIC
 
 # Move the built .so file to the sattle folder
-RUN cp sattle.cpython-311-aarch64-linux-gnu.so /app/sattle/python/lsst/sattle/sattle.so
+RUN cp *.so /app/sattle/python/lsst/sattle/sattle.so
 
 # Set the Python path to include the sattle module
 ENV PYTHONPATH="/app/sattle/python:$PYTHONPATH"
