@@ -134,4 +134,6 @@ class SatCatFetcher:
         requests.get(logout_url, cookies=jar)
         self._logger.info(f"Logged out")
 
+        #TODO: If dictionary is empty, we need to stop and send an error/warning??
+
         return omm_dict, self._last_satf_data

@@ -87,7 +87,7 @@ def get_current_tle_time():
 
 
 # Change name to read tles
-def read_tles(tle_source, filename=None, write_file=False, params=None):
+def read_tles(tle_source, filename=None, write_file=False, params=None, date=None):
     """Read TLEs from a source.
 
          Parameters
@@ -98,7 +98,6 @@ def read_tles(tle_source, filename=None, write_file=False, params=None):
             If tle_source is 'tle_file', this is the path to the file.
         write_file: `bool`
             A list of tles which will be added to the satellite cache.
-    """
         tles: `list`
         -------
         Returns
@@ -108,6 +107,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None):
         params: `float`
             be written to a file.
             If write file is set, the output of the tle retrieval will
+    """
     tles = []
 
     # TODO: Currently this requires manual input of ra/dec. Make this read
@@ -357,7 +357,7 @@ async def visit_handler(request):
         return web.Response(status=200, text=msg)
 
     try:
-        # For re-runs
+        # Used if re-running a pipeline on previous visits
         if is_historical:
             tles = read_tles('catalog', date=str(data['exposure_start_mjd']))
         else:
@@ -369,8 +369,6 @@ async def visit_handler(request):
                                             boresight_ra=data['boresight_ra'],
                                             boresight_dec=data['boresight_dec'],
                                             tles=tles)  # boresight and time
-
-        # TODO: make sure this works as expected with no results
 
         cache[cache_key]['matched_satellites'] = matched_satellites
         cache[cache_key]['compute_time'] = time()
@@ -410,13 +408,14 @@ async def diasource_handler(request):
     cache = request.app['visit_satellite_cache']
 
     if cache_key not in cache:
-        # TODO: consider if we can try again to compute the satellites
+        # If not present, pipelines will request a re-try to load the visit
+        # into the cache one time.
         msg = f"Provided visit {cache_key} not present in cache!."
         return web.Response(status=404, text=msg)
 
     try:
         sattleFilterTask = sattlePy.SattleFilterTask()
-        allow_list = sattleFilterTask.run(cache[visit_id], data['diasources'])
+        allow_list = sattleFilterTask.run(cache[cache_key], data['diasources'])
 
     except Exception as e:
         # So you can observe on disconnects and such.
@@ -461,9 +460,7 @@ def main():
     PORT = 9999
 
     visit_satellite_cache = defaultdict(dict)
-    # TODO: Adjust for the real catalog. This is currently in place
-    # to insure satchecker is bootstrapped in.
-    # Always load in the current catalog.
+    # Current catalog will always be loaded.
     tles = read_tles('catalog')
     sattleTask = sattlePy.SattleTask()
 
@@ -472,7 +469,6 @@ def main():
     logging.info("Server ready!")
 
     task = loop.create_task(cache_update(visit_satellite_cache, tles)) # noqa
-    # We need a seperate historical cache
     tle_task = loop.create_task(tle_update(visit_satellite_cache, tles)) # noqa
     try:
         loop.run_forever()

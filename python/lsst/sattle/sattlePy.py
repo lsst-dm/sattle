@@ -149,29 +149,7 @@ class SattleTask:
                 satellite_positions[1].append(list(out.dec))
                 unique_satellites.add(tle.norad_number)
 
-        return satellite_positions
-
-        satellite_ra = []
-        satellite_dec = []
-        satellite_list = []
-        for single_tle in tles:
-
-            tle = sattle.TleType()
-            sattle.parse_elements(single_tle.line1, single_tle.line2, tle)
-
-            out = sattle.calc_sat(inputs, tle)
-            if any(out.ra) and any(out.dec):
-                print("Time difference in "
-                      "hours: " + str((time_start - Time(tle.epoch, format='jd')).sec/60/60))
-
-                # TODO: Remove print in sattle.so
-                satellite_ra.append(list(out.ra))
-                satellite_dec.append(list(out.dec))
-                if tle.norad_number not in satellite_list:
-                    satellite_list.append(tle.norad_number)
-
-        satellite_positions = [satellite_ra, satellite_dec]
-
+        logging.info(f"Number of satellites found in {visit_id}: {len(satellite_positions[0])}")")
         return satellite_positions
 
 
