@@ -22,7 +22,9 @@ jobs:
       - uses: lsst-sqre/build-and-push-to-ghcr@v1
         id: build
         with:
-          image: ${{ github.repository }} # e.g. lsst-sqre/safirdemo
+          image: ${{ github.repository }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          context: ./docker
+          dockerfile: ./docker/Dockerfile
 
       - run: echo Pushed ghcr.io/${{ github.repository }}:${{ steps.build.outputs.tag }}
