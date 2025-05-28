@@ -118,6 +118,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
     # Keep this in but change
     # Needs to be all satellites visible in a night
     if tle_source == 'satchecker_query':
+        print("Using satchecker as tle source")
+        logging.info("Using satchecker as tle source")
         start_time = params['start_time_jd']
 
         base_url = "https://dev.satchecker.cps.iau.noirlab.edu"
@@ -149,6 +151,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                         epoch = Time(entry['epoch'][:-4], scale='utc')
                         current_epoch_delta = abs(epoch.jd - start_time)
                         print("Epoch delta: ", current_epoch_delta)
+                        print("Date: ", date)
 
                         if first:
                             tle = TLE(entry['tle_line1'], entry['tle_line2'])
@@ -168,7 +171,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 f"Failed to fetch TLE data. Status code: {response.status_code}")
 
     if tle_source == 'tle_file':
-
+        print("Using tle file as tle source")
+        logging.info("Using tle file as tle source")
         with open(filename, 'r') as file:
             # Read the contents of the file
             tles_raw = file.read()
@@ -187,6 +191,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                     i += 1  # Skip to the next line if not a valid pair
 
     elif tle_source == 'catalog':
+        print("Using catalog as tle source")
+        logging.info("Using catalog as tle source")
         scf = SatCatFetcher(eltype="gp")
         # If a date is provided, use that date, otherwise use the current date
         # This allows us to use historical catalogs
