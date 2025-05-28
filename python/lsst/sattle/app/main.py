@@ -117,58 +117,6 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
     # This would mean we remove the initial query though this is important
     # Keep this in but change
     # Needs to be all satellites visible in a night
-    if tle_source == 'satchecker_query':
-        print("Using satchecker as tle source")
-        logging.info("Using satchecker as tle source")
-        start_time = params['start_time_jd']
-
-        base_url = "https://dev.satchecker.cps.iau.noirlab.edu"
-        test_url = f"{base_url}/fov/satellite-passes/"
-
-        response = requests.get(test_url, params=params, timeout=70)
-        if response.status_code == 200:
-            satellite_json = response.json()['data']['satellites']
-
-            for sat_name in satellite_json.keys():
-                norad_id = satellite_json[sat_name]['norad_id']
-
-                params = {
-                    "id": norad_id,
-                    "id_type": 'catalog',
-                    "start_date_jd": start_time-0.6,
-                    "end_date_jd": start_time+0.6, }
-
-                base_url = "https://dev.satchecker.cps.iau.noirlab.edu"
-                test_url = f"{base_url}/tools/get-tle-data/"
-
-                response = requests.get(test_url, params=params, timeout=70)
-
-                # Here we need to only select the most recent tle
-                if response.json():
-
-                    first = True
-                    for entry in response.json():
-                        epoch = Time(entry['epoch'][:-4], scale='utc')
-                        current_epoch_delta = abs(epoch.jd - start_time)
-                        print("Epoch delta: ", current_epoch_delta)
-                        print("Date: ", date)
-
-                        if first:
-                            tle = TLE(entry['tle_line1'], entry['tle_line2'])
-                            epoch_delta = current_epoch_delta
-                            first = False
-                        elif epoch_delta > current_epoch_delta:
-                            epoch_delta = current_epoch_delta
-                            tle = TLE(entry['tle_line1'], entry['tle_line2'])
-
-                    # Only the lowest time delta will get added to the list for
-                    # a specific satellite
-                    tles.append(tle)
-                else:
-                    print("No valid TLE.")
-        else:
-            print(
-                f"Failed to fetch TLE data. Status code: {response.status_code}")
 
     if tle_source == 'tle_file':
         print("Using tle file as tle source")
