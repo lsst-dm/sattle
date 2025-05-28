@@ -193,11 +193,11 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
         if date:
             formated_date = format_date_for_catalog(date)
             omm, _ = scf.fetch_catalogs(source='gp_history', epoch=formated_date)
-            print("Using historical catalog for date: " + date + "")
+            logging.info("Using historical catalog for date: " + date + "")
         else:
             # Defaults to pulling the current catalog
             omm, _ = scf.fetch_catalogs()
-            print("Using current catalog")
+            logging.info("Using current catalog")
 
         # Extract TLE lines from the catalog
         tle_entries = [(entry['TLE_LINE1'], entry['TLE_LINE2'])
@@ -209,15 +209,14 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             tle = TLE(line1.strip(), line2.strip())
             tles.append(tle)
             time_delta = (get_current_tle_time()-float(line1[18:32]))*24.0
-            print("Epoch difference in hours: " + str((get_current_tle_time()-float(line1[18:32]))*24.0))
+            logging.info("Epoch difference in hours: " + str((get_current_tle_time()-float(line1[18:32]))*24.0))
             if time_delta > 12.0:
                 long_delta += 1
             else:
                 short_delta += 1
 
-        print("The number of satellites with long deltas is " + str(long_delta))
-        print(
-            "The number of satellites with short deltas is " + str(short_delta))
+        logging.info("The number of satellites with long deltas is " + str(long_delta))
+        logging.info("The number of satellites with short deltas is " + str(short_delta))
 
     else:
         raise ValueError(f"Invalid tle_source: {tle_source}. Please provide TLE source (catalog, sat_code, tle_file)")
@@ -381,6 +380,7 @@ async def visit_handler(request):
         msg = 'failed to compute'
         return web.Response(status=500, text=msg)
     msg = f"Successfully cached satellites for visit {cache_key}"
+    logging.info(msg)
     return web.Response(status=200, text=msg)
 
 
@@ -411,6 +411,7 @@ async def diasource_handler(request):
         # If not present, pipelines will request a re-try to load the visit
         # into the cache one time.
         msg = f"Provided visit {cache_key} not present in cache!."
+        logging.info(msg)
         return web.Response(status=404, text=msg)
 
     try:
@@ -421,6 +422,7 @@ async def diasource_handler(request):
         # So you can observe on disconnects and such.
         logging.exception(e)
         msg = f"Failed computing allow_list for visit {cache_key}, detector {detector_id}"
+        logging.info(msg)
         return web.Response(status=400, text=msg)
 
     data = {'visit_id': visit_id,
