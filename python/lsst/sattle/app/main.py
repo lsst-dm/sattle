@@ -406,9 +406,6 @@ async def build_server(address, port, visit_satellite_cache, tles, sattleTask):
 
 
 def main():
-    import pydevd_pycharm
-    pydevd_pycharm.settrace('localhost', port=8888, stdoutToServer=True,
-                            stderrToServer=True)
     logging.config.dictConfig(LOGGING)
 
     HOST = '0.0.0.0'
