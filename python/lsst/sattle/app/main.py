@@ -51,7 +51,8 @@ def format_date_for_catalog(mjd):
         mjd (float): Modified Julian Date
 
     Returns:
-        str: Formatted date string in the form %3E2024-11-22T22:40:30%2C%3C2024-11-23T3:20:30
+        str: Formatted date string in the form
+        %3E2024-11-22T22:40:30%2C%3C2024-11-23T3:20:30
     """
 
     t = Time(mjd, format='mjd')
@@ -162,7 +163,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             tle = TLE(line1.strip(), line2.strip())
             tles.append(tle)
             time_delta = (get_current_tle_time()-float(line1[18:32]))*24.0
-            logging.info("Epoch difference in hours: " + str((get_current_tle_time()-float(line1[18:32]))*24.0))
+            logging.info("Epoch difference in "
+                         "hours: " + str((get_current_tle_time()-float(line1[18:32]))*24.0))
             if time_delta > 12.0:
                 long_delta += 1
             else:
@@ -172,7 +174,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
         logging.info("The number of satellites with short deltas is " + str(short_delta))
 
     else:
-        raise ValueError(f"Invalid tle_source: {tle_source}. Please provide TLE source (catalog, sat_code, tle_file)")
+        raise ValueError(f"Invalid tle_source: {tle_source}. Please "
+                         f"provide TLE source (catalog, sat_code, tle_file)")
 
     # TODO: remove in final product, used for testing only
     if write_file:

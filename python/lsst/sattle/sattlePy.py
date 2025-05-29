@@ -134,7 +134,7 @@ class SattleTask:
         satellite_positions = [[], []]  # [ra_list, dec_list]
         unique_satellites = set()
 
-        #TODO: Need a deduplicator in here somewhere for the historical
+        # TODO: Need a deduplicator in here somewhere for the historical
         # queries.
         # not super important at the moment. It will make sure only
         # the closet in time satellites are used.

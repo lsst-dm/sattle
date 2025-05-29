@@ -18,11 +18,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import getpass
 import logging
 from typing import Any
 import os
 import requests
+
 
 class SatCatFetcher:
     """Fetches satellite catalogs from space-track.org.
@@ -46,7 +46,7 @@ class SatCatFetcher:
     FOLDERS = {"elset": 10}
 
     def __init__(self, eltype: str = "gp"):
-        self._username = os.getenv( 'SPACETRACK_USER')
+        self._username = os.getenv('SPACETRACK_USER')
         self._password = os.getenv('SPACETRACK_PASSWORD')
 
         if self._username is None or self._password is None:
@@ -121,19 +121,20 @@ class SatCatFetcher:
                     "class", "download",
                     "file_id", str(satf_id),
                 ])
-                self._logger.info(f"Requesting file")
+                self._logger.info("Requesting file")
                 satf_resp = requests.get(satf_url, cookies=jar)
                 satf_resp.raise_for_status()
                 self._last_satf_data = satf_resp.text
                 self._last_satf_id = satf_id
-                self._logger.info(f"Received file")
+                self._logger.info("Received file")
 
         logout_url = f"{self.BASE_URL}/ajaxauth/logout"
         # Ignore result
-        self._logger.info(f"Logging out")
+        self._logger.info("Logging out")
         requests.get(logout_url, cookies=jar)
-        self._logger.info(f"Logged out")
+        self._logger.info("Logged out")
 
-        #TODO: If dictionary is empty, we need to stop and send an error/warning??
+        # TODO: If dictionary is empty, we need to stop and send an
+        #  error/warning??
 
         return omm_dict, self._last_satf_data
