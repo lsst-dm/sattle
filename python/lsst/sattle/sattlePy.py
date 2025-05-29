@@ -149,7 +149,7 @@ class SattleTask:
                 satellite_positions[1].append(list(out.dec))
                 unique_satellites.add(tle.norad_number)
 
-        logging.info(f"Number of satellites found in {visit_id}: {len(satellite_positions[0])}")")
+        logging.info(f"Number of satellites found in {visit_id}: {len(satellite_positions[0])}")
         return satellite_positions
 
 
