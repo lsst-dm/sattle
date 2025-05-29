@@ -5,7 +5,6 @@ from aiohttp import web
 from time import time
 import logging
 import logging.config
-import requests
 from astropy.time import Time
 import datetime
 

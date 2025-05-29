@@ -24,7 +24,6 @@ import numpy as np
 import warnings
 from typing import Any, Optional, List
 from astropy.time import Time
-from datetime import datetime, timedelta
 
 import lsst.sphgeom as sphgeom
 from lsst.sattle import sattle
