@@ -167,7 +167,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 long_delta += 1
             else:
                 short_delta += 1
-
+        print("Calculating long deltas.")
         logging.info("The number of satellites with long deltas is " + str(long_delta))
         logging.info("The number of satellites with short deltas is " + str(short_delta))
 
