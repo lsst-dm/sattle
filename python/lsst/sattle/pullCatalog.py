@@ -43,9 +43,9 @@ class SatCatFetcher:
     _______
     """
     BASE_URL = "https://www.space-track.org"
-    FOLDERS = {"elset": 10}
+    FOLDERS = {"elset": 22700, "satf": 59}
 
-    def __init__(self, eltype: str = "gp"):
+    def __init__(self, eltype: str = "gp", use_folder: bool = False, **kwargs: Any):
         self._username = os.getenv('SPACETRACK_USER')
         self._password = os.getenv('SPACETRACK_PASSWORD')
 
@@ -53,12 +53,11 @@ class SatCatFetcher:
             raise ValueError(
                 "Environment variables SPACETRACK_USER and SPACETRACK_PASSWORD must be set")
 
-        self.use_folder = False
-        if eltype not in self.FOLDERS:
-            self._folder_id = None
-            self.use_folder = False
-        else:
+        self.use_folder = use_folder
+        if self.use_folder:
             self._folder_id = self.FOLDERS[eltype]
+        else:
+            self._folder_id = None
         self._last_satf_id = -1
         self._last_satf_data = ""
         self._logger = logging.getLogger(str(__class__))
@@ -73,21 +72,22 @@ class SatCatFetcher:
         jar = login_resp.cookies
         self._logger.info("Successfully logged in")
 
-        gp_url = "/".join([
+        if not self.use_folder:
+            gp_url = "/".join([
             self.BASE_URL,
-            "basicspacedata",
-            "query",
-            "class", source,
-            "decay_date", "null-val",
-            "epoch", epoch,
-            "orderby", "norad_cat_id",
-            "format", "json",
-        ])
-        self._logger.info("Requesting GP catalog")
-        gp_resp = requests.get(gp_url, cookies=jar)
-        gp_resp.raise_for_status()
-        omm_dict = gp_resp.json()
-        self._logger.info("Received GP catalog")
+                "basicspacedata",
+                "query",
+                "class", source,
+                "decay_date", "null-val",
+                "epoch", epoch,
+                "orderby", "norad_cat_id",
+                "format", "json",
+            ])
+            self._logger.info("Requesting GP catalog")
+            gp_resp = requests.get(gp_url, cookies=jar)
+            gp_resp.raise_for_status()
+            omm_dict = gp_resp.json()
+            self._logger.info("Received GP catalog")
 
         if self.use_folder:
 

@@ -47,12 +47,16 @@ def tle_time_to_jd(tle_time_str):
 def format_date_for_catalog(mjd):
     """Convert MJD to the required catalog query format
 
-    Inputs:
-        mjd (float): Modified Julian Date
+    Inputs
+    ------
+        mjd: `float`
+            Modified Julian Date in float format
 
-    Returns:
-        str: Formatted date string in the form
-        %3E2024-11-22T22:40:30%2C%3C2024-11-23T3:20:30
+    Returns
+    -------
+        date_string: `str`
+            Formatted date string in the form
+            %3E2024-11-22T22:40:30%2C%3C2024-11-23T3:20:30
     """
 
     t = Time(mjd, format='mjd')
@@ -63,8 +67,9 @@ def format_date_for_catalog(mjd):
 
     start_str = start_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
     end_str = end_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
+    date_string = f"%3E{start_str}%2C%3C{end_str}"
 
-    return f"%3E{start_str}%2C%3C{end_str}"
+    return date_string
 
 
 def get_current_tle_time():
@@ -85,11 +90,8 @@ def get_current_tle_time():
 
     return tle_time
 
-
-# Change name to read tles
-def read_tles(tle_source, filename=None, write_file=False, params=None, date=None):
+def read_tles(tle_source, filename=None, write_file=False, params=None, date=None, all_cats=False):
     """Read TLEs from a source.
-
          Parameters
         ----------
         tle_soure: `str`
@@ -98,28 +100,17 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             If tle_source is 'tle_file', this is the path to the file.
         write_file: `bool`
             A list of tles which will be added to the satellite cache.
-        tles: `list`
-        -------
         Returns
-            using satchecker as a tle source.
+        -------
+        tles: `list`
+            List of TLE objects.
 
-            Dictionary of parameters to be used for the tle retrieval when
-        params: `float`
-            be written to a file.
-            If write file is set, the output of the tle retrieval will
     """
     tles = []
 
-    # TODO: Currently this requires manual input of ra/dec. Make this read
-    # from a file so it can be checked faster.
-    # We need to change this to be more useful for verification.
-    # Should make it a per day tle list, so verification checks per day.
-    # This would mean we remove the initial query though this is important
-    # Keep this in but change
-    # Needs to be all satellites visible in a night
+    # TODO: Re-add sat_checker query
 
     if tle_source == 'tle_file':
-        print("Using tle file as tle source")
         logging.info("Using tle file as tle source")
         with open(filename, 'r') as file:
             # Read the contents of the file
@@ -139,8 +130,9 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                     i += 1  # Skip to the next line if not a valid pair
 
     elif tle_source == 'catalog':
-        print("Using catalog as tle source")
         logging.info("Using catalog as tle source")
+        # TODO: Add the secret catalog
+
         scf = SatCatFetcher(eltype="gp")
         # If a date is provided, use that date, otherwise use the current date
         # This allows us to use historical catalogs
@@ -152,6 +144,15 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             # Defaults to pulling the current catalog
             omm, _ = scf.fetch_catalogs()
             logging.info("Using current catalog")
+
+        if all_cats:
+
+            scf = SatCatFetcher(eltype=None)
+            # Can only fetch current?
+            omm_cui, _ = scf.fetch_catalogs()
+            omm.update(omm_cui)
+            logging.info("Using current catalog")
+
 
         # Extract TLE lines from the catalog
         tle_entries = [(entry['TLE_LINE1'], entry['TLE_LINE2'])
@@ -169,7 +170,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 long_delta += 1
             else:
                 short_delta += 1
-        print("Calculating long deltas.")
+        logging.info("Calculating long deltas.")
         logging.info("The number of satellites with long deltas is " + str(long_delta))
         logging.info("The number of satellites with short deltas is " + str(short_delta))
 
