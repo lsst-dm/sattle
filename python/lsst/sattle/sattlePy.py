@@ -92,7 +92,8 @@ class SattleTask:
         self.config = config or SattleConfig()
         super().__init__(**kwargs)
 
-    def run(self, visit_id, exposure_start_mjd, exposure_end_mjd, boresight_ra, boresight_dec, tles):
+    def run(self, visit_id, exposure_start_mjd, exposure_end_mjd, boresight_ra,
+            boresight_dec, tles, tles_age):
         """Calculate the positions of satellites within a given exposure.
 
         Parameters
@@ -116,6 +117,7 @@ class SattleTask:
             The first dimension is the paired Ra and the second array is the
             paired Dec.
         """
+        logging.info(f"Calculating satellite positions for visit {visit_id}")
         # Everything should be in astropy.time
         # This gets us the time in seconds
         time_start = Time(exposure_start_mjd, format='mjd', scale='tai')
@@ -132,14 +134,10 @@ class SattleTask:
         inputs.jd = [time_start.utc.jd, time_end.utc.jd]
 
         satellite_positions = [[], []]  # [ra_list, dec_list]
+        age_list = []
         unique_satellites = set()
 
-        #TODO: Need a deduplicator in here somewhere for the historical
-        # queries.
-        # not super important at the moment. It will make sure only
-        # the closet in time satellites are used.
-
-        for tle_data in tles:
+        for i, tle_data in enumerate(tles):
             tle = sattle.TleType()
             sattle.parse_elements(tle_data.line1, tle_data.line2, tle)
             out = sattle.calc_sat(inputs, tle)
@@ -148,8 +146,15 @@ class SattleTask:
                 satellite_positions[0].append(list(out.ra))
                 satellite_positions[1].append(list(out.dec))
                 unique_satellites.add(tle.norad_number)
+                age_list.append([tle.norad_number, tles_age[i]])
 
-        logging.info(f"Number of satellites found in {visit_id}: {len(satellite_positions[0])}")
+        with open(f'{visit_id}_tle_ages.txt', 'w') as file:
+            for item in age_list:
+                file.write(f"{item}\n")
+        if len(unique_satellites) != 0:
+            avg_age = sum(item[1] for item in age_list) / len(unique_satellites)
+            logging.info(f"The average age of the satellite tles is {avg_age} hours")
+        logging.info(f"The number of unique satellites found in {visit_id} is" f" {len(unique_satellites)}")
         return satellite_positions
 
 
@@ -180,7 +185,7 @@ class SattleFilterTask:
         self.config = config or SatelliteFilterConfig()
         super().__init__(**kwargs)
 
-    def run(self, sat_coords: np.ndarray, diaSources: dict) -> list:
+    def run(self, sat_coords: np.ndarray, diaSources: dict, visit_id: int, detector_id: int) -> list:
         """ Compare satellite tracks and source bounding boxes to create
         a source allowlist.
 
@@ -188,7 +193,7 @@ class SattleFilterTask:
         tracks. Then, compare these tracks to a catalog of diaSource bounding
         boxes.
         If the bounding boxes do not overlap with the satellite tracks, then
-        the source Ids are passed back as a allow list.
+        the source Ids are passed back as an allow list.
 
         Parameters
         ----------
@@ -207,7 +212,7 @@ class SattleFilterTask:
         -------
         allow_list : `array`
             List of diaSource IDs that don't intersect with satellite tracks.
-            Returns empty list if all sources are filtered. Returns the full
+            Returns an empty list if all sources are filtered. Returns the full
             diaSource ID list if no satellites are found.
 
         Notes
@@ -222,6 +227,8 @@ class SattleFilterTask:
         try:
             track_width = self.config.track_width
             sat_coords = np.array(sat_coords['matched_satellites'])
+            logging.info(f"Number of satellites to compare against: {len(sat_coords[0])}")
+            logging.info(f"Number of dia sources to compare against:{len(diaSources)}")
             source_bboxes = []
             source_ids = []
             for diaSource in diaSources:
@@ -233,7 +240,7 @@ class SattleFilterTask:
             bbox_sph_coords = self.calc_bbox_sph_coords(source_bboxes)
 
             # Generate satellite track polygons
-            satellite_tracks = self.satellite_tracks(track_width, sat_coords)
+            satellite_tracks = self.satellite_tracks(track_width, sat_coords, visit_id, detector_id)
 
             # Check for intersections and get allowed IDs
             id_allow_list = self._check_tracks(bbox_sph_coords, satellite_tracks, source_ids)
@@ -285,7 +292,7 @@ class SattleFilterTask:
 
     @staticmethod
     def _find_corners(sat_coords: np.ndarray, length: float):
-        """ Takes the satellite coordinates which are in lat and lon and
+        """Takes the satellite coordinates which are in lat and lon and
         calculates the corners of the satellite's path.
 
         This is done by looking at the endpoints of the satellite's movement,
@@ -378,7 +385,8 @@ class SattleFilterTask:
         return corner1, corner2, corner3, corner4
 
     @staticmethod
-    def satellite_tracks(track_width: float, sat_coords: np.ndarray) -> List[sphgeom.ConvexPolygon]:
+    def satellite_tracks(track_width: float, sat_coords: np.ndarray,
+                         visit_id: int, detector_id: int) -> List[sphgeom.ConvexPolygon]:
         """ Calculate the satellite tracks using their beginning and
         end points in ra and dec and the angle between them. The width of the
         tracks is based on the track_width.
@@ -412,13 +420,10 @@ class SattleFilterTask:
                             sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(corner3[0][i], corner3[1][i])),
                             sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(corner4[0][i], corner4[1][i]))])
                     tracks.append(track)
-            # TODO: Using for troubleshooting, make more robust
             except RuntimeError as e:
                 logging.exception(e)
-                print(corner1[0][i], corner2[1][i], corner2[0][i], corner2[1][i], corner3[0][i],
-                      corner2[1][i], corner4[0][i], corner4[1][i])
         # TODO: This is for testing only, remove once unit tests done
-        with open('2024111800093_long_satellites.txt', 'w') as file:
+        with open(f'{visit_id}_{detector_id}_sat_boxes.txt', 'w') as file:
             for item in tracks:
                 file.write(f"{item}\n")
 
@@ -446,7 +451,6 @@ class SattleFilterTask:
         -------
         id_allow_list : `list`
             A list containing allowed source IDs.
-
         """
         id_allow_list = []
         if sphere_source_bboxes.size > 1:
@@ -457,12 +461,14 @@ class SattleFilterTask:
                         if track.intersects(coord):
                             check = True
                             break
+                # Special case for single satellite track
                 else:
                     check = False
                     if satellite_tracks[0].intersects(coord):
                         check = True
                 if not check:
                     id_allow_list.append(source_ids[i])
+        # Special case for one bounding box only
         else:
             if len(satellite_tracks) > 1:
                 check = False
@@ -470,6 +476,7 @@ class SattleFilterTask:
                     if track.intersects(sphere_source_bboxes.item()):
                         check = True
                         break
+            # Special case for single satellite track
             else:
                 check = False
                 if satellite_tracks[0].intersects(sphere_source_bboxes.item()):
@@ -489,11 +496,11 @@ class SattleFilterTask:
         x1: `numpy.ndarray`
             Array containing all x1 line coordinates.
         y1: `numpy.ndarray`
-            Array containing all  y1 line coordinates
+            Array containing all y1 line coordinates
         x2: `numpy.ndarray`
             Array containing all x2 line coordinates.
         y2: `numpy.ndarray`
-            Array containing all  y2 line coordinates
+            Array containing all y2 line coordinates
         extend_length: `float`
             The length in degrees to extend the line.
 
@@ -547,7 +554,7 @@ class SattleFilterTask:
     @staticmethod
     def _normalize_coordinates(corner):
         """ After all the calculations, make sure none of the coordinates
-        exceed the spherical coordinates. If they do correct them.
+        exceed the spherical coordinates. If they do, correct them.
 
         Parameters
         ----------
@@ -556,9 +563,9 @@ class SattleFilterTask:
 
         Returns
         -------
-        lon : `numpy.ndarray`
+        lon: `numpy.ndarray`
             Array of lons which have been checked and corrected if necessary.
-        lat : `numpy.ndarray`
+        lat: `numpy.ndarray`
             Array of lats which have been checked and corrected if necessary.
         """
         lon, lat = corner[0], corner[1]

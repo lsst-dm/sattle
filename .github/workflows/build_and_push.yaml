@@ -19,6 +19,23 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Clone sattle repository
+        run: git clone --branch tickets/DM-50744 https://github.com/lsst-dm/sattle.git docker/sattle
+
+      - name: Clone lunar repository
+        run: |
+          git clone https://github.com/Bill-Gray/lunar.git docker/lunar
+          cd docker/lunar
+          git checkout a82172dcf437e95c89b9de1c2c16e9d3a6f433ce
+      
+
+      - name: Clone sat_code repository
+        run: |
+          git clone https://github.com/Bill-Gray/sat_code.git docker/sat_code
+          cd docker/sat_code
+          git checkout e03c80704c33cd2374912c86a88532157c5c7a19
+      
+
       - uses: lsst-sqre/build-and-push-to-ghcr@v1
         id: build
         with:
