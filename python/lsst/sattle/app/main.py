@@ -62,8 +62,8 @@ def format_date_for_catalog(mjd):
     t = Time(mjd, format='mjd')
 
     # Create a window around the observation time
-    start_time = t - 0.1833  # 2 hours before (2/24 days)
-    end_time = t + 0.1833  # 2 hours after
+    start_time = t - 2  # 2 hours before (2/24 days)
+    end_time = t + 2  # 2 hours after
 
     start_str = start_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
     end_str = end_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
