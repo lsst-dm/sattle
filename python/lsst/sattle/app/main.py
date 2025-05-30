@@ -90,6 +90,7 @@ def get_current_tle_time():
 
     return tle_time
 
+
 def read_tles(tle_source, filename=None, write_file=False, params=None, date=None, all_cats=False):
     """Read TLEs from a source.
          Parameters
@@ -153,7 +154,6 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             omm.update(omm_cui)
             logging.info("Using current catalog")
 
-
         # Extract TLE lines from the catalog
         tle_entries = [(entry['TLE_LINE1'], entry['TLE_LINE2'])
                        for entry in omm
@@ -168,7 +168,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 sat_num = line1[2:7]
                 time_diff = abs((date - float(line1[18:32])) * 24.0)
 
-                # If this satellite hasn't been seen before or if this TLE is closer to the target date
+                # If this satellite hasn't been seen before or if this TLE is
+                # closer to the target date
                 if sat_num not in satellite_tles or time_diff < \
                         satellite_tles[sat_num]['time_diff']:
                     satellite_tles[sat_num] = {

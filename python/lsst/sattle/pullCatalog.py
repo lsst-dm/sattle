@@ -74,7 +74,7 @@ class SatCatFetcher:
 
         if not self.use_folder:
             gp_url = "/".join([
-            self.BASE_URL,
+                self.BASE_URL,
                 "basicspacedata",
                 "query",
                 "class", source,
