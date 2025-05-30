@@ -1,0 +1,20 @@
+2025-05-20 23:21:39,844 INFO main Shutting Down!
+2025-05-20 23:21:53,738 INFO pullCatalog Logging in
+2025-05-20 23:21:54,881 INFO pullCatalog Successfully logged in
+2025-05-20 23:21:54,881 INFO pullCatalog Requesting GP catalog
+2025-05-20 23:22:08,329 INFO pullCatalog Received GP catalog
+2025-05-20 23:22:08,330 INFO pullCatalog Logging out
+2025-05-20 23:22:08,677 INFO pullCatalog Logged out
+2025-05-20 23:22:08,991 INFO main Server ready!
+2025-05-20 23:24:34,393 INFO main {'visit_id': 1234, 'exposure_start_mjd': 60633.09713337375, 'exposure_end_mjd': 60633.09748059596, 'boresight_ra': 59.2603658355, 'boresight_dec': -48.6722040564}
+2025-05-20 23:24:37,483 INFO web_log 127.0.0.1 [20/May/2025:15:24:34 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-20 23:24:37,483 INFO web_log 127.0.0.1 [20/May/2025:15:24:34 -0800] "PUT /visit_cache HTTP/1.1" 200 199 "-" "python-requests/2.32.3"
+2025-05-20 23:24:37,486 INFO main {}
+2025-05-20 23:24:37,486 INFO web_log 127.0.0.1 [20/May/2025:15:24:37 -0800] "GET /visit_cache HTTP/1.1" 200 558 "-" "python-requests/2.32.3"
+2025-05-20 23:24:37,486 INFO web_log 127.0.0.1 [20/May/2025:15:24:37 -0800] "GET /visit_cache HTTP/1.1" 200 558 "-" "python-requests/2.32.3"
+2025-05-20 23:24:37,488 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4569, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}, {'diasource_id': 4568, 'bbox': [[38, 7], [39, 8], [39, 7], [38, 8]]}]}
+2025-05-20 23:24:37,490 INFO web_log 127.0.0.1 [20/May/2025:15:24:37 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 230 "-" "python-requests/2.32.3"
+2025-05-20 23:24:37,490 INFO web_log 127.0.0.1 [20/May/2025:15:24:37 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 230 "-" "python-requests/2.32.3"
+2025-05-20 23:24:37,492 INFO main {'visit_id': 1234, 'detector_id': 8, 'diasources': [{'diasource_id': 4567, 'bbox': [[180.0, -23.1], [180.1, -23.1], [180.0, -23.0], [180.1, -23.0]]}, {'diasource_id': 4568, 'bbox': [[110, 34], [110, 30], [117, 34], [117, 30]]}]}
+2025-05-20 23:24:37,493 INFO web_log 127.0.0.1 [20/May/2025:15:24:37 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
+2025-05-20 23:24:37,493 INFO web_log 127.0.0.1 [20/May/2025:15:24:37 -0800] "PUT /diasource_allow_list HTTP/1.1" 200 224 "-" "python-requests/2.32.3"
