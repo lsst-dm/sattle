@@ -160,16 +160,50 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                        if 'TLE_LINE1' in entry and 'TLE_LINE2' in entry]
         long_delta = 0
         short_delta = 0
-        for line1, line2 in tle_entries:
-            tle = TLE(line1.strip(), line2.strip())
-            tles.append(tle)
-            time_delta = (get_current_tle_time()-float(line1[18:32]))*24.0
-            logging.info("Epoch difference in "
-                         "hours: " + str((get_current_tle_time()-float(line1[18:32]))*24.0))
-            if time_delta > 12.0:
-                long_delta += 1
-            else:
-                short_delta += 1
+        if date:
+            satellite_tles = {}
+
+            for line1, line2 in tle_entries:
+                # Get satellite number from TLE (columns 3-7 in line 1)
+                sat_num = line1[2:7]
+                time_diff = abs((date - float(line1[18:32])) * 24.0)
+
+                # If this satellite hasn't been seen before or if this TLE is closer to the target date
+                if sat_num not in satellite_tles or time_diff < \
+                        satellite_tles[sat_num]['time_diff']:
+                    satellite_tles[sat_num] = {
+                        'line1': line1.strip(),
+                        'line2': line2.strip(),
+                        'time_diff': time_diff
+                    }
+
+            # Reset counters
+            long_delta = 0
+            short_delta = 0
+
+            # Process only the closest TLEs
+            for sat_data in satellite_tles.values():
+                tle = TLE(sat_data['line1'], sat_data['line2'])
+                tles.append(tle)
+                time_delta = sat_data['time_diff']
+                logging.info("Epoch difference in hours: " + str(time_delta))
+                if time_delta > 12.0:
+                    long_delta += 1
+                else:
+                    short_delta += 1
+        else:
+            # Original code for when no date is specified
+            for line1, line2 in tle_entries:
+                tle = TLE(line1.strip(), line2.strip())
+                tles.append(tle)
+                time_delta = (get_current_tle_time() - float(
+                    line1[18:32])) * 24.0
+                logging.info("Epoch difference in hours: " + str(time_delta))
+                if time_delta > 12.0:
+                    long_delta += 1
+                else:
+                    short_delta += 1
+
         logging.info("Calculating long deltas.")
         logging.info("The number of satellites with long deltas is " + str(long_delta))
         logging.info("The number of satellites with short deltas is " + str(short_delta))
@@ -317,6 +351,7 @@ async def visit_handler(request):
         if is_historical:
             tles = read_tles('catalog', date=str(data['exposure_start_mjd']))
         else:
+            # Get the current catalog of TLEs
             tles = request.app['tles']
 
         matched_satellites = sattleTask.run(visit_id=data['visit_id'],
