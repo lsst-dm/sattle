@@ -166,7 +166,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             for line1, line2 in tle_entries:
                 # Get satellite number from TLE (columns 3-7 in line 1)
                 sat_num = line1[2:7]
-                time_diff = abs((date - float(line1[18:32])) * 24.0)
+                epoch_time = tle_time_to_jd(line1[18:32])
+                time_diff = abs((date - epoch_time) * 24.0)
 
                 # If this satellite hasn't been seen before or if this TLE is
                 # closer to the target date
