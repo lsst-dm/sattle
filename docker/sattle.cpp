@@ -115,14 +115,6 @@ Outputs DLL_FUNC calc_sat(Inputs inputs, tle_t tle)
                                                                  &inputs.rho_sin_phi);
        observer_cartesian_coords( inputs.jd[i],
                     inputs.lon * PI / 180., inputs.rho_cos_phi, inputs.rho_sin_phi, observer_loc);
-       printf( "inputs.target_ra %8.4f\n", inputs.target_ra);
-       printf( "inputs.target_dec %8.4f\n", inputs.target_dec);
-       printf( "inputs.jd[i] %8.4f\n", inputs.jd[i]);
-       printf( "lat in pi %8.4f\n", inputs.lat * PI / 180);
-       printf( "ht_in_meters %8.4f\n", inputs.ht_in_meters);
-       printf( "observer_loc %8.4f\n", *observer_loc);
-       printf( "rho_cos_phi %8.4f\n", inputs.rho_cos_phi);
-       printf( "rho_sin_phi %8.4f\n", inputs.rho_sin_phi);
 
        int is_deep = select_ephemeris( &tle);
        double sat_params[N_SAT_PARAMS], radius, d_ra, d_dec;
