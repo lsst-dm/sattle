@@ -4,6 +4,7 @@ import asyncio
 from aiohttp import web
 from time import time
 import logging
+import requests
 import logging.config
 from astropy.time import Time
 import datetime
@@ -62,8 +63,8 @@ def format_date_for_catalog(mjd):
     t = Time(mjd, format='mjd')
 
     # Create a window around the observation time
-    start_time = t - 2  # 2 hours before (2/24 days)
-    end_time = t + 2  # 2 hours after
+    start_time = t - 0.3833  # Roughly 4.4 hours before
+    end_time = t + 0.3833
 
     start_str = start_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
     end_str = end_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
@@ -109,7 +110,56 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
     """
     tles = []
 
-    # TODO: Re-add sat_checker query
+    if tle_source == 'satchecker_query':
+        logging.info("Using satchecker as tle source")
+        start_time = params['start_time_jd']
+
+        base_url = "https://dev.satchecker.cps.iau.noirlab.edu"
+        test_url = f"{base_url}/fov/satellite-passes/"
+
+        response = requests.get(test_url, params=params, timeout=70)
+        if response.status_code == 200:
+            satellite_json = response.json()['data']['satellites']
+
+            for sat_name in satellite_json.keys():
+                norad_id = satellite_json[sat_name]['norad_id']
+
+                params = {
+                    "id": norad_id,
+                    "id_type": 'catalog',
+                    "start_date_jd": start_time - 0.6,
+                    "end_date_jd": start_time + 0.6, }
+
+                base_url = "https://dev.satchecker.cps.iau.noirlab.edu"
+                test_url = f"{base_url}/tools/get-tle-data/"
+
+                response = requests.get(test_url, params=params, timeout=70)
+
+                # Here we need to only select the most recent tle
+                if response.json():
+
+                    first = True
+                    for entry in response.json():
+                        epoch = Time(entry['epoch'][:-4], scale='utc')
+                        current_epoch_delta = abs(epoch.jd - start_time)
+                        logging.info("Epoch delta: ", current_epoch_delta)
+                        logging.info("Date: ", date)
+
+                        if first:
+                            tle = TLE(entry['tle_line1'], entry['tle_line2'])
+                            epoch_delta = current_epoch_delta
+                            first = False
+                        elif epoch_delta > current_epoch_delta:
+                            epoch_delta = current_epoch_delta
+                            tle = TLE(entry['tle_line1'], entry['tle_line2'])
+
+                    # Only the lowest time delta will get added to the list for
+                    # a specific satellite
+                    tles.append(tle)
+                else:
+                    logging.info("No valid TLE.")
+        else:
+            logging.error(f"Failed to fetch TLE data. Status code: {response.status_code}")
 
     if tle_source == 'tle_file':
         logging.info("Using tle file as tle source")
@@ -166,8 +216,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             for line1, line2 in tle_entries:
                 # Get satellite number from TLE (columns 3-7 in line 1)
                 sat_num = line1[2:7]
-                epoch_time = tle_time_to_jd(line1[18:32])
-                time_diff = abs((date - epoch_time) * 24.0)
+                epoch_time = Time(tle_time_to_jd(line1[18:32]), format='jd', scale='utc')
+                time_diff = abs((float(date) - epoch_time.mjd) * 24.0)
 
                 # If this satellite hasn't been seen before or if this TLE is
                 # closer to the target date
@@ -194,7 +244,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 else:
                     short_delta += 1
         else:
-            # Original code for when no date is specified
+            # Current catalog
             for line1, line2 in tle_entries:
                 tle = TLE(line1.strip(), line2.strip())
                 tles.append(tle)
@@ -209,6 +259,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
         logging.info("Calculating long deltas.")
         logging.info("The number of satellites with long deltas is " + str(long_delta))
         logging.info("The number of satellites with short deltas is " + str(short_delta))
+        logging.info("The total number of satellites is " + str(len(tles)))
 
     else:
         raise ValueError(f"Invalid tle_source: {tle_source}. Please "
@@ -243,8 +294,6 @@ async def cache_update(visit_satellite_cache, tles, force_update=None):
             await asyncio.sleep(interval)
 
             time_now = time()
-            # TODO: consider if we need to think about IERS_A
-            # or just use non-astropy timestamps
 
             for visit_id, cache in visit_satellite_cache.items():
                 if time_now > (cache['compute_time'] + expire_cache_time_min * 3600 * 24):
@@ -365,7 +414,6 @@ async def visit_handler(request):
 
         cache[cache_key]['matched_satellites'] = matched_satellites
         cache[cache_key]['compute_time'] = time()
-        print(cache[cache_key])
 
     except Exception as e:
         # So you can observe on disconnects and such.
