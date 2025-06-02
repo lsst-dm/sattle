@@ -92,7 +92,7 @@ def get_current_tle_time():
     return tle_time
 
 
-def read_tles(tle_source, filename=None, write_file=False, params=None, date=None, all_cats=False):
+def read_tles(tle_source, filename=None, write_file=False, params=None, date=None, all_cats=True):
     """Read TLEs from a source.
          Parameters
         ----------
@@ -182,11 +182,10 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
 
     elif tle_source == 'catalog':
         logging.info("Using catalog as tle source")
-        # TODO: Add the secret catalog
-
-        scf = SatCatFetcher(eltype="gp")
+        # TODO: Add the CUI catalog
         # If a date is provided, use that date, otherwise use the current date
         # This allows us to use historical catalogs
+        scf = SatCatFetcher(eltype="gp")
         if date:
             formated_date = format_date_for_catalog(date)
             omm, _ = scf.fetch_catalogs(source='gp_history', epoch=formated_date)
@@ -197,19 +196,19 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             logging.info("Using current catalog")
 
         if all_cats:
-
-            scf = SatCatFetcher(eltype=None)
-            # Can only fetch current?
+            logging.info("Fetching CUI Catalog")
+            scf = SatCatFetcher(eltype='satf', use_folder=True)
             omm_cui, _ = scf.fetch_catalogs()
+            if not omm_cui:
+                raise ValueError("No data returned from CUI satellite catalog."
+                                 "")
             omm.update(omm_cui)
-            logging.info("Using current catalog")
 
         # Extract TLE lines from the catalog
         tle_entries = [(entry['TLE_LINE1'], entry['TLE_LINE2'])
                        for entry in omm
                        if 'TLE_LINE1' in entry and 'TLE_LINE2' in entry]
-        long_delta = 0
-        short_delta = 0
+        total_delta = 0.0
         if date:
             satellite_tles = {}
 
@@ -232,6 +231,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             # Reset counters
             long_delta = 0
             short_delta = 0
+            total_delta = 0.0
 
             # Process only the closest TLEs
             for sat_data in satellite_tles.values():
@@ -239,6 +239,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 tles.append(tle)
                 time_delta = sat_data['time_diff']
                 logging.info("Epoch difference in hours: " + str(time_delta))
+                total_delta += time_delta
                 if time_delta > 12.0:
                     long_delta += 1
                 else:
@@ -251,15 +252,17 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 time_delta = (get_current_tle_time() - float(
                     line1[18:32])) * 24.0
                 logging.info("Epoch difference in hours: " + str(time_delta))
+                total_delta += time_delta
                 if time_delta > 12.0:
                     long_delta += 1
                 else:
                     short_delta += 1
 
         logging.info("Calculating long deltas.")
-        logging.info("The number of satellites with long deltas is " + str(long_delta))
-        logging.info("The number of satellites with short deltas is " + str(short_delta))
         logging.info("The total number of satellites is " + str(len(tles)))
+        logging.info("The number of satellites with long time deltas is " + str(long_delta))
+        logging.info("The number of satellites with short time deltas is " + str(short_delta))
+        logging.info("The average time detla of the satellite tles is " + str(total_delta / len(tles)))
 
     else:
         raise ValueError(f"Invalid tle_source: {tle_source}. Please "
@@ -317,9 +320,9 @@ async def tle_update(visit_satellite_cache, tles):
     while True:
         try:
             await asyncio.sleep(interval)
-            # this is a placeholder as satchecker will not be the default,
-            # nore will the TLE params be the default
-            # This needs to be changed for better use when satchecker is used
+            # TODO: Make a config so you can actually set what is read as
+            #  the default??
+            # Always read the current catalog
             tles = read_tles('catalog')  # noqa
 
         except Exception as e:
@@ -401,6 +404,7 @@ async def visit_handler(request):
         # Used if re-running a pipeline on previous visits
         if is_historical:
             tles = read_tles('catalog', date=str(data['exposure_start_mjd']))
+            logging.info("Using historical catalog for date: " + str(data['exposure_start_mjd']))
         else:
             # Get the current catalog of TLEs
             tles = request.app['tles']

@@ -90,7 +90,6 @@ class SatCatFetcher:
             self._logger.info("Received GP catalog")
 
         if self.use_folder:
-
             folder_url = "/".join([
                 self.BASE_URL,
                 "fileshare",
@@ -133,8 +132,5 @@ class SatCatFetcher:
         self._logger.info("Logging out")
         requests.get(logout_url, cookies=jar)
         self._logger.info("Logged out")
-
-        # TODO: If dictionary is empty, we need to stop and send an
-        #  error/warning??
 
         return omm_dict, self._last_satf_data

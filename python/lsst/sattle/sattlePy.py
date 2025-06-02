@@ -134,11 +134,6 @@ class SattleTask:
         satellite_positions = [[], []]  # [ra_list, dec_list]
         unique_satellites = set()
 
-        # TODO: Need a deduplicator in here somewhere for the historical
-        # queries.
-        # not super important at the moment. It will make sure only
-        # the closet in time satellites are used.
-
         for tle_data in tles:
             tle = sattle.TleType()
             sattle.parse_elements(tle_data.line1, tle_data.line2, tle)
