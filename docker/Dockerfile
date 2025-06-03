@@ -15,11 +15,6 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Clone required repositories from github
-RUN git clone --branch tickets/DM-50744 https://github.com/lsst-dm/sattle.git /app/sattle
-RUN git clone https://github.com/Bill-Gray/lunar.git /app/lunar
-RUN git clone https://github.com/Bill-Gray/sat_code.git /app/sat_code
-
 # Install other required Python packages
 WORKDIR /app
 RUN pip install --upgrade pip \
