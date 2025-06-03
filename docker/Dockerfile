@@ -25,6 +25,12 @@ RUN pip install --upgrade pip \
     requests \
     pybind11
 
+# Copy the cloned repositories
+COPY lunar/ /app/lunar/
+COPY sat_code/ /app/sat_code/
+COPY sattle/ /app/sattle/
+
+
 # Required dependency for sattle to work
 WORKDIR /app/lunar
 RUN make install
@@ -41,10 +47,11 @@ RUN c++ -O3 -Wall -shared -std=c++11 $(python3 -m pybind11 --includes) \
     -fPIC
 
 # Move the built .so file to the sattle folder
-RUN cp *.so /app/sattle/python/lsst/sattle/sattle.so
+RUN mkdir -p /app/sattle/python/lsst/sattle/ && \
+    cp *.so /app/sattle/python/lsst/sattle/sattle.so
 
 # Set the Python path to include the sattle module
-ENV PYTHONPATH="/app/sattle/python:$PYTHONPATH"
+ENV PYTHONPATH=/app/sattle/python:${PYTHONPATH:-}
 
 # Set the default working directory to run app.py
 WORKDIR /app/sattle/bin.src
