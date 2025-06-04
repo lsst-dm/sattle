@@ -248,8 +248,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             logging.info("Using historical catalog for date: " + date + "")
         else:
             # Defaults to pulling the current catalog
-            # omm, _ = scf.fetch_catalogs()
-            omm = []
+            omm, _ = scf.fetch_catalogs()
             logging.info("Using current catalog")
             logging.info("Number of satellites in catalog: " + str(len(omm)))
 
