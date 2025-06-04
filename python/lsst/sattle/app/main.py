@@ -114,6 +114,7 @@ def merge_and_deduplicate_catalogs(omm, omm_cui, date=None):
 
     # Process both catalogs
     for entry in omm + omm_cui:
+        print(entry)
         if 'TLE_LINE1' not in entry or 'TLE_LINE2' not in entry:
             continue
 
