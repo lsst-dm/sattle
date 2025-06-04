@@ -268,11 +268,10 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             logging.info(
                 "Total number of unique satellites after deduplication: " + str(
                     len(tle_entries)))
-
-        # Extract TLE lines from the catalog
-        tle_entries = [(entry['TLE_LINE1'], entry['TLE_LINE2'])
-                       for entry in omm
-                       if 'TLE_LINE1' in entry and 'TLE_LINE2' in entry]
+        else:
+            tle_entries = [(entry['TLE_LINE1'], entry['TLE_LINE2'])
+                           for entry in omm
+                           if 'TLE_LINE1' in entry and 'TLE_LINE2' in entry]
 
         print(tle_entries)
         print(len(tle_entries))
