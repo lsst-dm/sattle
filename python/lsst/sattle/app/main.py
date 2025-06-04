@@ -194,16 +194,18 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             # Defaults to pulling the current catalog
             omm, _ = scf.fetch_catalogs()
             logging.info("Using current catalog")
+            logging.info("Number of satellites in catalog: " + str(len(omm)))
 
         if all_cats:
             logging.info("Fetching CUI Catalog")
             scf = SatCatFetcher(eltype='satf', use_folder=True)
             omm_cui, _ = scf.fetch_catalogs()
-            logging.info("Number of satellites in CUI catalog: " + len(omm_cui))
+            logging.info("Number of satellites in CUI catalog: " + str(len(omm_cui)))
             if not omm_cui:
                 raise ValueError("No data returned from CUI satellite catalog."
                                  "")
             omm.extend(omm_cui)
+            logging.info("Total number of satellites in catalog: " + str(len(omm)))
 
         # Extract TLE lines from the catalog
         tle_entries = [(entry['TLE_LINE1'], entry['TLE_LINE2'])
