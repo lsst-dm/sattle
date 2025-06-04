@@ -273,6 +273,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                        for entry in omm
                        if 'TLE_LINE1' in entry and 'TLE_LINE2' in entry]
 
+        print(tle_entries)
+        print(len(tle_entries))
         print(tle_entries[0])
         total_delta = 0.0
         if date:
