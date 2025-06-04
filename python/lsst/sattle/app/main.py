@@ -330,7 +330,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
         logging.info("The total number of satellites is " + str(len(tles)))
         logging.info("The number of satellites with long time deltas is " + str(long_delta))
         logging.info("The number of satellites with short time deltas is " + str(short_delta))
-        logging.info("The average time detla of the satellite tles is " + str(total_delta / len(tles)))
+        # logging.info("The average time detla of the satellite tles is " + str(total_delta / len(tles)))
 
     else:
         raise ValueError(f"Invalid tle_source: {tle_source}. Please "
