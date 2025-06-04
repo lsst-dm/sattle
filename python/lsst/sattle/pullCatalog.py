@@ -62,9 +62,9 @@ class SatCatFetcher:
         self._last_satf_data = ""
         self._logger = logging.getLogger(str(__class__))
 
-    def fetch_catalogs(self, source="gp", epoch="%3Enow-30") -> tuple[dict[str, Any], str]:
+    def fetch_catalogs(self, source="gp", epoch="%3Enow-30") -> tuple[list[dict[str, Any]], str]:
         self._logger.info("Logging in")
-        omm_dict = {}
+        omm_list = []
 
         login_url = f"{self.BASE_URL}/ajaxauth/login"
         login_data = {"identity": self._username, "password": self._password}
@@ -87,8 +87,9 @@ class SatCatFetcher:
             self._logger.info("Requesting GP catalog")
             gp_resp = requests.get(gp_url, cookies=jar)
             gp_resp.raise_for_status()
-            omm_dict = gp_resp.json()
-            print(omm_dict[0])
+            omm_list = gp_resp.json() 
+            if omm_list:
+                print(omm_list[0])
             self._logger.info("Received GP catalog")
 
         if self.use_folder:
@@ -114,40 +115,40 @@ class SatCatFetcher:
                 raise RuntimeError(f"Unexpected number of files to download: {len(folder_list)}")
             self._logger.info(f"Received file id {satf_id}")
 
-            if satf_id != self._last_satf_id:
-                satf_url = "/".join([
-                    self.BASE_URL,
-                    "fileshare",
-                    "query",
-                    "class", "download",
-                    "file_id", str(satf_id),
-                ])
-                self._logger.info("Requesting file")
-                satf_resp = requests.get(satf_url, cookies=jar)
-                satf_resp.raise_for_status()
-                self._last_satf_data = satf_resp.text
-                self._last_satf_id = satf_id
-                self._logger.info("Received file")
+        if satf_id != self._last_satf_id:
+            satf_url = "/".join([
+                self.BASE_URL,
+                "fileshare",
+                "query",
+                "class", "download",
+                "file_id", str(satf_id),
+            ])
+            self._logger.info("Requesting file")
+            satf_resp = requests.get(satf_url, cookies=jar)
+            satf_resp.raise_for_status()
+            self._last_satf_data = satf_resp.text
+            self._last_satf_id = satf_id
+            self._logger.info("Received file")
 
-                # Parse the TLE file content into omm_dict format
-                lines = self._last_satf_data.splitlines()
-                i = 0
-                while i < len(lines):
-                    line1 = lines[i].strip()
-                    line2 = lines[i + 1].strip() if i + 1 < len(lines) else ""
+            # Parse the TLE file content into list format
+            lines = self._last_satf_data.splitlines()
+            i = 0
+            while i < len(lines):
+                line1 = lines[i].strip()
+                line2 = lines[i + 1].strip() if i + 1 < len(lines) else ""
 
-                    if line1.startswith('1 ') and line2.startswith('2 '):
-                        # Create an entry in omm_dict for each TLE pair
-                        sat_num = line1[2:7]
-                        omm_dict[sat_num] = {
-                            'TLE_LINE1': line1,
-                            'TLE_LINE2': line2
-                        }
-                        i += 2  # Skip to next pair
-                    else:
-                        i += 1  # Skip invalid lines
-                print(list(omm_dict.items())[0])
-            self._logger.info(f"Received {len(omm_dict)} satellite TLEs from CUI")
+                if line1.startswith('1 ') and line2.startswith('2 '):
+                    # Create a dictionary entry for each TLE pair
+                    omm_list.append({
+                        'TLE_LINE1': line1,
+                        'TLE_LINE2': line2
+                    })
+                    i += 2  # Skip to next pair
+                else:
+                    i += 1  # Skip invalid lines
+            if omm_list:
+                print(omm_list[0])
+        self._logger.info(f"Received {len(omm_list)} satellite TLEs from CUI")
 
         logout_url = f"{self.BASE_URL}/ajaxauth/logout"
         # Ignore result
@@ -155,4 +156,4 @@ class SatCatFetcher:
         requests.get(logout_url, cookies=jar)
         self._logger.info("Logged out")
 
-        return omm_dict, self._last_satf_data
+        return omm_list, self._last_satf_data
