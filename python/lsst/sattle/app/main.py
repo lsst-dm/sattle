@@ -92,6 +92,61 @@ def get_current_tle_time():
     return tle_time
 
 
+def merge_and_deduplicate_catalogs(omm, omm_cui, date=None):
+    """Merge and deduplicate OMM and OMM_CUI catalogs based on satellite number and time difference.
+
+    Parameters
+    ----------
+    omm : list
+        List of dictionaries containing TLE data from main catalog
+    omm_cui : list
+        List of dictionaries containing TLE data from CUI catalog
+    date : float, optional
+        Target date in MJD format for comparing TLE epochs
+
+    Returns
+    -------
+    list
+        Combined and deduplicated list of TLE entries
+    """
+    # Create a dictionary to store the best TLE for each satellite
+    satellite_tles = {}
+
+    # Process both catalogs
+    for entry in omm + omm_cui:
+        if 'TLE_LINE1' not in entry or 'TLE_LINE2' not in entry:
+            continue
+
+        line1 = entry['TLE_LINE1']
+        line2 = entry['TLE_LINE2']
+        sat_num = line1[2:7]  # Satellite number from TLE
+
+        if date:
+            # Calculate time difference if date is provided
+            epoch_time = Time(tle_time_to_jd(line1[18:32]), format='jd',
+                              scale='utc')
+            time_diff = abs((float(date) - epoch_time.mjd) * 24.0)
+        else:
+            # For current catalog, use current time
+            time_diff = abs(
+                get_current_tle_time() - float(line1[18:32])) * 24.0
+
+        # Update dictionary if this is a new satellite or has a smaller time difference
+        if sat_num not in satellite_tles or time_diff < \
+                satellite_tles[sat_num]['time_diff']:
+            satellite_tles[sat_num] = {
+                'line1': line1.strip(),
+                'line2': line2.strip(),
+                'time_diff': time_diff
+            }
+
+    # Convert back to list format
+    tle_entries = [(data['line1'], data['line2'])
+                   for data in satellite_tles.values()]
+
+    return tle_entries
+
+
 def read_tles(tle_source, filename=None, write_file=False, params=None, date=None, all_cats=True):
     """Read TLEs from a source.
          Parameters
@@ -200,12 +255,17 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             logging.info("Fetching CUI Catalog")
             scf = SatCatFetcher(eltype='satf', use_folder=True)
             omm_cui, _ = scf.fetch_catalogs()
-            logging.info("Number of satellites in CUI catalog: " + str(len(omm_cui)))
+            logging.info(
+                "Number of satellites in CUI catalog: " + str(len(omm_cui)))
             if not omm_cui:
-                raise ValueError("No data returned from CUI satellite catalog."
-                                 "")
-            omm.extend(omm_cui)
-            logging.info("Total number of satellites in catalog: " + str(len(omm)))
+                raise ValueError(
+                    "No data returned from CUI satellite catalog.")
+
+            # Merge and deduplicate the catalogs
+            tle_entries = merge_and_deduplicate_catalogs(omm, omm_cui, date)
+            logging.info(
+                "Total number of unique satellites after deduplication: " + str(
+                    len(tle_entries)))
 
         # Extract TLE lines from the catalog
         tle_entries = [(entry['TLE_LINE1'], entry['TLE_LINE2'])
