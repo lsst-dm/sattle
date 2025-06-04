@@ -64,6 +64,7 @@ class SatCatFetcher:
 
     def fetch_catalogs(self, source="gp", epoch="%3Enow-30") -> tuple[dict[str, Any], str]:
         self._logger.info("Logging in")
+        omm_dict = {}
 
         login_url = f"{self.BASE_URL}/ajaxauth/login"
         login_data = {"identity": self._username, "password": self._password}
@@ -87,6 +88,7 @@ class SatCatFetcher:
             gp_resp = requests.get(gp_url, cookies=jar)
             gp_resp.raise_for_status()
             omm_dict = gp_resp.json()
+            print(omm_dict[0])
             self._logger.info("Received GP catalog")
 
         if self.use_folder:
@@ -126,6 +128,26 @@ class SatCatFetcher:
                 self._last_satf_data = satf_resp.text
                 self._last_satf_id = satf_id
                 self._logger.info("Received file")
+
+                # Parse the TLE file content into omm_dict format
+                lines = self._last_satf_data.splitlines()
+                i = 0
+                while i < len(lines):
+                    line1 = lines[i].strip()
+                    line2 = lines[i + 1].strip() if i + 1 < len(lines) else ""
+
+                    if line1.startswith('1 ') and line2.startswith('2 '):
+                        # Create an entry in omm_dict for each TLE pair
+                        sat_num = line1[2:7]
+                        omm_dict[sat_num] = {
+                            'TLE_LINE1': line1,
+                            'TLE_LINE2': line2
+                        }
+                        i += 2  # Skip to next pair
+                    else:
+                        i += 1  # Skip invalid lines
+                print(list(omm_dict.items())[0])
+            self._logger.info(f"Received {len(omm_dict)} satellite TLEs from CUI")
 
         logout_url = f"{self.BASE_URL}/ajaxauth/logout"
         # Ignore result
