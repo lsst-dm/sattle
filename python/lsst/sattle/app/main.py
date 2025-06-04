@@ -97,11 +97,11 @@ def merge_and_deduplicate_catalogs(omm, omm_cui, date=None):
 
     Parameters
     ----------
-    omm : list
+    omm: `list`
         List of dictionaries containing TLE data from main catalog
-    omm_cui : list
+    omm_cui: `list`
         List of dictionaries containing TLE data from CUI catalog
-    date : float, optional
+    date: `float`, optional
         Target date in MJD format for comparing TLE epochs
 
     Returns
@@ -247,7 +247,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             logging.info("Using historical catalog for date: " + date + "")
         else:
             # Defaults to pulling the current catalog
-            omm, _ = scf.fetch_catalogs()
+            # omm, _ = scf.fetch_catalogs()
+            omm = []
             logging.info("Using current catalog")
             logging.info("Number of satellites in catalog: " + str(len(omm)))
 
