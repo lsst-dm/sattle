@@ -272,6 +272,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
         tle_entries = [(entry['TLE_LINE1'], entry['TLE_LINE2'])
                        for entry in omm
                        if 'TLE_LINE1' in entry and 'TLE_LINE2' in entry]
+
+        print(tle_entries[0])
         total_delta = 0.0
         if date:
             satellite_tles = {}
