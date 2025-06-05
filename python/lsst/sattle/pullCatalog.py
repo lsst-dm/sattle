@@ -100,7 +100,7 @@ class SatCatFetcher:
                 "predicates", "file_id",
                 "folder_id", str(self._folder_id),
                 "orderby", "file_uploaded%20desc",
-                "limit", "1",
+                "limit", "100",
                 "format", "json",
                 "emptyresult", "show",
             ])
@@ -109,6 +109,9 @@ class SatCatFetcher:
             folder_resp = requests.get(folder_url, cookies=jar)
             folder_resp.raise_for_status()
             folder_list = folder_resp.json()
+            self._logger.info("List of folders received:" +
+                              str(folder_list) +
+                              f" for folder id {self._folder_id}")
 
             # Get the satf_id and process the file
             if len(folder_list) == 1:

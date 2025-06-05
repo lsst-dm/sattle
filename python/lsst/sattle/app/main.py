@@ -230,7 +230,6 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 line2 = lines[i + 1].strip()
                 if line1.startswith('1 ') and line2.startswith('2 '):
                     tle = TLE(line1, line2)
-
                     tles.append(tle)
                     i += 2  # Move to the next pair of lines
                 else:
@@ -245,7 +244,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
         if date:
             formated_date = format_date_for_catalog(date)
             omm, _ = scf.fetch_catalogs(source='gp_history', epoch=formated_date)
-            logging.info("Using historical catalog for date: " + date + "")
+            logging.info("Using historical catalog for date: " + date)
         else:
             # Defaults to pulling the current catalog
             omm, _ = scf.fetch_catalogs()
@@ -253,9 +252,14 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             logging.info("Number of satellites in catalog: " + str(len(omm)))
 
         if all_cats:
-            logging.info("Fetching CUI Catalog")
-            scf = SatCatFetcher(eltype='satf', use_folder=True)
-            omm_cui, _ = scf.fetch_catalogs()
+            if date:
+                logging.info("Fetching historical CUI catalog for date: " + date)
+                scf = SatCatFetcher(eltype='satf', use_folder=True)
+                omm_cui, _ = scf.fetch_catalogs()
+            else:
+                logging.info("Fetching CUI catalog")
+                scf = SatCatFetcher(eltype='satf', use_folder=True)
+                omm_cui, _ = scf.fetch_catalogs()
             logging.info(
                 "Number of satellites in CUI catalog: " + str(len(omm_cui)))
             if not omm_cui:
@@ -305,7 +309,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 tle = TLE(sat_data['line1'], sat_data['line2'])
                 tles.append(tle)
                 time_delta = sat_data['time_diff']
-                # logging.info("Epoch difference in hours: " + str(time_delta))
+                logging.debug("Epoch difference in hours: " + str(time_delta))
                 total_delta += time_delta
                 if time_delta > 12.0:
                     long_delta += 1
