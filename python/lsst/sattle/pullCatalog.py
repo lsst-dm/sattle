@@ -113,6 +113,7 @@ class SatCatFetcher:
             self._logger.info("List of folders received:" +
                               str(folder_list) +
                               f" for folder id {self._folder_id}")
+            self._logger.info(folder_resp)
             for folder in folder_list:
                 upload_time = datetime.datetime.strptime(
                     folder['FILE_UPLOADED'],
