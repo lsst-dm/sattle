@@ -89,8 +89,6 @@ class SatCatFetcher:
             gp_resp = requests.get(gp_url, cookies=jar)
             gp_resp.raise_for_status()
             omm_list = gp_resp.json()
-            if omm_list:
-                print(omm_list[0])
             self._logger.info("Received GP catalog")
 
         if self.use_folder:
