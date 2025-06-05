@@ -75,7 +75,7 @@ class SatCatFetcher:
         jar = login_resp.cookies
         self._logger.info("Successfully logged in")
 
-        test_epoch = "%3E2024-11-22T22:40:30%2C%3C2024-11-23T3:20:30"
+        test_epoch = "%3E2025-02-20T22:40:30%2C%3C2025-02-23T3:20:30"
         if not self.use_folder:
             gp_url = "/".join([
                 self.BASE_URL,
