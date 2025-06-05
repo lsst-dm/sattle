@@ -22,6 +22,7 @@ import logging
 from typing import Any
 import os
 import requests
+import datetime
 
 
 class SatCatFetcher:
@@ -112,6 +113,12 @@ class SatCatFetcher:
             self._logger.info("List of folders received:" +
                               str(folder_list) +
                               f" for folder id {self._folder_id}")
+            for folder in folder_list:
+                upload_time = datetime.datetime.strptime(
+                    folder['FILE_UPLOADED'],
+                    '%Y-%m-%d %H:%M:%S'
+                ).replace(tzinfo=datetime.timezone.utc)
+                self._logger.info(f"File uploaded at {upload_time}")
 
             # Get the satf_id and process the file
             if len(folder_list) == 1:
