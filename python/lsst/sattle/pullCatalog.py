@@ -102,6 +102,7 @@ class SatCatFetcher:
                 "folder_id", str(self._folder_id),
                 "orderby", "file_uploaded%20desc",
                 "limit", "100",
+                "epoch", epoch,
                 "format", "json",
                 "emptyresult", "show",
             ])
