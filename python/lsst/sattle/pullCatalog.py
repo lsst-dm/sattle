@@ -75,7 +75,6 @@ class SatCatFetcher:
         jar = login_resp.cookies
         self._logger.info("Successfully logged in")
 
-        test_epoch = "%3E2025-02-20T22:40:30%2C%3C2025-02-23T3:20:30"
         if not self.use_folder:
             gp_url = "/".join([
                 self.BASE_URL,
@@ -102,7 +101,6 @@ class SatCatFetcher:
                 "predicates", "file_id",
                 "folder_id", str(self._folder_id),
                 "orderby", "file_uploaded%20desc",
-                "FILE_UPLOADED", test_epoch,
                 "format", "json",
                 "emptyresult", "show",
             ])
@@ -112,7 +110,7 @@ class SatCatFetcher:
             folder_resp.raise_for_status()
             folder_list = folder_resp.json()
             self._logger.info("List of folders received:" +
-                              str(folder_list) +
+                              str(folder_list) + type(folder_list) +
                               f" for folder id {self._folder_id}")
             self._logger.info(folder_list[0])
             self._logger.info(folder_resp)
