@@ -305,7 +305,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 tle = TLE(sat_data['line1'], sat_data['line2'])
                 tles.append(tle)
                 time_delta = sat_data['time_diff']
-                logging.info("Epoch difference in hours: " + str(time_delta))
+                # logging.info("Epoch difference in hours: " + str(time_delta))
                 total_delta += time_delta
                 if time_delta > 12.0:
                     long_delta += 1
@@ -322,7 +322,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 tles.append(tle)
                 time_delta = (get_current_tle_time() - float(
                     line1[18:32])) * 24.0
-                logging.info("Epoch difference in hours: " + str(time_delta))
+                # logging.info("Epoch difference in hours: " + str(time_delta))
                 total_delta += time_delta
                 if time_delta > 12.0:
                     long_delta += 1
@@ -333,7 +333,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
         logging.info("The total number of satellites is " + str(len(tles)))
         logging.info("The number of satellites with long time deltas is " + str(long_delta))
         logging.info("The number of satellites with short time deltas is " + str(short_delta))
-        # logging.info("The average time detla of the satellite tles is " + str(total_delta / len(tles)))
+        logging.info("The average time detla of the satellite tles is " + str(total_delta / len(tles)))
 
     else:
         raise ValueError(f"Invalid tle_source: {tle_source}. Please "
