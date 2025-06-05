@@ -109,6 +109,7 @@ class SatCatFetcher:
             folder_resp = requests.get(folder_url, cookies=jar)
             folder_resp.raise_for_status()
             folder_list = folder_resp.json()
+            print(folder_resp.json())
             self._logger.info("List of folders received:" +
                               str(folder_list) + str(type(folder_list)) +
                               f" for folder id {self._folder_id}")
