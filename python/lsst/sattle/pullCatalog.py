@@ -110,7 +110,7 @@ class SatCatFetcher:
             folder_resp.raise_for_status()
             folder_list = folder_resp.json()
             self._logger.info("List of folders received:" +
-                              str(folder_list) + type(folder_list) +
+                              str(folder_list) + str(type(folder_list)) +
                               f" for folder id {self._folder_id}")
             self._logger.info(folder_list[0])
             self._logger.info(folder_resp)
