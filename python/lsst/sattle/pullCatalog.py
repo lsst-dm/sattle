@@ -110,16 +110,10 @@ class SatCatFetcher:
             folder_resp.raise_for_status()
             folder_list = folder_resp.json()
 
-            if epoch == "%3Enow-30":
-                self._logger.info("Using most recent file in folder")
-                satf_id = int(folder_list[0]["FILE_ID"])
-                upload_time = datetime.datetime.strptime(
-                    folder_list[0]['FILE_UPLOADED'],'%Y-%m-%d %H:%M:%S'
-                ).replace(tzinfo=datetime.timezone.utc)
-                self._logger.info(f"File uploaded at {upload_time}")
-            elif current_epoch:
+            if current_epoch:
                 target_time = datetime.datetime.strptime(current_epoch,'%Y-%m-%dT%H:%M:%S').replace(
                     tzinfo=datetime.timezone.utc)
+                logging.info(f"Target time: {target_time}")
 
                 # Closest upload time
                 closest_file = min(folder_list,key=lambda x: abs(
@@ -137,6 +131,13 @@ class SatCatFetcher:
 
                 self._logger.info(f"Found closest file (ID: {satf_id}) uploaded at {upload_time}")
                 self._logger.info(f"Time difference from target: {time_diff}")
+            elif epoch == "%3Enow-30":
+                self._logger.info("Using most recent file in folder")
+                satf_id = int(folder_list[0]["FILE_ID"])
+                upload_time = datetime.datetime.strptime(
+                    folder_list[0]['FILE_UPLOADED'],'%Y-%m-%d %H:%M:%S'
+                ).replace(tzinfo=datetime.timezone.utc)
+                self._logger.info(f"File uploaded at {upload_time}")
 
             self._logger.info(f"Received file id {satf_id}")
 
