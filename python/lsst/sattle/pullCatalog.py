@@ -63,7 +63,7 @@ class SatCatFetcher:
         self._last_satf_data = ""
         self._logger = logging.getLogger(str(__class__))
 
-    def fetch_catalogs(self, source="gp", epoch="%3Enow-30") -> tuple[
+    def fetch_catalogs(self, source="gp", epoch="%3Enow-30", current_epoch=None) -> tuple[
         list[dict[str, Any]], str]:
         self._logger.info("Logging in")
         omm_list = []
@@ -127,45 +127,66 @@ class SatCatFetcher:
 
             if epoch == "%3Enow-30":
                 satf_id = int(folder_list[0]["FILE_ID"])
-                self._logger.info(f"Received file id {satf_id}")
+            elif current_epoch:
+                target_time = datetime.datetime.strptime(current_epoch,'%Y-%m-%dT%H:%M:%S').replace(
+                    tzinfo=datetime.timezone.utc)
 
-                if satf_id != self._last_satf_id:
-                    satf_url = "/".join([
-                        self.BASE_URL,
-                        "fileshare",
-                        "query",
-                        "class", "download",
-                        "file_id", str(satf_id),
-                    ])
-                    self._logger.info("Requesting file")
-                    satf_resp = requests.get(satf_url, cookies=jar)
-                    satf_resp.raise_for_status()
-                    self._last_satf_data = satf_resp.text
-                    self._last_satf_id = satf_id
-                    self._logger.info("Received file")
+                # Closest upload time
+                closest_file = min(folder_list,key=lambda x: abs(
+                        datetime.datetime.strptime(x['FILE_UPLOADED'],'%Y-%m-%d %H:%M:%S').replace(
+                            tzinfo=datetime.timezone.utc) - target_time))
 
-                    # Parse the TLE file content into list format
-                    lines = self._last_satf_data.splitlines()
-                    i = 0
-                    while i < len(lines):
-                        line1 = lines[i].strip()
-                        line2 = lines[i + 1].strip() if i + 1 < len(
-                            lines) else ""
+                # Get the file ID of the closest match
+                satf_id = int(closest_file["FILE_ID"])
 
-                        if line1.startswith('1 ') and line2.startswith('2 '):
-                            # Create a dictionary entry for each TLE pair
-                            omm_list.append({
-                                'TLE_LINE1': line1,
-                                'TLE_LINE2': line2
-                            })
-                            i += 2  # Skip to next pair
-                        else:
-                            i += 1  # Skip invalid lines
-                    if omm_list:
-                        print(omm_list[0])
-            else:
-                raise RuntimeError(
-                    f"Unexpected number of files to download: {len(folder_list)}")
+                # Log the time difference for monitoring
+                upload_time = datetime.datetime.strptime(
+                    closest_file['FILE_UPLOADED'],
+                    '%Y-%m-%d %H:%M:%S').replace(tzinfo=datetime.timezone.utc)
+                time_diff = abs(upload_time - target_time)
+
+                self._logger.info(f"Found closest file (ID: {satf_id}) uploaded at {upload_time}")
+                self._logger.info(f"Time difference from target: {time_diff}")
+
+            self._logger.info(f"Received file id {satf_id}")
+
+            if satf_id != self._last_satf_id:
+                satf_url = "/".join([
+                    self.BASE_URL,
+                    "fileshare",
+                    "query",
+                    "class", "download",
+                    "file_id", str(satf_id),
+                ])
+                self._logger.info("Requesting file")
+                satf_resp = requests.get(satf_url, cookies=jar)
+                satf_resp.raise_for_status()
+                self._last_satf_data = satf_resp.text
+                self._last_satf_id = satf_id
+                self._logger.info("Received file")
+
+                # Parse the TLE file content into list format
+                lines = self._last_satf_data.splitlines()
+                i = 0
+                while i < len(lines):
+                    line1 = lines[i].strip()
+                    line2 = lines[i + 1].strip() if i + 1 < len(
+                        lines) else ""
+
+                    if line1.startswith('1 ') and line2.startswith('2 '):
+                        # Create a dictionary entry for each TLE pair
+                        omm_list.append({
+                            'TLE_LINE1': line1,
+                            'TLE_LINE2': line2
+                        })
+                        i += 2  # Skip to next pair
+                    else:
+                        i += 1  # Skip invalid lines
+                if omm_list:
+                    print(omm_list[0])
+        else:
+            raise RuntimeError(
+                f"Unexpected number of files to download: {len(folder_list)}")
 
             self._logger.info(
                 f"Received {len(omm_list)} satellite TLEs from CUI")
