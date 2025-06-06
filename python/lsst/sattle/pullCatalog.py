@@ -74,6 +74,7 @@ class SatCatFetcher:
         login_resp.raise_for_status()
         jar = login_resp.cookies
         self._logger.info("Successfully logged in")
+        logging.info("Observation epoch is " + str(observation_epoch))
 
         if not self.use_folder:
             gp_url = "/".join([
