@@ -177,8 +177,6 @@ class SatCatFetcher:
                         i += 2  # Skip to next pair
                     else:
                         i += 1  # Skip invalid lines
-                if omm_list:
-                    print(omm_list[0])
 
             self._logger.info(
                 f"Received {len(omm_list)} satellite TLEs from CUI")
