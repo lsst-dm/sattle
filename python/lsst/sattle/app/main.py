@@ -343,6 +343,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
         logging.info("The number of satellites with short time deltas is " + str(short_delta))
         logging.info("The average time detla of the satellite tles is " + str(total_delta / len(tles)))
         logging.info("The average long time delta is " + str(long_delta_val / long_delta))
+        logging.info("The average short time delta is " + str(short_delta_val / short_delta))
 
 
     else:
