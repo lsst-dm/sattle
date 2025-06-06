@@ -98,7 +98,7 @@ class SatCatFetcher:
                 "fileshare",
                 "query",
                 "class", "file",
-                "predicates", "file_id",
+                "file_id",
                 "folder_id", str(self._folder_id),
                 "orderby", "file_uploaded%20desc",
                 "format", "json",
