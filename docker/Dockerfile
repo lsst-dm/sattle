@@ -15,11 +15,6 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Clone required repositories from github
-RUN git clone --branch tickets/DM-49713 https://github.com/lsst-dm/sattle.git /app/sattle
-RUN git clone https://github.com/Bill-Gray/lunar.git /app/lunar
-RUN git clone https://github.com/Bill-Gray/sat_code.git /app/sat_code
-
 # Install other required Python packages
 WORKDIR /app
 RUN pip install --upgrade pip \
@@ -29,6 +24,12 @@ RUN pip install --upgrade pip \
     aiohttp \
     requests \
     pybind11
+
+# Copy the cloned repositories
+COPY lunar/ /app/lunar/
+COPY sat_code/ /app/sat_code/
+COPY sattle/ /app/sattle/
+
 
 # Required dependency for sattle to work
 WORKDIR /app/lunar
@@ -46,10 +47,11 @@ RUN c++ -O3 -Wall -shared -std=c++11 $(python3 -m pybind11 --includes) \
     -fPIC
 
 # Move the built .so file to the sattle folder
-RUN cp *.so /app/sattle/python/lsst/sattle/sattle.so
+RUN mkdir -p /app/sattle/python/lsst/sattle/ && \
+    cp *.so /app/sattle/python/lsst/sattle/sattle.so
 
 # Set the Python path to include the sattle module
-ENV PYTHONPATH="/app/sattle/python:$PYTHONPATH"
+ENV PYTHONPATH=/app/sattle/python:${PYTHONPATH:-}
 
 # Set the default working directory to run app.py
 WORKDIR /app/sattle/bin.src
