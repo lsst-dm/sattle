@@ -123,7 +123,9 @@ class SatCatFetcher:
                 self._logger.info(f"File uploaded at {upload_time}")
 
             # Get the satf_id and process the file
-            if len(folder_list) == 1:
+
+
+            if epoch == "%3Enow-30":
                 satf_id = int(folder_list[0]["FILE_ID"])
                 self._logger.info(f"Received file id {satf_id}")
 
