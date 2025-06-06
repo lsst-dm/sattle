@@ -63,7 +63,7 @@ class SatCatFetcher:
         self._last_satf_data = ""
         self._logger = logging.getLogger(str(__class__))
 
-    def fetch_catalogs(self, source="gp", epoch="%3Enow-30", current_epoch=None) -> tuple[
+    def fetch_catalogs(self, source="gp", epoch="%3Enow-30", observation_epoch=None) -> tuple[
         list[dict[str, Any]], str]:
         self._logger.info("Logging in")
         omm_list = []
@@ -110,8 +110,9 @@ class SatCatFetcher:
             folder_resp.raise_for_status()
             folder_list = folder_resp.json()
 
-            if current_epoch:
-                target_time = datetime.datetime.strptime(current_epoch,'%Y-%m-%dT%H:%M:%S').replace(
+            if observation_epoch:
+                logging.info("Fetching historical CUI for target epoch" + str(observation_epoch))
+                target_time = datetime.datetime.strptime(observation_epoch, '%Y-%m-%dT%H:%M:%S').replace(
                     tzinfo=datetime.timezone.utc)
                 logging.info(f"Target time: {target_time}")
 

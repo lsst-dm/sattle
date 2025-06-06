@@ -69,9 +69,9 @@ def format_date_for_catalog(mjd):
     start_str = start_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
     end_str = end_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
     date_string = f"%3E{start_str}%2C%3C{end_str}"
-    current_date = t.datetime.strftime('%Y-%m-%dT%H:%M:%S')
+    observation_date = t.datetime.strftime('%Y-%m-%dT%H:%M:%S')
 
-    return date_string, current_date
+    return date_string, observation_date
 
 
 def get_current_tle_time():
@@ -242,7 +242,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
         # This allows us to use historical catalogs
         scf = SatCatFetcher(eltype="gp")
         if date:
-            formated_date, current_formated_date = format_date_for_catalog(date)
+            formated_date, observation_formated_date = format_date_for_catalog(date)
             omm, _ = scf.fetch_catalogs(source='gp_history', epoch=formated_date)
             logging.info("Using historical catalog for date: " + date)
         else:
@@ -254,7 +254,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
         if all_cats:
             if date:
                 logging.info("Fetching historical CUI catalog for date: " + date)
-                scf = SatCatFetcher(eltype='satf', use_folder=True, current_epoch=current_formated_date)
+                scf = SatCatFetcher(eltype='satf', use_folder=True, observation_epoch=observation_formated_date)
                 omm_cui, _ = scf.fetch_catalogs()
             else:
                 logging.info("Fetching CUI catalog")
