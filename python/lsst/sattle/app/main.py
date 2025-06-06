@@ -299,6 +299,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             long_delta = 0
             short_delta = 0
             total_delta = 0.0
+            long_delta_val= 0.0
+            short_delta_val = 0.0
 
             # Process only the closest TLEs
             for sat_data in satellite_tles.values():
@@ -309,13 +311,17 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 total_delta += time_delta
                 if time_delta > 12.0:
                     long_delta += 1
+                    long_delta_val += time_delta
                 else:
                     short_delta += 1
+                    short_delta_val += time_delta
         else:
             # Current catalog
             long_delta = 0
             short_delta = 0
             total_delta = 0.0
+            long_delta_val= 0.0
+            short_delta_val = 0.0
 
             for line1, line2 in tle_entries:
                 tle = TLE(line1.strip(), line2.strip())
@@ -326,14 +332,18 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 total_delta += time_delta
                 if time_delta > 12.0:
                     long_delta += 1
+                    long_delta_val += time_delta
                 else:
                     short_delta += 1
+                    short_delta_val += time_delta
 
         logging.info("Calculating long deltas.")
         logging.info("The total number of satellites is " + str(len(tles)))
         logging.info("The number of satellites with long time deltas is " + str(long_delta))
         logging.info("The number of satellites with short time deltas is " + str(short_delta))
         logging.info("The average time detla of the satellite tles is " + str(total_delta / len(tles)))
+        logging.info("The average long time delta is " + str(long_delta_val / long_delta))
+
 
     else:
         raise ValueError(f"Invalid tle_source: {tle_source}. Please "
