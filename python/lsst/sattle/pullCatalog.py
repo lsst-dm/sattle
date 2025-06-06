@@ -63,7 +63,7 @@ class SatCatFetcher:
         self._last_satf_data = ""
         self._logger = logging.getLogger(str(__class__))
 
-    def fetch_catalogs(self, source="gp", epoch="%3Enow-30", current_epoch=None) -> tuple[
+    def fetch_catalogs(self, source="gp", epoch="%3Enow-30", observation_epoch=None) -> tuple[
         list[dict[str, Any]], str]:
         self._logger.info("Logging in")
         omm_list = []
@@ -74,6 +74,7 @@ class SatCatFetcher:
         login_resp.raise_for_status()
         jar = login_resp.cookies
         self._logger.info("Successfully logged in")
+        logging.info("Observation epoch is " + str(observation_epoch))
 
         if not self.use_folder:
             gp_url = "/".join([
@@ -110,16 +111,11 @@ class SatCatFetcher:
             folder_resp.raise_for_status()
             folder_list = folder_resp.json()
 
-            if epoch == "%3Enow-30":
-                self._logger.info("Using most recent file in folder")
-                satf_id = int(folder_list[0]["FILE_ID"])
-                upload_time = datetime.datetime.strptime(
-                    folder_list[0]['FILE_UPLOADED'],'%Y-%m-%d %H:%M:%S'
-                ).replace(tzinfo=datetime.timezone.utc)
-                self._logger.info(f"File uploaded at {upload_time}")
-            elif current_epoch:
-                target_time = datetime.datetime.strptime(current_epoch,'%Y-%m-%dT%H:%M:%S').replace(
+            if observation_epoch:
+                logging.info("Fetching historical CUI for target epoch" + str(observation_epoch))
+                target_time = datetime.datetime.strptime(observation_epoch, '%Y-%m-%dT%H:%M:%S').replace(
                     tzinfo=datetime.timezone.utc)
+                logging.info(f"Target time: {target_time}")
 
                 # Closest upload time
                 closest_file = min(folder_list,key=lambda x: abs(
@@ -137,6 +133,13 @@ class SatCatFetcher:
 
                 self._logger.info(f"Found closest file (ID: {satf_id}) uploaded at {upload_time}")
                 self._logger.info(f"Time difference from target: {time_diff}")
+            elif epoch == "%3Enow-30":
+                self._logger.info("Using most recent file in folder")
+                satf_id = int(folder_list[0]["FILE_ID"])
+                upload_time = datetime.datetime.strptime(
+                    folder_list[0]['FILE_UPLOADED'],'%Y-%m-%d %H:%M:%S'
+                ).replace(tzinfo=datetime.timezone.utc)
+                self._logger.info(f"File uploaded at {upload_time}")
 
             self._logger.info(f"Received file id {satf_id}")
 

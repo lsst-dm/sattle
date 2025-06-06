@@ -69,9 +69,9 @@ def format_date_for_catalog(mjd):
     start_str = start_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
     end_str = end_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
     date_string = f"%3E{start_str}%2C%3C{end_str}"
-    current_date = t.datetime.strftime('%Y-%m-%dT%H:%M:%S')
+    observation_date = t.datetime.strftime('%Y-%m-%dT%H:%M:%S')
 
-    return date_string, current_date
+    return date_string, observation_date
 
 
 def get_current_tle_time():
@@ -201,6 +201,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                         logging.info("Epoch delta: ", current_epoch_delta)
                         logging.info("Date: ", date)
 
+                        # Only the lowest time delta will get added to the list for
+                        # a specific satellite
                         if first:
                             tle = TLE(entry['tle_line1'], entry['tle_line2'])
                             epoch_delta = current_epoch_delta
@@ -208,9 +210,6 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                         elif epoch_delta > current_epoch_delta:
                             epoch_delta = current_epoch_delta
                             tle = TLE(entry['tle_line1'], entry['tle_line2'])
-
-                    # Only the lowest time delta will get added to the list for
-                    # a specific satellite
                     tles.append(tle)
                 else:
                     logging.info("No valid TLE.")
@@ -237,14 +236,14 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
 
     elif tle_source == 'catalog':
         logging.info("Using catalog as tle source")
-        # TODO: Add the CUI catalog
         # If a date is provided, use that date, otherwise use the current date
         # This allows us to use historical catalogs
         scf = SatCatFetcher(eltype="gp")
         if date:
-            formated_date, current_formated_date = format_date_for_catalog(date)
+            formated_date, observation_formated_date = format_date_for_catalog(date)
             omm, _ = scf.fetch_catalogs(source='gp_history', epoch=formated_date)
             logging.info("Using historical catalog for date: " + date)
+            logging.info("Number of satellites in historical catalog: " + str(len(omm)))
         else:
             # Defaults to pulling the current catalog
             omm, _ = scf.fetch_catalogs()
@@ -254,8 +253,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
         if all_cats:
             if date:
                 logging.info("Fetching historical CUI catalog for date: " + date)
-                scf = SatCatFetcher(eltype='satf', use_folder=True, current_epoch=current_formated_date)
-                omm_cui, _ = scf.fetch_catalogs()
+                scf = SatCatFetcher(eltype='satf', use_folder=True)
+                omm_cui, _ = scf.fetch_catalogs(observation_epoch=observation_formated_date)
             else:
                 logging.info("Fetching CUI catalog")
                 scf = SatCatFetcher(eltype='satf', use_folder=True)
@@ -263,14 +262,12 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             logging.info(
                 "Number of satellites in CUI catalog: " + str(len(omm_cui)))
             if not omm_cui:
-                raise ValueError(
-                    "No data returned from CUI satellite catalog.")
+                raise ValueError("No data returned from CUI satellite catalog.")
 
             # Merge and deduplicate the catalogs
             tle_entries = merge_and_deduplicate_catalogs(omm, omm_cui, date)
             logging.info(
-                "Total number of unique satellites after deduplication: " + str(
-                    len(tle_entries)))
+                "Total number of unique satellites after deduplication: " + str(len(tle_entries)))
         else:
             tle_entries = [(entry['TLE_LINE1'], entry['TLE_LINE2'])
                            for entry in omm
@@ -280,6 +277,13 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
             satellite_tles = {}
 
             for line1, line2 in tle_entries:
+                # Reset counters
+                long_delta = 0
+                short_delta = 0
+                total_delta = 0.0
+                long_delta_val = 0.0
+                short_delta_val = 0.0
+
                 # Get satellite number from TLE (columns 3-7 in line 1)
                 sat_num = line1[2:7]
                 epoch_time = Time(tle_time_to_jd(line1[18:32]), format='jd', scale='utc')
@@ -295,11 +299,6 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                         'time_diff': time_diff
                     }
 
-            # Reset counters
-            long_delta = 0
-            short_delta = 0
-            total_delta = 0.0
-
             # Process only the closest TLEs
             for sat_data in satellite_tles.values():
                 tle = TLE(sat_data['line1'], sat_data['line2'])
@@ -309,31 +308,39 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 total_delta += time_delta
                 if time_delta > 12.0:
                     long_delta += 1
+                    long_delta_val += time_delta
                 else:
                     short_delta += 1
+                    short_delta_val += time_delta
         else:
             # Current catalog
             long_delta = 0
             short_delta = 0
             total_delta = 0.0
+            long_delta_val= 0.0
+            short_delta_val = 0.0
 
             for line1, line2 in tle_entries:
                 tle = TLE(line1.strip(), line2.strip())
                 tles.append(tle)
-                time_delta = (get_current_tle_time() - float(
-                    line1[18:32])) * 24.0
-                # logging.info("Epoch difference in hours: " + str(time_delta))
+                time_delta = abs((get_current_tle_time() - float(
+                    line1[18:32]))) * 24.0
                 total_delta += time_delta
                 if time_delta > 12.0:
                     long_delta += 1
+                    long_delta_val += time_delta
                 else:
                     short_delta += 1
+                    short_delta_val += time_delta
 
         logging.info("Calculating long deltas.")
         logging.info("The total number of satellites is " + str(len(tles)))
         logging.info("The number of satellites with long time deltas is " + str(long_delta))
         logging.info("The number of satellites with short time deltas is " + str(short_delta))
-        logging.info("The average time detla of the satellite tles is " + str(total_delta / len(tles)))
+        logging.info("The average time delta of the satellite tles is " + str(total_delta / len(tles)))
+        logging.info("The average long time delta is " + str(long_delta_val / long_delta))
+        logging.info("The average short time delta is " + str(short_delta_val / short_delta))
+
 
     else:
         raise ValueError(f"Invalid tle_source: {tle_source}. Please "
@@ -504,7 +511,7 @@ async def visit_handler(request):
 async def diasource_handler(request):
     """Return allow_list for provided diasources"""
     data = await request.json()
-    logging.info(data)
+    logging.debug(data)
 
     expected_columns = ['visit_id', 'detector_id', 'diasources']
 
@@ -512,15 +519,13 @@ async def diasource_handler(request):
         if col not in data:
             msg = f"Missing column {col}."
             return web.Response(status=400, text=msg)
+    logging.info("Received dia source filtering request for visit and detector:" + str(data['visit_id']) + str(data['detector_id']))
 
     visit_id = data['visit_id']
     detector_id = data['detector_id']
-
     is_historical = data.get('historical', False)
-
     # Create the same cache key format as used in visit_handler
-    cache_key = f"{data['visit_id']}_historical" if is_historical else data[
-        'visit_id']
+    cache_key = f"{data['visit_id']}_historical" if is_historical else data['visit_id']
 
     cache = request.app['visit_satellite_cache']
 
@@ -532,6 +537,7 @@ async def diasource_handler(request):
         return web.Response(status=404, text=msg)
 
     try:
+        logging.info("Running satellite filter for visit and detector:" + str(data['visit_id']) + str(data['detector_id']))
         sattleFilterTask = sattlePy.SattleFilterTask()
         allow_list = sattleFilterTask.run(cache[cache_key], data['diasources'])
 
@@ -545,6 +551,8 @@ async def diasource_handler(request):
     data = {'visit_id': visit_id,
             'detector_id': detector_id,
             'allow_list': allow_list}
+
+    logging.info("Returning allow_list for visit and detector:" + str(data['visit_id']) + str(data['detector_id']))
 
     return web.json_response(data)
 

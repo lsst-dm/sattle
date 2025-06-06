@@ -116,6 +116,7 @@ class SattleTask:
             The first dimension is the paired Ra and the second array is the
             paired Dec.
         """
+        logging.info(f"Calculating satellite positions for visit {visit_id}")
         # Everything should be in astropy.time
         # This gets us the time in seconds
         time_start = Time(exposure_start_mjd, format='mjd', scale='tai')
@@ -217,6 +218,8 @@ class SattleFilterTask:
         try:
             track_width = self.config.track_width
             sat_coords = np.array(sat_coords['matched_satellites'])
+            logging.info(f"Number of satellites to compare against: {len(sat_coords[0])}")
+            logging.info(f"Number of dia sources to compare against:{len(diaSources)}")
             source_bboxes = []
             source_ids = []
             for diaSource in diaSources:
