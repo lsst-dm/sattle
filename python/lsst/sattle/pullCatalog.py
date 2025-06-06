@@ -184,9 +184,6 @@ class SatCatFetcher:
                         i += 1  # Skip invalid lines
                 if omm_list:
                     print(omm_list[0])
-        else:
-            raise RuntimeError(
-                f"Unexpected number of files to download: {len(folder_list)}")
 
             self._logger.info(
                 f"Received {len(omm_list)} satellite TLEs from CUI")
