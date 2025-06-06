@@ -109,14 +109,9 @@ class SatCatFetcher:
             folder_resp = requests.get(folder_url, cookies=jar)
             folder_resp.raise_for_status()
             folder_list = folder_resp.json()
-            for folder in folder_list:
-                upload_time = datetime.datetime.strptime(
-                    folder['FILE_UPLOADED'],
-                    '%Y-%m-%d %H:%M:%S'
-                ).replace(tzinfo=datetime.timezone.utc)
-                self._logger.info(f"File uploaded at {upload_time}")
 
             if epoch == "%3Enow-30":
+                self._logger.info("Using most recent file in folder")
                 satf_id = int(folder_list[0]["FILE_ID"])
                 upload_time = datetime.datetime.strptime(
                     folder_list[0]['FILE_UPLOADED'],'%Y-%m-%d %H:%M:%S'
