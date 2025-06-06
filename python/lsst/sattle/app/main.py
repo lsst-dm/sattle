@@ -254,8 +254,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
         if all_cats:
             if date:
                 logging.info("Fetching historical CUI catalog for date: " + date)
-                scf = SatCatFetcher(eltype='satf', use_folder=True, observation_epoch=observation_formated_date)
-                omm_cui, _ = scf.fetch_catalogs()
+                scf = SatCatFetcher(eltype='satf', use_folder=True)
+                omm_cui, _ = scf.fetch_catalogs(observation_epoch=observation_formated_date)
             else:
                 logging.info("Fetching CUI catalog")
                 scf = SatCatFetcher(eltype='satf', use_folder=True)
