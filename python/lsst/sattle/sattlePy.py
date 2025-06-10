@@ -92,7 +92,7 @@ class SattleTask:
         self.config = config or SattleConfig()
         super().__init__(**kwargs)
 
-    def run(self, visit_id, exposure_start_mjd, exposure_end_mjd, boresight_ra, boresight_dec, tles, tle_age):
+    def run(self, visit_id, exposure_start_mjd, exposure_end_mjd, boresight_ra, boresight_dec, tles, tles_age):
         """Calculate the positions of satellites within a given exposure.
 
         Parameters
