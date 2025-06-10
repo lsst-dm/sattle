@@ -147,8 +147,7 @@ class SattleTask:
                 unique_satellites.add(tle.norad_number)
                 average_age += tles_age[i]
 
-        logging.info(f"Number of satellites found in {visit_id}: {len(satellite_positions[0])}")
-        logging.info(f"The average age of the satellite tles is" f" {average_age/len(tles_age)} days")
+        logging.info(f"The average age of the satellite tles is" f" {average_age/len(unique_satellites)} hours")
         logging.info(f"The number of unique satellites found in {visit_id} is" f" {len(unique_satellites)}")
         return satellite_positions
 
