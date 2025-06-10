@@ -398,7 +398,7 @@ async def cache_update(visit_satellite_cache, tles, force_update=None):
     return
 
 
-async def tle_update(visit_satellite_cache, tles):
+async def tle_update(visit_satellite_cache, tles, tles_age):
     """Main loop that clears the tle cache according to the clock."""
     interval = 600000  # seconds
 
@@ -408,7 +408,7 @@ async def tle_update(visit_satellite_cache, tles):
             # TODO: Make a config so you can actually set what is read as
             #  the default??
             # Always read the current catalog
-            tles = read_tles('catalog')  # noqa
+            tles, tles_age = read_tles('catalog')  # noqa
 
         except Exception as e:
             # So you can observe on disconnects and such.
@@ -488,18 +488,20 @@ async def visit_handler(request):
     try:
         # Used if re-running a pipeline on previous visits
         if is_historical:
-            tles = read_tles('catalog', date=str(data['exposure_start_mjd']))
+            tles, tles_age = read_tles('catalog', date=str(data['exposure_start_mjd']))
             logging.info("Using historical catalog for date: " + str(data['exposure_start_mjd']))
         else:
             # Get the current catalog of TLEs
             tles = request.app['tles']
+            tles_age = request.app['tles_age']
 
         matched_satellites = sattleTask.run(visit_id=data['visit_id'],
                                             exposure_start_mjd=data['exposure_start_mjd'],
                                             exposure_end_mjd=data['exposure_end_mjd'],
                                             boresight_ra=data['boresight_ra'],
                                             boresight_dec=data['boresight_dec'],
-                                            tles=tles)  # boresight and time
+                                            tles=tles,
+                                            tles_age=tles_age)  # boresight and time
 
         cache[cache_key]['matched_satellites'] = matched_satellites
         cache[cache_key]['compute_time'] = time()
@@ -564,7 +566,7 @@ async def diasource_handler(request):
     return web.json_response(data)
 
 
-async def build_server(address, port, visit_satellite_cache, tles, sattleTask):
+async def build_server(address, port, visit_satellite_cache, tles, tles_age, sattleTask):
     # For most applications -- those with one event loop --
     # you don't need to pass around a loop object. At anytime,
     # you can retrieve it with a call to asyncio.get_event_loop().
@@ -579,6 +581,7 @@ async def build_server(address, port, visit_satellite_cache, tles, sattleTask):
 
     app['visit_satellite_cache'] = visit_satellite_cache
     app['tles'] = tles
+    app['tles_age'] = tles_age
     app['sattleTask'] = sattleTask
 
     return await loop.create_server(app.make_handler(), address, port)
@@ -592,11 +595,11 @@ def main():
 
     visit_satellite_cache = defaultdict(dict)
     # Current catalog will always be loaded.
-    tles, tle_age = read_tles('catalog')
+    tles, tles_age = read_tles('catalog')
     sattleTask = sattlePy.SattleTask()
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(build_server(HOST, PORT, visit_satellite_cache, tles, sattleTask))
+    loop.run_until_complete(build_server(HOST, PORT, visit_satellite_cache, tles, tles_age, sattleTask))
     logging.info("Server ready!")
 
     task = loop.create_task(cache_update(visit_satellite_cache, tles, tle_age)) # noqa

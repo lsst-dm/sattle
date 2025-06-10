@@ -92,7 +92,7 @@ class SattleTask:
         self.config = config or SattleConfig()
         super().__init__(**kwargs)
 
-    def run(self, visit_id, exposure_start_mjd, exposure_end_mjd, boresight_ra, boresight_dec, tles):
+    def run(self, visit_id, exposure_start_mjd, exposure_end_mjd, boresight_ra, boresight_dec, tles, tle_age):
         """Calculate the positions of satellites within a given exposure.
 
         Parameters
@@ -133,9 +133,10 @@ class SattleTask:
         inputs.jd = [time_start.utc.jd, time_end.utc.jd]
 
         satellite_positions = [[], []]  # [ra_list, dec_list]
+        average_age = 0.0
         unique_satellites = set()
 
-        for tle_data in tles:
+        for i, tle_data in enumerate(tles):
             tle = sattle.TleType()
             sattle.parse_elements(tle_data.line1, tle_data.line2, tle)
             out = sattle.calc_sat(inputs, tle)
@@ -144,11 +145,11 @@ class SattleTask:
                 satellite_positions[0].append(list(out.ra))
                 satellite_positions[1].append(list(out.dec))
                 unique_satellites.add(tle.norad_number)
-                tle.epoch
-
+                average_age += tle_age[i]
 
         logging.info(f"Number of satellites found in {visit_id}: {len(satellite_positions[0])}")
-        logging.info(f"The average age of the satellite tles is")
+        logging.info(f"The average age of the satellite tles is" f" {average_age/len(tle_age)} days")
+        logging.info(f"The number of unique satellites found in {visit_id} is" f" {len(unique_satellites)}")
         return satellite_positions
 
 
