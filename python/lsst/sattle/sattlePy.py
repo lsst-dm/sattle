@@ -145,10 +145,10 @@ class SattleTask:
                 satellite_positions[0].append(list(out.ra))
                 satellite_positions[1].append(list(out.dec))
                 unique_satellites.add(tle.norad_number)
-                average_age += tle_age[i]
+                average_age += tles_age[i]
 
         logging.info(f"Number of satellites found in {visit_id}: {len(satellite_positions[0])}")
-        logging.info(f"The average age of the satellite tles is" f" {average_age/len(tle_age)} days")
+        logging.info(f"The average age of the satellite tles is" f" {average_age/len(tles_age)} days")
         logging.info(f"The number of unique satellites found in {visit_id} is" f" {len(unique_satellites)}")
         return satellite_positions
 
