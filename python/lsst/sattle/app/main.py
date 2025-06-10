@@ -602,8 +602,8 @@ def main():
     loop.run_until_complete(build_server(HOST, PORT, visit_satellite_cache, tles, tles_age, sattleTask))
     logging.info("Server ready!")
 
-    task = loop.create_task(cache_update(visit_satellite_cache, tles, tle_age)) # noqa
-    tle_task = loop.create_task(tle_update(visit_satellite_cache, tles, tle_age)) # noqa
+    task = loop.create_task(cache_update(visit_satellite_cache, tles, tles_age)) # noqa
+    tle_task = loop.create_task(tle_update(visit_satellite_cache, tles, tles_age)) # noqa
     try:
         loop.run_forever()
     except KeyboardInterrupt:
