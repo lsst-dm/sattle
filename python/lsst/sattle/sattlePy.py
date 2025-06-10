@@ -144,8 +144,11 @@ class SattleTask:
                 satellite_positions[0].append(list(out.ra))
                 satellite_positions[1].append(list(out.dec))
                 unique_satellites.add(tle.norad_number)
+                tle.epoch
+
 
         logging.info(f"Number of satellites found in {visit_id}: {len(satellite_positions[0])}")
+        logging.info(f"The average age of the satellite tles is")
         return satellite_positions
 
 
@@ -176,7 +179,7 @@ class SattleFilterTask:
         self.config = config or SatelliteFilterConfig()
         super().__init__(**kwargs)
 
-    def run(self, sat_coords: np.ndarray, diaSources: dict) -> list:
+    def run(self, sat_coords: np.ndarray, diaSources: dict, visit_id: int, detector_id: int) -> list:
         """ Compare satellite tracks and source bounding boxes to create
         a source allowlist.
 
@@ -231,7 +234,7 @@ class SattleFilterTask:
             bbox_sph_coords = self.calc_bbox_sph_coords(source_bboxes)
 
             # Generate satellite track polygons
-            satellite_tracks = self.satellite_tracks(track_width, sat_coords)
+            satellite_tracks = self.satellite_tracks(track_width, sat_coords, visit_id, detector_id)
 
             # Check for intersections and get allowed IDs
             id_allow_list = self._check_tracks(bbox_sph_coords, satellite_tracks, source_ids)
@@ -376,7 +379,7 @@ class SattleFilterTask:
         return corner1, corner2, corner3, corner4
 
     @staticmethod
-    def satellite_tracks(track_width: float, sat_coords: np.ndarray) -> List[sphgeom.ConvexPolygon]:
+    def satellite_tracks(track_width: float, sat_coords: np.ndarray, visit_id: int, detector_id: int) -> List[sphgeom.ConvexPolygon]:
         """ Calculate the satellite tracks using their beginning and
         end points in ra and dec and the angle between them. The width of the
         tracks is based on the track_width.
@@ -410,13 +413,10 @@ class SattleFilterTask:
                             sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(corner3[0][i], corner3[1][i])),
                             sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(corner4[0][i], corner4[1][i]))])
                     tracks.append(track)
-            # TODO: Using for troubleshooting, make more robust
             except RuntimeError as e:
                 logging.exception(e)
-                print(corner1[0][i], corner2[1][i], corner2[0][i], corner2[1][i], corner3[0][i],
-                      corner2[1][i], corner4[0][i], corner4[1][i])
         # TODO: This is for testing only, remove once unit tests done
-        with open('2024111800093_long_satellites.txt', 'w') as file:
+        with open(f'{visit_id}_{detector_id}_sat_boxes.txt', 'w') as file:
             for item in tracks:
                 file.write(f"{item}\n")
 
@@ -487,11 +487,11 @@ class SattleFilterTask:
         x1: `numpy.ndarray`
             Array containing all x1 line coordinates.
         y1: `numpy.ndarray`
-            Array containing all  y1 line coordinates
+            Array containing all y1 line coordinates
         x2: `numpy.ndarray`
             Array containing all x2 line coordinates.
         y2: `numpy.ndarray`
-            Array containing all  y2 line coordinates
+            Array containing all y2 line coordinates
         extend_length: `float`
             The length in degrees to extend the line.
 
@@ -545,7 +545,7 @@ class SattleFilterTask:
     @staticmethod
     def _normalize_coordinates(corner):
         """ After all the calculations, make sure none of the coordinates
-        exceed the spherical coordinates. If they do correct them.
+        exceed the spherical coordinates. If they do, correct them.
 
         Parameters
         ----------
@@ -554,9 +554,9 @@ class SattleFilterTask:
 
         Returns
         -------
-        lon : `numpy.ndarray`
+        lon: `numpy.ndarray`
             Array of lons which have been checked and corrected if necessary.
-        lat : `numpy.ndarray`
+        lat: `numpy.ndarray`
             Array of lats which have been checked and corrected if necessary.
         """
         lon, lat = corner[0], corner[1]

@@ -28,6 +28,10 @@ TEST_TLE_PARAMS = {
 
 def tle_time_to_jd(tle_time_str):
     """Convert TLE time format (YYDDD.DDDDDDDD) to Julian Date
+
+    Inputs
+    ------
+        tle_time_str: `str`
     """
     year = int(tle_time_str[:2])
     days = float(tle_time_str[2:])
@@ -165,6 +169,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
 
     """
     tles = []
+    tle_age = []
 
     if tle_source == 'satchecker_query':
         logging.info("Using satchecker as tle source")
@@ -259,15 +264,14 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 logging.info("Fetching CUI catalog")
                 scf = SatCatFetcher(eltype='satf', use_folder=True)
                 omm_cui, _ = scf.fetch_catalogs()
-            logging.info(
-                "Number of satellites in CUI catalog: " + str(len(omm_cui)))
+            logging.info("Number of satellites in CUI catalog: " + str(len(omm_cui)))
             if not omm_cui:
                 raise ValueError("No data returned from CUI satellite catalog.")
 
             # Merge and deduplicate the catalogs
             tle_entries = merge_and_deduplicate_catalogs(omm, omm_cui, date)
-            logging.info(
-                "Total number of unique satellites after deduplication: " + str(len(tle_entries)))
+            logging.info("Total number of unique satellites "
+                         "after deduplication: " + str(len(tle_entries)))
         else:
             tle_entries = [(entry['TLE_LINE1'], entry['TLE_LINE2'])
                            for entry in omm
@@ -312,6 +316,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 else:
                     short_delta += 1
                     short_delta_val += time_delta
+
+                tle_age.append(sat_data['time_diff'])
         else:
             # Current catalog
             long_delta = 0
@@ -326,6 +332,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 time_delta = abs((get_current_tle_time() - float(
                     line1[18:32]))) * 24.0
                 total_delta += time_delta
+                tle_age.append(time_delta)
                 if time_delta > 12.0:
                     long_delta += 1
                     long_delta_val += time_delta
@@ -353,7 +360,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 file.write(f"{tle.line1}\n")
                 file.write(f"{tle.line2}\n")
 
-    return tles
+    return tles, tle_age
 
 
 class TLE:
@@ -537,9 +544,9 @@ async def diasource_handler(request):
         return web.Response(status=404, text=msg)
 
     try:
-        logging.info("Running satellite filter for visit and detector:" + str(data['visit_id']) + str(data['detector_id']))
+        logging.info("Running satellite filter for: visit" + str(data['visit_id']) + " detector"+ str(data['detector_id']))
         sattleFilterTask = sattlePy.SattleFilterTask()
-        allow_list = sattleFilterTask.run(cache[cache_key], data['diasources'])
+        allow_list = sattleFilterTask.run(cache[cache_key], data['diasources'], visit_id, detector_id)
 
     except Exception as e:
         # So you can observe on disconnects and such.
@@ -585,15 +592,15 @@ def main():
 
     visit_satellite_cache = defaultdict(dict)
     # Current catalog will always be loaded.
-    tles = read_tles('catalog')
+    tles, tle_age = read_tles('catalog')
     sattleTask = sattlePy.SattleTask()
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(build_server(HOST, PORT, visit_satellite_cache, tles, sattleTask))
     logging.info("Server ready!")
 
-    task = loop.create_task(cache_update(visit_satellite_cache, tles)) # noqa
-    tle_task = loop.create_task(tle_update(visit_satellite_cache, tles)) # noqa
+    task = loop.create_task(cache_update(visit_satellite_cache, tles, tle_age)) # noqa
+    tle_task = loop.create_task(tle_update(visit_satellite_cache, tles, tle_age)) # noqa
     try:
         loop.run_forever()
     except KeyboardInterrupt:
