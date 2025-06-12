@@ -146,7 +146,7 @@ class SattleTask:
                 satellite_positions[0].append(list(out.ra))
                 satellite_positions[1].append(list(out.dec))
                 unique_satellites.add(tle.norad_number)
-                age_list.append(tles_age[i])
+                age_list.append([tle['norad_number'], tles_age[i]])
 
         with open(f'{visit_id}_tle_ages.txt', 'w') as file:
             for item in age_list:
