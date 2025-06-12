@@ -151,8 +151,8 @@ class SattleTask:
         with open(f'{visit_id}_tle_ages.txt', 'w') as file:
             for item in age_list:
                 file.write(f"{item}\n")
-
-        logging.info(f"The average age of the satellite tles is" f" {sum(item[1] for item in age_list)/len(unique_satellites)} hours")
+        if len(unique_satellites) != 0:
+            logging.info(f"The average age of the satellite tles is" f" {sum(item[1] for item in age_list)/len(unique_satellites)} hours")
         logging.info(f"The number of unique satellites found in {visit_id} is" f" {len(unique_satellites)}")
         return satellite_positions
 
