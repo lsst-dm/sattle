@@ -4,6 +4,8 @@ name: CI
   merge_group: {}
   pull_request: {}
   push:
+    branches:
+      - main
     tags:
       - "*"
 
@@ -26,5 +28,13 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ./docker
           dockerfile: ./docker/Dockerfile
+
+      - name: Push latest tag on main
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "Tagging image as latest"
+          docker tag ghcr.io/${{ github.repository }}:${{ steps.build.outputs.tag }} ghcr.io/${{ github.repository }}:latest
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push ghcr.io/${{ github.repository }}:latest
 
       - run: echo Pushed ghcr.io/${{ github.repository }}:${{ steps.build.outputs.tag }}

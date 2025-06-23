@@ -48,6 +48,7 @@ output to local files.
 .. code-block:: bash
 
     apptainer --debug run  --contain  --no-home  --pwd /output /
+    --env-file ~sattle/.credentials.sh /
     --bind ~/apptainer_logs:/app/sattle/python/lsst/sattle/logs /
     --bind ~/apptainer_output:/output  sattle_tickets-dm-51091.sif /
     python /app/sattle/bin.src/app.py
@@ -103,10 +104,8 @@ The package provides a server that runs on port 9999 by default. After starting 
     python app.py
 
 The server will be available at ``http://localhost:9999``. You can now make api calls to calculate a cache for specific visits.
-Please reffer to `sattle/bin.src/example_client.py` for example puts. The first call is made during deia
+Please refer to `sattle/bin.src/example_client.py` for example puts. The first call is made during `pipe_tasks` in the AP pipelines
+to populate the comparison catalog. The second put call is made in `detectAndMeasure` to verify the dia sources and return
+diaSource ids which will be included in the catalog.
 
-
-
-This occurs during X part of the pipelines. If you are using historical data, you must include historical=True in the requests.
-
-To then use the verification server, a put request is sent in `ap_association`, which returns a list of allowed dia sources.
+If you are using historical data, you must include historical=True in the requests.
