@@ -34,24 +34,36 @@ Installation
 -----------
 The easiest way to run the package is using Docker:
 
-.. code-block:: bash
+    .. code-block:: bash
 
-    # Build the Docker image
-    docker build -t sattle .
+        # Build the Docker image
+        docker build -t sattle .
 
-    # Run the container
-    docker run -p 9999:9999 sattle
+        # Run the container
+        docker run -p 9999:9999 sattle
 
-For USDF use, the container is run via apptainer, you need to bind the
-output to local files.
+For USDF the container is run via apptainer. First logon to the sattle machine, then sudo to get access to sattle.
+You can then pull the latest sattle build and run the generated .sif file. You need to bind the
+output to local files. Replace the version number with the most recent version or desired ticket branch.
 
-.. code-block:: bash
+    .. code-block:: bash
 
-    apptainer --debug run  --contain  --no-home  --pwd /output /
-    --env-file ~sattle/.credentials.sh /
-    --bind ~/apptainer_logs:/app/sattle/python/lsst/sattle/logs /
-    --bind ~/apptainer_output:/output  sattle_tickets-dm-51091.sif /
-    python /app/sattle/bin.src/app.py
+        sudo -i -u sattle
+
+        apptainer pull --force docker://ghcr.io/lsst-dm/sattle:1.0.0
+
+        apptainer --debug run  --contain  --no-home  --pwd /output /
+        --env-file ~sattle/.credentials.sh /
+        --bind ~/apptainer_logs:/app/sattle/python/lsst/sattle/logs /
+        --bind ~/apptainer_output:/output  sattle_1.0.0.sif /
+        python /app/sattle/bin.src/app.py
+
+If sattle is running and you want to stop it an replace it with a new version, run the following code.
+
+    .. code-block:: bash
+
+         apptainer instance stop sattle_1.0.0
+
 
 Manual Installation
 -----------------
@@ -87,7 +99,7 @@ Manual Installation
 
 sattle.so must be built within `sat_code`.
 
-    ..code-block:: bash
+    .. code-block:: bash
     run c++ -O3 -Wall -shared -std=c++11 $(python3 -m pybind11 --includes) \
         observe.cpp sdp4.cpp sgp4.cpp sgp8.cpp sdp8.cpp sattle.cpp sgp.o deep.cpp common.cpp basics.cpp get_el.cpp \
         -o sattle$(python3-config --extension-suffix) \
@@ -99,9 +111,9 @@ Usage
 -----
 The package provides a server that runs on port 9999 by default. After starting the server:
 
-.. code-block:: bash
+    .. code-block:: bash
 
-    python app.py
+        python app.py
 
 The server will be available at ``http://localhost:9999``. You can now make api calls to calculate a cache for specific visits.
 Please refer to `sattle/bin.src/example_client.py` for example puts. The first call is made during `pipe_tasks` in the AP pipelines

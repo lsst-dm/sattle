@@ -81,6 +81,13 @@ class SattleConfig:
         doc="Height of the telescope in meters.",
     )
 
+    doWriteAges = Field(
+        dtype=bool,
+        default=False,
+        doc="If set, a text file of the ages of the satellites will be written "
+            "to the output directory.",
+    )
+
 
 class SattleTask:
     """Retrieve DiaObjects and associated DiaSources from the Apdb given an
@@ -148,9 +155,10 @@ class SattleTask:
                 unique_satellites.add(tle.norad_number)
                 age_list.append([tle.norad_number, tles_age[i]])
 
-        with open(f'{visit_id}_tle_ages.txt', 'w') as file:
-            for item in age_list:
-                file.write(f"{item}\n")
+        if self.config.doWriteAges:
+            with open(f'{visit_id}_tle_ages.txt', 'w') as file:
+                for item in age_list:
+                    file.write(f"{item}\n")
         if len(unique_satellites) != 0:
             avg_age = sum(item[1] for item in age_list) / len(unique_satellites)
             logging.info(f"The average age of the satellite tles is {avg_age} hours")
@@ -422,10 +430,6 @@ class SattleFilterTask:
                     tracks.append(track)
             except RuntimeError as e:
                 logging.exception(e)
-        # TODO: This is for testing only, remove once unit tests done
-        with open(f'{visit_id}_{detector_id}_sat_boxes.txt', 'w') as file:
-            for item in tracks:
-                file.write(f"{item}\n")
 
         return np.array(tracks)
 
