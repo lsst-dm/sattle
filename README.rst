@@ -42,10 +42,15 @@ The easiest way to run the package is using Docker:
     # Run the container
     docker run -p 9999:9999 sattle
 
-For USDF use, the container is run via apptainer, you need to bind the
-output to local files.
+For USDF the container is run via apptainer. First logon to the sattle machine, then sudo to get access to sattle.
+You can then pull the latest sattle build and run the generated .sif file. You need to bind the
+output to local files. Replace the ticket number with the most current branch.
 
 .. code-block:: bash
+
+    sudo -i -u sattle
+
+    apptainer pull --force docker://ghcr.io/lsst-dm/sattle:tickets-dm-51091
 
     apptainer --debug run  --contain  --no-home  --pwd /output /
     --env-file ~sattle/.credentials.sh /
