@@ -480,10 +480,11 @@ async def visit_handler(request):
             return web.Response(status=400, text=msg)
 
     is_historical = data.get('historical', False)
-    cache_key = f"{data['visit_id']}_historical" if is_historical else data['visit_id']
+    cache_key = f"{data['visit_id']}_{data['exposure_start_mjd']}_historical" \
+        if is_historical else f"{data['visit_id']}_{data['exposure_start_mjd']}"
 
     if cache_key in cache:
-        msg = f"Visit {data['visit_id']} already loaded."
+        msg = f"Visit {cache_key} already loaded."
         return web.Response(status=200, text=msg)
 
     try:
@@ -523,7 +524,7 @@ async def diasource_handler(request):
     data = await request.json()
     logging.debug(data)
 
-    expected_columns = ['visit_id', 'detector_id', 'diasources']
+    expected_columns = ['visit_id', 'exposure_start_mjd', 'detector_id', 'diasources']
 
     for col in expected_columns:
         if col not in data:
@@ -536,7 +537,8 @@ async def diasource_handler(request):
     detector_id = data['detector_id']
     is_historical = data.get('historical', False)
     # Create the same cache key format as used in visit_handler
-    cache_key = f"{data['visit_id']}_historical" if is_historical else data['visit_id']
+    cache_key = f"{data['visit_id']}_{data['exposure_start_mjd']}_historical" \
+        if is_historical else f"{data['visit_id']}_{data['exposure_start_mjd']}"
 
     cache = request.app['visit_satellite_cache']
 
@@ -548,8 +550,9 @@ async def diasource_handler(request):
         return web.Response(status=404, text=msg)
 
     try:
-        logging.info("Running satellite filter for: visit"
-                     + str(data['visit_id']) + " detector" + str(data['detector_id']))
+        logging.info("Running satellite filter for: visit: "
+                     + str(data['visit_id']) + " detector: "
+                     + str(data['detector_id']) + " exposure_start_time: " + str(data['exposure_start_mjd']))
         sattleFilterTask = sattlePy.SattleFilterTask()
         allow_list = sattleFilterTask.run(cache[cache_key], data['diasources'], visit_id, detector_id)
 
