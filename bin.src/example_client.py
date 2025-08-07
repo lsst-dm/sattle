@@ -76,7 +76,7 @@ print(r.text)
 
 print('getting allowlist')
 r = requests.put(f'{HOST}:{PORT}/diasource_allow_list', json=
-                 {"visit_id":2024111600306, "detector_id":8,
+                 {"visit_id":2024111600306, "detector_id":8, "exposure_start_mjd":60631.339154479196,
                   "diasources": [{"diasource_id":4567, "bbox":
                   [[180.0,-23.1],
                    [180.1,-23.1],
@@ -97,7 +97,7 @@ print(f'status code: {r.status_code}')
 print(r.text)
 print('getting allowlist')
 r = requests.put(f'{HOST}:{PORT}/diasource_allow_list', json=
-                 {"visit_id":2024111200285, "detector_id":8,
+                 {"visit_id":2024111200285, "detector_id":8, "exposure_start_mjd":60627.265859282394,
                   "diasources": [{"diasource_id":4567, "bbox":
                   [[180.0,-23.1],
                    [180.1,-23.1],

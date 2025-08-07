@@ -480,8 +480,12 @@ async def visit_handler(request):
             return web.Response(status=400, text=msg)
 
     is_historical = data.get('historical', False)
-    cache_key = f"{data['visit_id']}_{data['exposure_start_mjd']}_historical" \
-        if is_historical else f"{data['visit_id']}_{data['exposure_start_mjd']}"
+
+    int_part, dec_part = str(data['exposure_start_mjd']).split('.')
+    truncated_mjd = f"{int_part}.{dec_part[:4]}"
+
+    cache_key = f"{data['visit_id']}_{truncated_mjd}_historical" \
+        if is_historical else f"{data['visit_id']}_{truncated_mjd}"
 
     if cache_key in cache:
         msg = f"Visit {cache_key} already loaded."
@@ -536,9 +540,13 @@ async def diasource_handler(request):
     visit_id = data['visit_id']
     detector_id = data['detector_id']
     is_historical = data.get('historical', False)
+
+    int_part, dec_part = str(data['exposure_start_mjd']).split('.')
+    truncated_mjd = f"{int_part}.{dec_part[:4]}"
+
     # Create the same cache key format as used in visit_handler
-    cache_key = f"{data['visit_id']}_{data['exposure_start_mjd']}_historical" \
-        if is_historical else f"{data['visit_id']}_{data['exposure_start_mjd']}"
+    cache_key = f"{data['visit_id']}_{truncated_mjd}_historical" \
+        if is_historical else f"{data['visit_id']}_{truncated_mjd}"
 
     cache = request.app['visit_satellite_cache']
 

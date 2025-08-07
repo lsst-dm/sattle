@@ -118,7 +118,7 @@ class FilterSattleTaskTest(unittest.TestCase):
         coords = self.satFilterTask.calc_bbox_sph_coords(self.boxes)
 
         self.assertIsInstance(coords[0], lsst.sphgeom._sphgeom.ConvexPolygon)
-        self.assertEquals(len(coords), 2)
+        self.assertEqual(len(coords), 2)
 
         for i, coord in enumerate(coords):
 
@@ -171,8 +171,10 @@ class FilterSattleTaskTest(unittest.TestCase):
                                    [1.5,  1.5, -0.5,  -0.5],
                                    [0.5,  -0.5, -0.5,  0.5],
                                    [-0.191, -0.516, 1.191, 1.516]]
+        visit_id = 123454
+        detector_id = 6
 
-        tracks = self.satFilterTask.satellite_tracks(width, sat_coords)
+        tracks = self.satFilterTask.satellite_tracks(width, sat_coords, visit_id, detector_id)
         self.assertEqual(len(tracks), 4)
         for track in tracks:
             self.assertIsInstance(track, lsst.sphgeom._sphgeom.ConvexPolygon)
@@ -365,14 +367,19 @@ class SattleTaskTest(unittest.TestCase):
         """ The example satchecker_output has 3 satellites """
         # TODO: Add an additional satellite TLE which would not be returned and
         #  a duplicate sat.
-        tles =app.read_tles('tle_file', filename='test_files/satchecker_output.txt')
+        import pydevd_pycharm
+        pydevd_pycharm.settrace('localhost', port=8888, stdoutToServer=True,
+                                stderrToServer=True)
+        tles =app.read_tles('tle_file', filename='test_files/satchecker_output.txt')[0]
         visit_id = 1234
         exposure_start_mjd = 60641.04957530673
         exposure_end_mjd = 60641.049922528946
         boresight_ra = 38.3951559125
         boresight_dec = 7.1126590888
+        tles_age = [1.0, 0.4, 0.1]
         sattleTask = SattleTask()
-        response = sattleTask.run(visit_id, exposure_start_mjd, exposure_end_mjd, boresight_ra, boresight_dec, tles)
+        response = sattleTask.run(visit_id, exposure_start_mjd, exposure_end_mjd,
+                                  boresight_ra, boresight_dec, tles, tles_age)
         self.assertEqual(len(response), 2)  # add assertion here
         self.assertEqual(len(response[0]), 3)
         self.assertEqual(len(response[1]), 3)
