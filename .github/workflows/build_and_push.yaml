@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Clone sattle repository
-        run: git clone --branch tickets/DM-50744 https://github.com/lsst-dm/sattle.git docker/sattle
+        run: git clone --branch tickets/DM-52104 https://github.com/lsst-dm/sattle.git docker/sattle
 
       - name: Clone lunar repository
         run: |
