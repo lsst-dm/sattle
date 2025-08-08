@@ -481,6 +481,8 @@ async def visit_handler(request):
 
     is_historical = data.get('historical', False)
 
+    logging.info("test")
+
     int_part, dec_part = str(data['exposure_start_mjd']).split('.')
     truncated_mjd = f"{int_part}.{dec_part[:4]}"
 
