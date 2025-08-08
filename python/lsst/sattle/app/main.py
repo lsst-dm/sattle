@@ -487,6 +487,8 @@ async def visit_handler(request):
     cache_key = f"{data['visit_id']}_{truncated_mjd}_historical" \
         if is_historical else f"{data['visit_id']}_{truncated_mjd}"
 
+    logging.info("Using cache key: " + cache_key)
+
     if cache_key in cache:
         msg = f"Visit {cache_key} already loaded."
         return web.Response(status=200, text=msg)
@@ -547,6 +549,8 @@ async def diasource_handler(request):
     # Create the same cache key format as used in visit_handler
     cache_key = f"{data['visit_id']}_{truncated_mjd}_historical" \
         if is_historical else f"{data['visit_id']}_{truncated_mjd}"
+
+    logging.info("Using cache key: " + cache_key)
 
     cache = request.app['visit_satellite_cache']
 
