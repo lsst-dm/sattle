@@ -62,7 +62,18 @@ If sattle is running and you want to stop it an replace it with a new version, r
 
     .. code-block:: bash
 
-         apptainer instance stop sattle_1.0.0
+         ps aux | grep sattle
+
+Sattle will be running as a foreground application, so you will need to kill the resulting process to stop it if you
+want to change to a different image. You want to pick the runtime parent ID and kill that process.
+
+    .. code-block:: bash
+
+        sattle   1409820  0.0  0.0 1843976 29832 ?       Sl   Aug27   0:01 Apptainer runtime parent
+
+        kill 1409820
+
+This will allow you to repeat the above commands and start a new sattle instance.
 
 
 Manual Installation
