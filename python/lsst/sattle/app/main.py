@@ -513,7 +513,7 @@ async def visit_handler(request):
         # TODO: pass exception text
         msg = 'failed to compute'
         return web.Response(status=500, text=msg)
-    msg = f"Successfully cached satellites for visit {cache_key}"
+    msg = f"Successfully cached satellites for visit {cache_key} using "
     logging.info(msg)
     return web.Response(status=200, text=msg)
 

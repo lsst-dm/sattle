@@ -67,7 +67,7 @@ Configurations
 .. Script reference
 .. ================
 
-.. .. TODO: Add an item to this toctree for each script reference topic in the scripts subdirectory.
+.. .. TODO: Add an item to this doctree for each script reference topic in the scripts subdirectory.
 
 .. .. toctree::
 ..    :maxdepth: 1

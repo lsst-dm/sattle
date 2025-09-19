@@ -14,15 +14,16 @@ jobs:
     runs-on: ubuntu-latest
 
     # (optional) only build on tags or ticket branches
-    if: >
-      startsWith(github.ref, 'refs/tags/')
-      || startsWith(github.head_ref, 'tickets/')
+    if: |
+      startsWith(github.ref, 'refs/tags/') ||
+      github.ref == 'refs/heads/main' ||
+      startsWith(github.head_ref, 'tickets/')
 
     steps:
       - uses: actions/checkout@v3
 
       - name: Clone sattle repository
-        run: git clone --branch tickets/DM-50744 https://github.com/lsst-dm/sattle.git docker/sattle
+        run: git clone --branch ${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}} https://github.com/lsst-dm/sattle.git docker/sattle
 
       - name: Clone lunar repository
         run: |

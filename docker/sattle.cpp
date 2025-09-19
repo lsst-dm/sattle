@@ -101,10 +101,6 @@ Outputs DLL_FUNC calc_sat(Inputs inputs, tle_t tle)
 {
     Outputs outputs;
 
-        // Run the beginning and end time
-   // printf( "inputs.target_ra %8.4f\n", inputs.target_ra);
-   // printf( "inputs.target_dec %8.4f\n", inputs.target_dec);
-
     inputs.target_ra *= PI / 180.;
     inputs.target_dec *= PI / 180.;
     for (int i = 0; i < 2; ++i) {
@@ -121,9 +117,6 @@ Outputs DLL_FUNC calc_sat(Inputs inputs, tle_t tle)
        double ra, dec, dist_to_satellite, t_since;
        double pos[3]; /* Satellite position vector */
         t_since = (inputs.jd[i] - tle.epoch) * 1440.;
-        // printf( "tle epoch %8.4f\n",tle.epoch);
-        // printf( "inputs jd %8.4f\n",inputs.jd[i]);
-        // printf( "t_since %8.4f\n",t_since);
         if( is_deep)
            {
            SDP4_init( sat_params, &tle);
@@ -138,31 +131,19 @@ Outputs DLL_FUNC calc_sat(Inputs inputs, tle_t tle)
                                 &ra, &dec, &dist_to_satellite);
         epoch_of_date_to_j2000( inputs.jd[i], &ra, &dec);
         d_ra = (ra - inputs.target_ra + PI * 4.);
-        // printf( "d_ra %8.4f\n",d_ra);
         while( d_ra > PI)
            d_ra -= PI + PI;
         d_dec = dec - inputs.target_dec;
         radius = sqrt( d_ra * d_ra + d_dec * d_dec) * 180. / PI;
-        // printf( "RA (J2000) dec    Delta Radius   \n");
         inputs.header_line_shown = 1;
-        // printf( "%8.4f %8.4f %8.1f %5.2f\n",
-        //              ra * 180. / PI, dec * 180. / PI,
-        //             dist_to_satellite, radius);
-
 
         if( radius < inputs.search_radius)      /* good enough for us! */
         {
 
             if( !inputs.header_line_shown) {
-            //    printf( "RA (J2000) dec    Delta Radius   \n");
                 inputs.header_line_shown = 1;
             }
-            /* Put RA into 0 to 2pi range: */
             ra = fmod( ra + PI * 10., PI + PI);
-            // printf( "%8.4f %8.4f %8.1f %5.2f\n",
-            //         ra * 180. / PI, dec * 180. / PI,
-            //         dist_to_satellite, radius);
-
             outputs.ra[i] = ra * 180. / PI;
             outputs.dec[i] = dec * 180. / PI;
 
