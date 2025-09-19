@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # (optional) only build on tags or ticket branches
+    # only build on tags or ticket branches
     if: |
       startsWith(github.ref, 'refs/tags/') ||
       github.ref == 'refs/heads/main' ||
@@ -23,21 +23,26 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Clone sattle repository
-        run: git clone --branch ${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}} https://github.com/lsst-dm/sattle.git docker/sattle
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            TAG=${GITHUB_REF#refs/tags/}
+            git clone -b "$TAG" https://github.com/lsst-dm/sattle.git docker/sattle
+          else
+            BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+            git clone -b "$BRANCH" https://github.com/lsst-dm/sattle.git docker/sattle
+          fi
 
       - name: Clone lunar repository
         run: |
           git clone https://github.com/Bill-Gray/lunar.git docker/lunar
           cd docker/lunar
           git checkout a82172dcf437e95c89b9de1c2c16e9d3a6f433ce
-      
 
       - name: Clone sat_code repository
         run: |
           git clone https://github.com/Bill-Gray/sat_code.git docker/sat_code
           cd docker/sat_code
           git checkout e03c80704c33cd2374912c86a88532157c5c7a19
-      
 
       - uses: lsst-sqre/build-and-push-to-ghcr@v1
         id: build
@@ -51,8 +56,8 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           echo "Tagging image as latest"
-          docker tag ghcr.io/${{ github.repository }}:${{ steps.build.outputs.tag }} ghcr.io/${{ github.repository }}:latest
+          docker tag "${{ env.DOCKER_METADATA_OUTPUT_TAGS }}" "ghcr.io/${{ github.repository }}:latest"
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker push ghcr.io/${{ github.repository }}:latest
+          docker push "ghcr.io/${{ github.repository }}:latest"
 
       - run: echo Pushed ghcr.io/${{ github.repository }}:${{ steps.build.outputs.tag }}
