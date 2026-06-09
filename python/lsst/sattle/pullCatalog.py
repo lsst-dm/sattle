@@ -61,7 +61,7 @@ class SatCatFetcher:
             self._folder_id = None
         self._last_satf_id = -1
         self._last_satf_data = ""
-        self._logger = logging.getLogger(str(__class__))
+        self._logger = logging.getLogger(__name__)
 
     def fetch_catalogs(self, source="gp", epoch="%3Enow-30",
                        observation_epoch=None) -> tuple[list[dict[str, Any]], str]:
@@ -75,9 +75,9 @@ class SatCatFetcher:
         jar = login_resp.cookies
         self._logger.info("Successfully logged in")
         if observation_epoch is not None:
-            logging.info("Observation epoch is " + str(observation_epoch))
+            self._logger.info(f"Observation epoch: {observation_epoch}")
         else:
-            logging.info("Observation epoch is not set, using most recent files.")
+            self._logger.info("Observation epoch not set, using most recent files")
 
         if not self.use_folder:
             gp_url = "/".join([
@@ -115,10 +115,10 @@ class SatCatFetcher:
             folder_list = folder_resp.json()
 
             if observation_epoch:
-                logging.info("Fetching historical CUI for target epoch" + str(observation_epoch))
+                self._logger.info(f"Fetching historical CUI for target epoch: {observation_epoch}")
                 target_time = datetime.datetime.strptime(observation_epoch, '%Y-%m-%dT%H:%M:%S').replace(
                     tzinfo=datetime.timezone.utc)
-                logging.info(f"Target time: {target_time}")
+                self._logger.info(f"Target time: {target_time}")
 
                 # Closest absolute upload time. Potentially an issue for
                 # satellites that maneuver, however currently there are no

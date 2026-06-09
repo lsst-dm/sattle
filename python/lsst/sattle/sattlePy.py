@@ -28,6 +28,7 @@ from astropy.time import Time
 import lsst.sphgeom as sphgeom
 from lsst.sattle import sattle
 
+logger = logging.getLogger(__name__)
 
 __all__ = ["SattleConfig", "SattleTask", "SatelliteFilterConfig", "SattleFilterTask"]
 
@@ -124,7 +125,7 @@ class SattleTask:
             The first dimension is the paired Ra and the second array is the
             paired Dec.
         """
-        logging.info(f"Calculating satellite positions for visit {visit_id}")
+        logger.info(f"Calculating satellite positions for visit {visit_id}")
         # Everything should be in astropy.time
         # This gets us the time in seconds
         time_start = Time(exposure_start_mjd, format='mjd', scale='tai')
@@ -161,8 +162,8 @@ class SattleTask:
                     file.write(f"{item}\n")
         if len(unique_satellites) != 0:
             avg_age = sum(item[1] for item in age_list) / len(unique_satellites)
-            logging.info(f"The average age of the satellite tles is {avg_age} hours")
-        logging.info(f"The number of unique satellites found in {visit_id} is" f" {len(unique_satellites)}")
+            logger.info(f"Average TLE age for visit {visit_id}: {avg_age:.2f}h")
+        logger.info(f"Unique satellites found for visit {visit_id}: {len(unique_satellites)}")
         return satellite_positions
 
 
@@ -235,8 +236,8 @@ class SattleFilterTask:
         try:
             track_width = self.config.track_width
             sat_coords = np.array(sat_coords['matched_satellites'])
-            logging.info(f"Number of satellites to compare against: {len(sat_coords[0])}")
-            logging.info(f"Number of dia sources to compare against:{len(diaSources)}")
+            logger.info(f"Satellites to compare: {len(sat_coords[0])}, dia "
+                        f"sources to compare: {len(diaSources)}")
             source_bboxes = []
             source_ids = []
             for diaSource in diaSources:
@@ -256,7 +257,7 @@ class SattleFilterTask:
             return id_allow_list
 
         except Exception as e:
-            logging.error(f"Error in SattleFilterTask.run: {str(e)}")
+            logger.error(f"Error in SattleFilterTask.run: {str(e)}")
             raise RuntimeError(f"Failed to filter diasources: {str(e)}")
 
     @staticmethod
@@ -429,7 +430,7 @@ class SattleFilterTask:
                             sphgeom.UnitVector3d(sphgeom.LonLat.fromDegrees(corner4[0][i], corner4[1][i]))])
                     tracks.append(track)
             except RuntimeError as e:
-                logging.exception(e)
+                logger.exception(e)
 
         return np.array(tracks)
 

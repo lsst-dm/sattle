@@ -4,14 +4,18 @@ import asyncio
 from aiohttp import web
 from time import time
 import logging
+import os
 import requests
 import logging.config
 from astropy.time import Time
 import datetime
-
-from .constants import LOGGING
 from lsst.sattle import sattlePy
 from lsst.sattle.pullCatalog import SatCatFetcher
+
+from .constants import LOGGING, visit_id_ctx, detector_id_ctx
+
+ALL_CATS = os.environ.get("SATTLE_ALL_CATS", "true").lower() != "false"
+logger = logging.getLogger(__name__)
 
 TEST_TLE_PARAMS = {
     "latitude": -30.244633333333333,
@@ -174,7 +178,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
     tle_age = []
 
     if tle_source == 'satchecker_query':
-        logging.info("Using satchecker as tle source")
+        logger.info("TLE source: satchecker")
         start_time = params['start_time_jd']
 
         base_url = "https://dev.satchecker.cps.iau.noirlab.edu"
@@ -205,8 +209,8 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                     for entry in response.json():
                         epoch = Time(entry['epoch'][:-4], scale='utc')
                         current_epoch_delta = abs(epoch.jd - start_time)
-                        logging.info("Epoch delta: ", current_epoch_delta)
-                        logging.info("Date: ", date)
+                        logger.info(f"Epoch delta: {current_epoch_delta}")
+                        logger.info(f"Date: {date}")
 
                         # Only the lowest time delta will get added to the list
                         # for a specific satellite
@@ -219,12 +223,12 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                             tle = TLE(entry['tle_line1'], entry['tle_line2'])
                     tles.append(tle)
                 else:
-                    logging.info("No valid TLE.")
+                    logger.info("No valid TLE.")
         else:
-            logging.error(f"Failed to fetch TLE data. Status code: {response.status_code}")
+            logger.error(f"Failed to fetch TLE data: status {response.status_code}")
 
     if tle_source == 'tle_file':
-        logging.info("Using tle file as tle source")
+        logger.info("TLE source: file")
         with open(filename, 'r') as file:
             # Read the contents of the file
             tles_raw = file.read()
@@ -242,38 +246,35 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                     i += 1  # Skip to the next line if not a valid pair
 
     elif tle_source == 'catalog':
-        logging.info("Using catalog as tle source")
+        logger.info("TLE source: catalog")
         # If a date is provided, use that date, otherwise use the current date
         # This allows us to use historical catalogs
         scf = SatCatFetcher(eltype="gp")
         if date:
             formated_date, observation_formated_date = format_date_for_catalog(date)
             omm, _ = scf.fetch_catalogs(source='gp_history', epoch=formated_date)
-            logging.info("Using historical catalog for date: " + date)
-            logging.info("Number of satellites in historical catalog: " + str(len(omm)))
+            logger.info(f"Historical catalog: date={date}, satellites={len(omm)}")
         else:
             # Defaults to pulling the current catalog
             omm, _ = scf.fetch_catalogs()
-            logging.info("Using current catalog")
-            logging.info("Number of satellites in catalog: " + str(len(omm)))
+            logger.info(f"Current catalog satellites: {len(omm)}")
 
         if all_cats:
             if date:
-                logging.info("Fetching historical CUI catalog for date: " + date)
+                logger.info(f"Fetching historical CUI catalog date: {date}")
                 scf = SatCatFetcher(eltype='satf', use_folder=True)
                 omm_cui, _ = scf.fetch_catalogs(observation_epoch=observation_formated_date)
             else:
-                logging.info("Fetching CUI catalog")
+                logger.info("Fetching CUI catalog")
                 scf = SatCatFetcher(eltype='satf', use_folder=True)
                 omm_cui, _ = scf.fetch_catalogs()
-            logging.info("Number of satellites in CUI catalog: " + str(len(omm_cui)))
+            logger.info(f"Number of satellites in CUI catalog: {len(omm_cui)}")
             if not omm_cui:
                 raise ValueError("No data returned from CUI satellite catalog.")
 
             # Merge and deduplicate the catalogs
             tle_entries = merge_and_deduplicate_catalogs(omm, omm_cui, date)
-            logging.info("Total number of unique satellites "
-                         "after deduplication: " + str(len(tle_entries)))
+            logger.info(f"After deduplication the number of unique satellite is: {len(tle_entries)}")
         else:
             tle_entries = [(entry['TLE_LINE1'], entry['TLE_LINE2'])
                            for entry in omm
@@ -310,7 +311,7 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                 tle = TLE(sat_data['line1'], sat_data['line2'])
                 tles.append(tle)
                 time_delta = sat_data['time_diff']
-                logging.debug("Epoch difference in hours: " + str(time_delta))
+                logger.debug(f"Epoch difference: {time_delta:.2f}h")
                 total_delta += time_delta
                 if time_delta > 12.0:
                     long_delta += 1
@@ -342,13 +343,12 @@ def read_tles(tle_source, filename=None, write_file=False, params=None, date=Non
                     short_delta += 1
                     short_delta_val += time_delta
 
-        logging.info("Calculating long deltas.")
-        logging.info("The total number of satellites is " + str(len(tles)))
-        logging.info("The number of satellites with long time deltas is " + str(long_delta))
-        logging.info("The number of satellites with short time deltas is " + str(short_delta))
-        logging.info("The average time delta of the satellite tles is " + str(total_delta / len(tles)))
-        logging.info("The average long time delta is " + str(long_delta_val / long_delta))
-        logging.info("The average short time delta is " + str(short_delta_val / short_delta))
+        logger.info("The total number of satellites is " + str(len(tles)))
+        logger.info("The number of satellites with long time deltas is " + str(long_delta))
+        logger.info("The number of satellites with short time deltas is " + str(short_delta))
+        logger.info("The average time delta of the satellite tles is " + str(total_delta / len(tles)))
+        logger.info("The average long time delta is " + str(long_delta_val / long_delta))
+        logger.info("The average short time delta is " + str(short_delta_val / short_delta))
 
     else:
         raise ValueError(f"Invalid tle_source: {tle_source}. Please "
@@ -393,7 +393,7 @@ async def cache_update(visit_satellite_cache, tles, force_update=None):
 
         except Exception as e:
             # So you can observe on disconnects and such.
-            logging.exception(e)
+            logger.exception(e)
             raise
 
     return
@@ -409,11 +409,11 @@ async def tle_update(visit_satellite_cache, tles, tles_age):
             # TODO: Make a config so you can actually set what is read as
             #  the default??
             # Always read the current catalog
-            tles, tles_age = read_tles('catalog')  # noqa
+            tles, tles_age = read_tles('catalog', all_cats=ALL_CATS)  # noqa
 
         except Exception as e:
             # So you can observe on disconnects and such.
-            logging.exception(e)
+            logger.exception(e)
             raise
 
     return
@@ -448,7 +448,7 @@ async def aio_scheduler_status_handler(request):
             await asyncio.sleep(interval)
         except Exception as e:
             # So you can observe on disconnects and such.
-            logging.exception(e)
+            logger.exception(e)
             raise
 
     return resp
@@ -457,7 +457,7 @@ async def aio_scheduler_status_handler(request):
 async def get_cache_handler(request):
     """Precompute satellite cache given visit information"""
     data = await request.json()
-    logging.info(data)
+    logger.info(f"Cache request ({request.content_length} bytes): {data}")
     cache = request.app['visit_satellite_cache']
 
     return web.json_response(cache)
@@ -466,7 +466,8 @@ async def get_cache_handler(request):
 async def visit_handler(request):
     """Precompute satellite cache given visit information"""
     data = await request.json()
-    logging.info(data)
+    visit_id_ctx.set(str(data.get('visit_id', '-')))
+    logger.info(f"Visit request ({request.content_length} bytes): {data}")
 
     expected_columns = ['visit_id', 'exposure_start_mjd', 'exposure_end_mjd',
                         'boresight_ra', 'boresight_dec']
@@ -489,8 +490,8 @@ async def visit_handler(request):
     try:
         # Used if re-running a pipeline on previous visits
         if is_historical:
-            tles, tles_age = read_tles('catalog', date=str(data['exposure_start_mjd']))
-            logging.info("Using historical catalog for date: " + str(data['exposure_start_mjd']))
+            tles, tles_age = read_tles('catalog', date=str(data['exposure_start_mjd']), all_cats=ALL_CATS)
+            logger.info(f"Using historical catalog: date={data['exposure_start_mjd']}")
         else:
             # Get the current catalog of TLEs
             tles = request.app['tles']
@@ -509,19 +510,21 @@ async def visit_handler(request):
 
     except Exception as e:
         # So you can observe on disconnects and such.
-        logging.exception(e)
+        logger.exception(e)
         # TODO: pass exception text
         msg = 'failed to compute'
         return web.Response(status=500, text=msg)
-    msg = f"Successfully cached satellites for visit {cache_key} using "
-    logging.info(msg)
+    msg = f"Succesfully cached satellites for visit {cache_key}"
+    logger.info(msg)
     return web.Response(status=200, text=msg)
 
 
 async def diasource_handler(request):
     """Return allow_list for provided diasources"""
     data = await request.json()
-    logging.debug(data)
+    visit_id_ctx.set(str(data.get('visit_id', '-')))
+    detector_id_ctx.set(str(data.get('detector_id', '-')))
+    logger.debug(f"Diasource request ({request.content_length} bytes): {data}")
 
     expected_columns = ['visit_id', 'detector_id', 'diasources']
 
@@ -529,8 +532,7 @@ async def diasource_handler(request):
         if col not in data:
             msg = f"Missing column {col}."
             return web.Response(status=400, text=msg)
-    logging.info("Received dia source filtering request for visit and detector:"
-                 + str(data['visit_id']) + str(data['detector_id']))
+    logger.info(f"Diasource filter request for visit: {data['visit_id']}, detector: {data['detector_id']}")
 
     visit_id = data['visit_id']
     detector_id = data['detector_id']
@@ -543,29 +545,28 @@ async def diasource_handler(request):
     if cache_key not in cache:
         # If not present, pipelines will request a re-try to load the visit
         # into the cache one time.
-        msg = f"Provided visit {cache_key} not present in cache!."
-        logging.info(msg)
+        msg = f"Visit {cache_key} not in cache"
+        logger.info(msg)
         return web.Response(status=404, text=msg)
 
     try:
-        logging.info("Running satellite filter for: visit"
-                     + str(data['visit_id']) + " detector" + str(data['detector_id']))
+        logger.info(f"Running satellite filter for visit: {data['visit_id']}, "
+                    f"detector: {data['detector_id']}")
         sattleFilterTask = sattlePy.SattleFilterTask()
         allow_list = sattleFilterTask.run(cache[cache_key], data['diasources'], visit_id, detector_id)
 
     except Exception as e:
         # So you can observe on disconnects and such.
-        logging.exception(e)
+        logger.exception(e)
         msg = f"Failed computing allow_list for visit {cache_key}, detector {detector_id}"
-        logging.info(msg)
+        logger.info(msg)
         return web.Response(status=400, text=msg)
 
     data = {'visit_id': visit_id,
             'detector_id': detector_id,
             'allow_list': allow_list}
 
-    logging.info("Returning allow_list for visit and detector:"
-                 + str(data['visit_id']) + str(data['detector_id']))
+    logger.info(f"Returning allow_list for visit: {data['visit_id']},  detector: {data['detector_id']}")
 
     return web.json_response(data)
 
@@ -578,7 +579,7 @@ async def build_server(address, port, visit_satellite_cache, tles, tles_age, sat
     # "explicit is better than implicit." (At other times, it's
     # noise.)
     loop = asyncio.get_event_loop()
-    app = web.Application(loop=loop)
+    app = web.Application(loop=loop, client_max_size=40 * 1024 * 1024)
     app.router.add_route('PUT', "/visit_cache", visit_handler)
     app.router.add_route('GET', "/visit_cache", get_cache_handler)
     app.router.add_route('PUT', "/diasource_allow_list", diasource_handler)
@@ -599,19 +600,19 @@ def main():
 
     visit_satellite_cache = defaultdict(dict)
     # Current catalog will always be loaded.
-    tles, tles_age = read_tles('catalog')
+    tles, tles_age = read_tles('catalog', all_cats=ALL_CATS)
     sattleTask = sattlePy.SattleTask()
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(build_server(HOST, PORT, visit_satellite_cache, tles, tles_age, sattleTask))
-    logging.info("Server ready!")
+    logger.info("Server ready!")
 
     task = loop.create_task(cache_update(visit_satellite_cache, tles, tles_age)) # noqa
     tle_task = loop.create_task(tle_update(visit_satellite_cache, tles, tles_age)) # noqa
     try:
         loop.run_forever()
     except KeyboardInterrupt:
-        logging.info("Shutting Down!")
+        logger.info("Shutting Down!")
         # Canceling pending tasks and stopping the loop
         asyncio.gather(*asyncio.all_tasks()).cancel()
         loop.stop()
