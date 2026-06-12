@@ -5,15 +5,28 @@ import time
 import inspect
 import logging
 import logging.config
+import contextvars
 
 BASE_DIR = os.path.dirname(os.path.abspath(inspect.getfile(
                 inspect.currentframe()))) + '/'
 
 TARGET_OUTPUT_DIR = BASE_DIR+'../'
 
+visit_id_ctx: contextvars.ContextVar[str] = contextvars.ContextVar('visit_id', default='-')
+detector_id_ctx: contextvars.ContextVar[str] = contextvars.ContextVar('detector_id', default='-')
+
+
 class UTCFormatter(logging.Formatter):
     """Output logs in UTC"""
     converter = time.gmtime
+
+
+class ContextFilter(logging.Filter):
+    """Attach visit_id and detector_id from context vars to each log record."""
+    def filter(self, record):
+        record.visit_id = visit_id_ctx.get()
+        record.detector_id = detector_id_ctx.get()
+        return True
 
 
 LOGGING = {
@@ -22,17 +35,23 @@ LOGGING = {
     'formatters': {
         'utc': {
             '()': UTCFormatter,
-            'format': '%(asctime)s %(levelname)s %(module)s %(message)s'
+            'format': '%(asctime)s %(levelname)s %(module)s [%(visit_id)s/%(detector_id)s] %(message)s'
         },
         'simple': {
-            'format': '%(levelname)s %(message)s'
+            'format': '%(levelname)s [%(visit_id)s/%(detector_id)s] %(message)s'
         },
+    },
+    'filters': {
+        'context': {
+            '()': ContextFilter,
+        }
     },
     'handlers': {
         'console':{
             'level':'INFO',
             'class':'logging.StreamHandler',
             'formatter': 'simple',
+            'filters': ['context'],
             'stream'  : 'ext://sys.stdout'
         },
         'logfile': {
@@ -40,6 +59,7 @@ LOGGING = {
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': f'{BASE_DIR}/../logs/sattle.log',
             'formatter': 'utc',
+            'filters': ['context'],
             'when': 'midnight',
             'utc': 'True'
         }
