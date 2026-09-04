@@ -83,6 +83,7 @@ def format_date_for_catalog(mjd):
 
 
 def get_current_tle_time():
+    """Get the current TLE time in YYDDD.DDDDDDDD format."""
     now = datetime.datetime.now(datetime.timezone.utc)
     # Get year in YY format
     year = now.year % 100
