@@ -9,7 +9,7 @@ import requests
 import logging.config
 from astropy.time import Time
 import datetime
-from lsst.sattle import sattlePy
+from lsst.sattle import sattle, sattlePy
 from lsst.sattle.pullCatalog import SatCatFetcher
 
 from .constants import LOGGING, visit_id_ctx, detector_id_ctx
@@ -28,6 +28,29 @@ TEST_TLE_PARAMS = {
     "dec": 7.1126590888,
     "group_by": 'satellite',
     "is_illuminated": True, }
+
+_SELFTEST_LINE1 = "1 28900U 05044B   24332.40839354  .00016856  00000-0  30171-2 0  9992"
+_SELFTEST_LINE2 = "2 28900   3.1618  27.4062 7009977 210.3167  77.0063  2.63739217169425"
+_SELFTEST_JD_START = 2460641.549147066
+_SELFTEST_JD_END = 2460641.550536177
+
+
+def _startup_self_test():
+    """Verify the C++ sattle module can parse TLEs and compute positions."""
+    tle = sattle.TleType()
+    sattle.parse_elements(_SELFTEST_LINE1, _SELFTEST_LINE2, tle)
+
+    inputs = sattle.Inputs()
+    inputs.target_ra = 38.0
+    inputs.target_dec = 7.0
+    inputs.search_radius = 180.0
+    inputs.ht_in_meters = 2662.75
+    inputs.jd = [_SELFTEST_JD_START, _SELFTEST_JD_END]
+
+    out = sattle.calc_sat(inputs, tle)
+    if not (any(out.ra) and any(out.dec)):
+        raise RuntimeError("Startup self-test failed: calc_sat returned zero coordinates")
+    logger.info("Startup self-test passed")
 
 
 def tle_time_to_jd(tle_time_str):
@@ -464,6 +487,24 @@ async def get_cache_handler(request):
     return web.json_response(cache)
 
 
+async def health_handler(request):
+    """Health check -- verifies C++ layer and reports operational state."""
+    try:
+        _startup_self_test()
+    except Exception as e:
+        return web.json_response(
+            {"status": "unhealthy", "error": str(e)}, status=500)
+
+    tles = request.app.get('tles', [])
+    cache = request.app.get('visit_satellite_cache', {})
+
+    return web.json_response({
+        "status": "healthy",
+        "tle_count": len(tles),
+        "cached_visits": len(cache),
+    })
+
+
 async def visit_handler(request):
     """Precompute satellite cache given visit information"""
     data = await request.json()
@@ -581,6 +622,7 @@ async def build_server(address, port, visit_satellite_cache, tles, tles_age, sat
     # noise.)
     loop = asyncio.get_event_loop()
     app = web.Application(loop=loop, client_max_size=40 * 1024 * 1024)
+    app.router.add_route('GET', "/health", health_handler)
     app.router.add_route('PUT', "/visit_cache", visit_handler)
     app.router.add_route('GET', "/visit_cache", get_cache_handler)
     app.router.add_route('PUT', "/diasource_allow_list", diasource_handler)
@@ -595,6 +637,8 @@ async def build_server(address, port, visit_satellite_cache, tles, tles_age, sat
 
 def main():
     logging.config.dictConfig(LOGGING)
+
+    _startup_self_test()
 
     HOST = '0.0.0.0'
     PORT = 9999
