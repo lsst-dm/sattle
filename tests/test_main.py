@@ -43,7 +43,8 @@ from lsst.sattle.app.main import (
 
 TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "test_files")
 
-# Two TLE lines for satellite 28900, and one for 39294 (from test_files/satchecker_output.txt)
+# Two TLE lines for satellite 28900, and one for 39294
+# (from test_files/satchecker_output.txt)
 # Needed for time comparison and difference comparison
 _LINE1_A = "1 28900U 05044B   24332.40839354  .00016856  00000-0  30171-2 0  9992"
 _LINE2_A = "2 28900   3.1618  27.4062 7009977 210.3167  77.0063  2.63739217169425"
@@ -56,7 +57,8 @@ _LINE2_B = "2 39294 100.4080 203.7249 0049438  84.8048 275.8720 13.4454098558379
 
 
 class TestTLE(unittest.TestCase):
-    """Tests for the TLE class to make sure sattle is reading the TLEs correctly."""
+    """Tests for the TLE class to make sure sattle is reading the TLEs
+    correctly."""
 
     def test_construction(self):
         tle = TLE("line1", "line2")
@@ -76,7 +78,8 @@ class TestTLE(unittest.TestCase):
 
 
 class TestTleTimeToJd(unittest.TestCase):
-    """Mock TLE setup testing that the TLE time is being correctly converted to JD."""
+    """Mock TLE setup testing that the TLE time is being correctly converted to
+     JD."""
 
     def test_year_2000s(self):
         # Year 24 < 57 → 2024, day 1.0 = Jan 1, 2024
@@ -173,7 +176,8 @@ class TestMergeAndDeduplicateCatalogs(unittest.TestCase):
     """Tests for the merge_and_deduplicate_catalogs function."""
 
     def test_empty_catalogs(self):
-        """Test that an empty list of catalogs returns an empty list of results."""
+        """Test that an empty list of catalogs returns an empty list of
+        results."""
         result = merge_and_deduplicate_catalogs([], [], date=60000.0)
         self.assertEqual(result, [])
 
