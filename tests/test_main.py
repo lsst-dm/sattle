@@ -32,6 +32,7 @@ from lsst.sattle.app.main import (
     format_date_for_catalog,
     get_cache_handler,
     get_current_tle_time,
+    health_handler,
     merge_and_deduplicate_catalogs,
     read_tles,
     tle_time_to_jd,
@@ -43,8 +44,7 @@ from lsst.sattle.app.main import (
 
 TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "test_files")
 
-# Two TLE lines for satellite 28900, and one for 39294
-# (from test_files/satchecker_output.txt)
+# Two TLE lines for satellite 28900, and one for 39294 (from test_files/satchecker_output.txt)
 # Needed for time comparison and difference comparison
 _LINE1_A = "1 28900U 05044B   24332.40839354  .00016856  00000-0  30171-2 0  9992"
 _LINE2_A = "2 28900   3.1618  27.4062 7009977 210.3167  77.0063  2.63739217169425"
@@ -57,8 +57,7 @@ _LINE2_B = "2 39294 100.4080 203.7249 0049438  84.8048 275.8720 13.4454098558379
 
 
 class TestTLE(unittest.TestCase):
-    """Tests for the TLE class to make sure sattle is reading the TLEs
-    correctly."""
+    """Tests for the TLE class to make sure sattle is reading the TLEs correctly."""
 
     def test_construction(self):
         tle = TLE("line1", "line2")
@@ -78,8 +77,7 @@ class TestTLE(unittest.TestCase):
 
 
 class TestTleTimeToJd(unittest.TestCase):
-    """Mock TLE setup testing that the TLE time is being correctly converted to
-     JD."""
+    """Mock TLE setup testing that the TLE time is being correctly converted to JD."""
 
     def test_year_2000s(self):
         # Year 24 < 57 → 2024, day 1.0 = Jan 1, 2024
@@ -176,8 +174,7 @@ class TestMergeAndDeduplicateCatalogs(unittest.TestCase):
     """Tests for the merge_and_deduplicate_catalogs function."""
 
     def test_empty_catalogs(self):
-        """Test that an empty list of catalogs returns an empty list of
-        results."""
+        """Test that an empty list of catalogs returns an empty list of results."""
         result = merge_and_deduplicate_catalogs([], [], date=60000.0)
         self.assertEqual(result, [])
 
@@ -416,6 +413,59 @@ class TestGetCacheHandler(unittest.IsolatedAsyncioTestCase):
         response = await get_cache_handler(request)
         self.assertEqual(response.status, 200)
         self.assertEqual(json.loads(response.body), cache)
+
+
+class TestHealthHandler(unittest.IsolatedAsyncioTestCase):
+    """Tests for the health_handler function."""
+
+    def _make_request(self, app_data):
+        request = MagicMock()
+        request.app = app_data
+        return request
+
+    @patch('lsst.sattle.app.main._startup_self_test')
+    async def test_healthy_returns_200(self, mock_self_test):
+        """health_handler should return 200 with status info when self-test passes."""
+        app_data = {
+            'visit_satellite_cache': {'v1': {}, 'v2': {}},
+            'tle_catalog_timestamp': '2026-01-15T12:00:00+00:00',
+        }
+        request = self._make_request(app_data)
+        response = await health_handler(request)
+        self.assertEqual(response.status, 200)
+        body = json.loads(response.body)
+        self.assertEqual(body['status'], 'healthy')
+        self.assertEqual(body['cached_visits'], 2)
+        self.assertEqual(body['tle_catalog_timestamp'], '2026-01-15T12:00:00+00:00')
+
+    @patch('lsst.sattle.app.main._startup_self_test',
+           side_effect=RuntimeError('self-test boom'))
+    async def test_unhealthy_returns_500(self, mock_self_test):
+        """health_handler should return 500 when the self-test fails."""
+        app_data = {
+            'visit_satellite_cache': {},
+            'tle_catalog_timestamp': None,
+        }
+        request = self._make_request(app_data)
+        response = await health_handler(request)
+        self.assertEqual(response.status, 500)
+        body = json.loads(response.body)
+        self.assertEqual(body['status'], 'unhealthy')
+        self.assertIn('self-test boom', body['error'])
+
+    @patch('lsst.sattle.app.main._startup_self_test')
+    async def test_healthy_with_empty_state(self, mock_self_test):
+        """health_handler should report zeros when no visits are cached."""
+        app_data = {
+            'visit_satellite_cache': {},
+            'tle_catalog_timestamp': None,
+        }
+        request = self._make_request(app_data)
+        response = await health_handler(request)
+        self.assertEqual(response.status, 200)
+        body = json.loads(response.body)
+        self.assertEqual(body['cached_visits'], 0)
+        self.assertIsNone(body['tle_catalog_timestamp'])
 
 
 if __name__ == '__main__':
