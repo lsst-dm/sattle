@@ -1,4 +1,5 @@
-# flake8: noqa
+ # flake8: noqa
+import os
 import unittest
 import numpy as np
 import numpy.testing as npt
@@ -10,6 +11,8 @@ from lsst.sattle import sattle
 import lsst.sattle.app as app
 import re
 from lsst.sphgeom import ConvexPolygon, UnitVector3d
+
+TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "test_files")
 
 
 def load_satellites(filename):
@@ -42,33 +45,31 @@ def parse_convex_polygon(line):
 
     return ConvexPolygon(unit_vectors)
 
-
 class FilterSattleTaskTest(unittest.TestCase):
 
     def setUp(self):
         self.satFilterTask = SattleFilterTask()
         self.boxes = [[[np.float64(180.0), np.float64(-23.1)],
-                       [np.float64(180.1), np.float64(-23.1)],
-                       [np.float64(180.1), np.float64(-23.0)],
-                       [np.float64(180.0), np.float64(-23.0)]],
-                      [[np.float64(117), np.float64(34)],
-                       [np.float64(110), np.float64(30)],
-                       [np.float64(110), np.float64(34)],
-                       [np.float64(117), np.float64(0)]]]
+                  [np.float64(180.1), np.float64(-23.1)],
+                  [np.float64(180.1), np.float64(-23.0)],
+                  [np.float64(180.0), np.float64(-23.0)]],
+                 [[np.float64(117), np.float64(34)],
+                  [np.float64(110), np.float64(30)],
+                  [np.float64(110), np.float64(34)],
+                  [np.float64(117), np.float64(0)]]]
         self.boxes_no_match = [[[np.float64(222.0), np.float64(24.1)],
-                                [np.float64(223.1), np.float64(26.1)],
-                                [np.float64(222.1), np.float64(25.0)],
-                                [np.float64(226.0), np.float64(24.0)]],
-                               [[np.float64(30), np.float64(34)],
-                                [np.float64(20), np.float64(30)],
-                                [np.float64(20), np.float64(34)],
-                                [np.float64(30), np.float64(0)]]]
-
+                  [np.float64(223.1), np.float64(26.1)],
+                  [np.float64(222.1), np.float64(25.0)],
+                  [np.float64(226.0), np.float64(24.0)]],
+                 [[np.float64(30), np.float64(34)],
+                  [np.float64(20), np.float64(30)],
+                  [np.float64(20), np.float64(34)],
+                  [np.float64(30), np.float64(0)]]]
     def test_run(self):
         """ This test can only run if a local test sattle server is running. It
         checks that the full filter task runs successfully and returns
         the expected list of allowed ids."""
-        # TODO: This will be addressed in DM-50889
+        #TODO: This will be addressed in DM-50889
         sattleTask = SattleTask()
         self.assertEqual(True, True)  # add assertion here
 
@@ -79,8 +80,7 @@ class FilterSattleTaskTest(unittest.TestCase):
         tracks = [sphere_bboxes[0]]
 
         source_ids = [123, 456]
-        ids = self.satFilterTask._check_tracks(sphere_bboxes, tracks,
-                                               source_ids)
+        ids = self.satFilterTask._check_tracks(sphere_bboxes, tracks, source_ids)
         self.assertEqual(ids, [456])
 
     def test_check_tracks_one_source(self):
@@ -91,8 +91,7 @@ class FilterSattleTaskTest(unittest.TestCase):
         sphere_bboxes = self.satFilterTask.calc_bbox_sph_coords(self.boxes)
         tracks = [sphere_bboxes[0]]
         source_ids = [456]
-        ids = self.satFilterTask._check_tracks(np.array(sphere_bboxes[1]),
-                                               tracks, source_ids)
+        ids = self.satFilterTask._check_tracks(np.array(sphere_bboxes[1]), tracks, source_ids)
         self.assertEqual(ids, [[456]])
 
     def test_check_tracks_all_filtered(self):
@@ -105,16 +104,14 @@ class FilterSattleTaskTest(unittest.TestCase):
         tracks = sphere_bboxes.tolist()
 
         source_ids = [123, 456]
-        ids = self.satFilterTask._check_tracks(sphere_bboxes, tracks,
-                                               source_ids)
+        ids = self.satFilterTask._check_tracks(sphere_bboxes, tracks, source_ids)
         self.assertFalse(ids)
 
     def test_check_tracks_all_pass(self):
         sphere_bboxes = self.satFilterTask.calc_bbox_sph_coords(self.boxes)
         tracks = self.satFilterTask.calc_bbox_sph_coords(self.boxes_no_match)
         source_ids = [123, 456]
-        ids = self.satFilterTask._check_tracks(sphere_bboxes, tracks,
-                                               source_ids)
+        ids = self.satFilterTask._check_tracks(sphere_bboxes, tracks, source_ids)
         self.assertEqual(ids, [123, 456])
 
     def test_calc_bbox_sph_coords(self):
@@ -124,7 +121,7 @@ class FilterSattleTaskTest(unittest.TestCase):
         coords = self.satFilterTask.calc_bbox_sph_coords(self.boxes)
 
         self.assertIsInstance(coords[0], lsst.sphgeom._sphgeom.ConvexPolygon)
-        self.assertEquals(len(coords), 2)
+        self.assertEqual(len(coords), 2)
 
         for i, coord in enumerate(coords):
 
@@ -164,18 +161,18 @@ class FilterSattleTaskTest(unittest.TestCase):
         sat_coords = np.array([[[0.0, 0.0],
                                 [0.0, 0.0],
                                 [0.0, 1.0],
-                                [0.0, 1.0]],
-                               [[0.0, 1.0],
-                                [1.0, 0.0],
-                                [0.0, 0.0],
+                                [0.0,1.0]],
+                               [[ 0.0,  1.0],
+                                [ 1.0,  0.0],
+                                [ 0.0,  0.0],
                                 [0.0, 1.0]]])
         expected_sat_coords_ra = [[359.5, 0.5, 0.5, 359.5],
                                   [0.5, 359.5, 359.5, 0.5],
                                   [359.5, 359.5, 1.5, 1.5],
                                   [359.174, 0.119, 1.826, 0.881]]
-        expected_sat_coords_dec = [[-0.5, -0.5, 1.5, 1.5],
-                                   [1.5, 1.5, -0.5, -0.5],
-                                   [0.5, -0.5, -0.5, 0.5],
+        expected_sat_coords_dec = [[-0.5,  -0.5, 1.5,  1.5],
+                                   [1.5,  1.5, -0.5,  -0.5],
+                                   [0.5,  -0.5, -0.5,  0.5],
                                    [-0.191, -0.516, 1.191, 1.516]]
 
         tracks = self.satFilterTask.satellite_tracks(width, sat_coords, 0, 0)
@@ -205,10 +202,8 @@ class FilterSattleTaskTest(unittest.TestCase):
             # This is currently only looking at one, needs more fixing
             # This was in the outer loop and only checking one bbox
             for j, verts in enumerate(ra_dec_vertices):
-                self.assertAlmostEqual(verts[0], expected_sat_coords_ra[i][j],
-                                       places=3, )
-                self.assertAlmostEqual(verts[1], expected_sat_coords_dec[i][j],
-                                       places=3, )
+                self.assertAlmostEqual(verts[0], expected_sat_coords_ra[i][j], places=3,)
+                self.assertAlmostEqual(verts[1], expected_sat_coords_dec[i][j], places=3,)
 
     def test_find_corners(self):
         """Make test for find corners here. It should check that the angles
@@ -222,22 +217,22 @@ class FilterSattleTaskTest(unittest.TestCase):
                                 [1.0, 0.0],
                                 [0.0, 0.0],
                                 [0.0, 1.0]]])
-        corner1, corner2, corner3, corner4 = self.satFilterTask._find_corners(
-            sat_coords, psf)
+        corner1, corner2, corner3, corner4 = self.satFilterTask._find_corners(sat_coords, psf)
 
-        expected_corner1 = np.array([[.500, .500, 359.500, 0.119],
-                                     [-.500, 1.50, .500, -.516]])
-        expected_corner2 = np.array([[359.500, 359.500, 359.500, 359.174],
-                                     [-.500, 1.500, -.500, -.191]])
-        expected_corner3 = np.array([[0.5, 0.5, 1.5, 1.826],
-                                     [1.5, -0.5, 0.5, 1.191]])
+        expected_corner1 = np.array([[.500,  .500,  359.500, 0.119],
+                            [-.500,  1.50,  .500, -.516]])
+        expected_corner2 = np.array([[359.500,  359.500,  359.500, 359.174],
+                            [-.500,  1.500, -.500, -.191]])
+        expected_corner3 = np.array([[0.5,  0.5,  1.5,  1.826],
+                            [1.5, -0.5,  0.5,  1.191 ]])
         expected_corner4 = np.array([[359.5, 359.5, 1.5, 0.881],
-                                     [1.5, -0.5, -0.5, 1.516]])
+                            [1.5, -0.5, -0.5, 1.516]])
 
         np.allclose(corner1, expected_corner1)
         np.allclose(corner2, expected_corner2)
         np.allclose(corner3, expected_corner3)
         np.allclose(corner4, expected_corner4)
+
 
     def test_find_corners_lon_extremes(self):
         """ Test if find_corners correctly wraps lon coordinates when extending
@@ -245,8 +240,7 @@ class FilterSattleTaskTest(unittest.TestCase):
          degrees"""
         psf = 1
         sat_coords = np.array([[[350, 1], ], [[30, 30], ]])
-        corner1, corner2, corner3, corner4 = self.satFilterTask._find_corners(
-            sat_coords, psf)
+        corner1, corner2, corner3, corner4 = self.satFilterTask._find_corners(sat_coords, psf)
 
         expected_corner1 = np.array((np.array([349]), np.array([31])))
         expected_corner2 = np.array((np.array([349]), np.array([29])))
@@ -261,8 +255,7 @@ class FilterSattleTaskTest(unittest.TestCase):
         # Should always find the shortest path
         sat_coords = np.array([[[1, 350], ], [[30, 30], ]])
 
-        corner1, corner2, corner3, corner4 = self.satFilterTask._find_corners(
-            sat_coords, psf)
+        corner1, corner2, corner3, corner4 = self.satFilterTask._find_corners(sat_coords, psf)
 
         expected_corner1 = (np.array([2]), np.array([31]))
         expected_corner2 = (np.array([2]), np.array([29]))
@@ -274,13 +267,14 @@ class FilterSattleTaskTest(unittest.TestCase):
         npt.assert_array_equal(corner3, expected_corner3)
         npt.assert_array_equal(corner4, expected_corner4)
 
+
     def test_find_corners_lat_extremes(self):
         """ Test if find_corners correctly wraps lon coordinates when extending
         over 90/-90 degrees in latitude and that the longitude gets properly
         wrapped."""
         psf = 1
         # Positive lats
-        sat_coords_positive = np.array([[[30, 30], ], [[88, 89.9], ]])
+        sat_coords_positive = np.array([[[30, 30],], [[88, 89.9],]])
 
         expected_corner1 = (np.array([31.]), np.array([87]))
         expected_corner2 = (np.array([29.]), np.array([87]))
@@ -295,15 +289,14 @@ class FilterSattleTaskTest(unittest.TestCase):
         npt.assert_array_equal(corner3, expected_corner3)
         npt.assert_array_equal(corner4, expected_corner4)
 
-        sat_coords_negative = np.array([[[30, 30], ], [[-88, -89.9], ]])
+        sat_coords_negative= np.array([[[30, 30], ], [[-88, -89.9], ]])
 
         expected_corner1 = (np.array([31.]), np.array([-87.]))
         expected_corner2 = (np.array([29.]), np.array([-87.]))
         expected_corner3 = (np.array([211.]), np.array([-89.1]))
         expected_corner4 = (np.array([209.]), np.array([-89.1]))
 
-        corner1, corner2, corner3, corner4 = (
-            self.satFilterTask._find_corners(sat_coords_negative, psf))
+        corner1, corner2, corner3, corner4 = (self.satFilterTask._find_corners(sat_coords_negative, psf))
 
         npt.assert_array_equal(corner1, expected_corner1)
         npt.assert_array_equal(corner2, expected_corner2)
@@ -313,8 +306,7 @@ class FilterSattleTaskTest(unittest.TestCase):
     def test_extend_line(self):
         """Test that extend line properly extends the length of the given
          lines."""
-        x1, y1, x2, y2, length = np.array([0.0]), np.array([0.0]), np.array(
-            [10.0]), np.array([10.0]), 15.0
+        x1, y1, x2, y2, length = np.array([0.0]), np.array([0.0]), np.array([10.0]), np.array([10.0]), 15.0
         expected_x1, expected_y1, expected_x2, expected_y2 = -10.6066, -10.6066, 20.6066, 20.6066
         result = SattleFilterTask._extend_line(x1, y1, x2, y2, length)
         self.assertAlmostEqual(result[0].item(), expected_x1, places=3)
@@ -322,11 +314,11 @@ class FilterSattleTaskTest(unittest.TestCase):
         self.assertAlmostEqual(result[2].item(), expected_x2, places=3)
         self.assertAlmostEqual(result[3].item(), expected_y2, places=3)
 
+
     def test_extend_line_horizontal(self):
         """Test that the horizontal lines are handled correctly"""
 
-        x1, y1, x2, y2, length = np.array([0.0]), np.array([10.0]), np.array(
-            [10.0]), np.array([10.0]), 15.0
+        x1, y1, x2, y2, length = np.array([0.0]), np.array([10.0]), np.array([10.0]), np.array([10.0]), 15.0
         expected_x1, expected_y1, expected_x2, expected_y2 = -15.0, 10.0, 25.0, 10.0
         result = SattleFilterTask._extend_line(x1, y1, x2, y2, length)
         self.assertAlmostEqual(result[0].item(), expected_x1, places=3)
@@ -334,8 +326,7 @@ class FilterSattleTaskTest(unittest.TestCase):
         self.assertAlmostEqual(result[2].item(), expected_x2, places=3)
         self.assertAlmostEqual(result[3].item(), expected_y2, places=3)
 
-        x1, y1, x2, y2, length = np.array([10.0]), np.array([10.0]), np.array(
-            [0.0]), np.array([10.0]), 15.0
+        x1, y1, x2, y2, length = np.array([10.0]), np.array([10.0]), np.array([0.0]), np.array([10.0]), 15.0
         expected_x1, expected_y1, expected_x2, expected_y2 = 25.0, 10.0, -15.0, 10.0
         result = SattleFilterTask._extend_line(x1, y1, x2, y2, length)
         self.assertAlmostEqual(result[0].item(), expected_x1, places=3)
@@ -345,8 +336,7 @@ class FilterSattleTaskTest(unittest.TestCase):
 
     def test_extend_line_vertical(self):
         """Test that the vertical lines are handled correctly"""
-        x1, y1, x2, y2, length = np.array([0.0]), np.array([0.0]), np.array(
-            [0.0]), np.array([10.0]), 15.0
+        x1, y1, x2, y2, length = np.array([0.0]), np.array([0.0]), np.array([0.0]), np.array([10.0]), 15.0
         expected_x1, expected_y1, expected_x2, expected_y2 = 0.0, -15.0, 0.0, 25.0
         result = SattleFilterTask._extend_line(x1, y1, x2, y2, length)
         self.assertAlmostEqual(result[0].item(), expected_x1, places=3)
@@ -354,8 +344,7 @@ class FilterSattleTaskTest(unittest.TestCase):
         self.assertAlmostEqual(result[2].item(), expected_x2, places=3)
         self.assertAlmostEqual(result[3].item(), expected_y2, places=3)
 
-        x1, y1, x2, y2, length = np.array([0.0]), np.array([10.0]), np.array(
-            [0.0]), np.array([0.0]), 15.0
+        x1, y1, x2, y2, length = np.array([0.0]), np.array([10.0]), np.array([0.0]), np.array([0.0]), 15.0
         expected_x1, expected_y1, expected_x2, expected_y2 = 0.0, 25.0, 0.0, -15.0
         result = SattleFilterTask._extend_line(x1, y1, x2, y2, length)
         self.assertAlmostEqual(result[0].item(), expected_x1, places=3)
@@ -366,10 +355,10 @@ class FilterSattleTaskTest(unittest.TestCase):
     def test_normalize_coordinates(self):
         """ Test that the lat and lon extremes are handled correctly."""
         corners = np.array([[20.0, -10.0, 380.0, 10.0, 10.0, 354.0],
-                            [30.0, 20.0, 20.0, -99.0, 99.0, 99.0]])
+                           [30.0, 20.0, 20.0, -99.0, 99.0, 99.0]])
         result = SattleFilterTask._normalize_coordinates(corners)
         expected_result = np.array([[20.0, 350, 20, 190, 190, 174.0],
-                                    [30.0, 20.0, 20.0, -81, 81.0, 81.0]])
+                           [30.0, 20.0, 20.0, -81, 81.0, 81.0]])
         np.testing.assert_array_equal(result, expected_result)
 
 
@@ -379,17 +368,14 @@ class SattleTaskTest(unittest.TestCase):
         """ The example satchecker_output has 3 satellites """
         # TODO: Add an additional satellite TLE which would not be returned and
         #  a duplicate sat.
-        tles, tles_age = app.read_tles('tle_file',
-                                       filename='test_files/satchecker_output.txt')
+        tles, tles_age = app.read_tles('tle_file', filename=os.path.join(TEST_FILES_DIR, 'satchecker_output.txt'))
         visit_id = 1234
         exposure_start_mjd = 60641.04957530673
         exposure_end_mjd = 60641.049922528946
         boresight_ra = 38.3951559125
         boresight_dec = 7.1126590888
         sattleTask = SattleTask()
-        response = sattleTask.run(visit_id, exposure_start_mjd,
-                                  exposure_end_mjd, boresight_ra,
-                                  boresight_dec, tles, tles_age)
+        response = sattleTask.run(visit_id, exposure_start_mjd, exposure_end_mjd, boresight_ra, boresight_dec, tles, tles_age)
         self.assertEqual(len(response), 2)  # add assertion here
         self.assertEqual(len(response[0]), 3)
         self.assertEqual(len(response[1]), 3)
@@ -409,24 +395,21 @@ class Alpha5SattleTest(unittest.TestCase):
     ALPHA5_LINE2_B = '2 B2345 100.4080 203.7249 0049438  84.8048 275.8720 13.44540985583795'
 
     def test_parse_elements_alpha5(self):
-        """parse_elements should accept Alpha-5 satellite numbers without
-        error."""
+        """parse_elements should accept Alpha-5 satellite numbers without error."""
         tle = sattle.TleType()
         sattle.parse_elements(self.ALPHA5_LINE1, self.ALPHA5_LINE2, tle)
         self.assertIsNotNone(tle.epoch)
         self.assertGreater(tle.epoch, 0)
 
     def test_parse_elements_alpha5_norad_number(self):
-        """parse_elements should decode Alpha-5 to the correct integer NORAD
-        number."""
+        """parse_elements should decode Alpha-5 to the correct integer NORAD number."""
         tle = sattle.TleType()
         sattle.parse_elements(self.ALPHA5_LINE1, self.ALPHA5_LINE2, tle)
         # A0001 = 100001
         self.assertEqual(tle.norad_number, 100001)
 
     def test_parse_elements_alpha5_b_prefix(self):
-        """parse_elements should decode B-prefixed Alpha-5 numbers
-        correctly."""
+        """parse_elements should decode B-prefixed Alpha-5 numbers correctly."""
         tle = sattle.TleType()
         sattle.parse_elements(self.ALPHA5_LINE1_B, self.ALPHA5_LINE2_B, tle)
         # B2345 = 112345
@@ -448,10 +431,8 @@ class Alpha5SattleTest(unittest.TestCase):
         self.assertEqual(len(out.dec), 2)
 
     def test_read_tles_file_alpha5_parses(self):
-        """read_tles should parse Alpha-5 TLEs from file and pass to
-        SattleTask."""
-        tles, tle_age = app.read_tles('tle_file',
-                                      filename='test_files/alpha5_test.tle')
+        """read_tles should parse Alpha-5 TLEs from file and pass to SattleTask."""
+        tles, tle_age = app.read_tles('tle_file', filename=os.path.join(TEST_FILES_DIR, 'alpha5_test.tle'))
         self.assertEqual(len(tles), 3)
 
         # Verify Alpha-5 lines are preserved
@@ -462,8 +443,7 @@ class Alpha5SattleTest(unittest.TestCase):
 
     def test_sattle_task_alpha5_integration(self):
         """SattleTask.run should handle a mix of Alpha-5 and standard TLEs."""
-        tles, tle_age = app.read_tles('tle_file',
-                                      filename='test_files/alpha5_test.tle')
+        tles, tle_age = app.read_tles('tle_file', filename=os.path.join(TEST_FILES_DIR, 'alpha5_test.tle'))
         sattleTask = SattleTask()
 
         visit_id = 9999
