@@ -20,7 +20,6 @@ ALL_CATS = os.environ.get("SATTLE_ALL_CATS", "true").lower() != "false"
 logger = logging.getLogger(__name__)
 
 
-
 def _startup_self_test():
     """Verify the C++ sattle module can parse TLEs and compute positions."""
     tle = sattle.TleType()
