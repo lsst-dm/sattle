@@ -6,7 +6,7 @@ import logging
 import os
 import requests
 import logging.config
-from astropy.time import Time
+from astropy.time import Time, TimeDelta
 import datetime
 from lsst.sattle import sattle, sattlePy
 from lsst.sattle.pullCatalog import SatCatFetcher
@@ -80,8 +80,9 @@ def format_date_for_catalog(mjd):
     t = Time(mjd, format='mjd')
 
     # Create a window around the observation time
-    start_time = t - 0.3833  # Roughly 4.4 hours before
-    end_time = t + 0.3833
+    window = TimeDelta(0.3833, format='jd')
+    start_time = t - window
+    end_time = t + window
 
     start_str = start_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
     end_str = end_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
