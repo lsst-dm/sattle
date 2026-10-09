@@ -25,7 +25,7 @@ import unittest
 from collections import defaultdict
 from unittest.mock import patch, MagicMock, AsyncMock
 
-from astropy.time import Time
+from astropy.time import Time, TimeDelta
 
 from lsst.sattle.app.main import (
     TLE,
@@ -140,8 +140,8 @@ class TestFormatDateForCatalog(unittest.TestCase):
         mjd = 60500.0
         date_string, observation_date = format_date_for_catalog(mjd)
         t_center = Time(mjd, format='mjd')
-        t_start = t_center - 0.3833
-        t_end = t_center + 0.3833
+        t_start = t_center - TimeDelta(0.3833, format='jd')
+        t_end = t_center + TimeDelta(0.3833, format='jd')
         start_str = t_start.datetime.strftime('%Y-%m-%dT%H:%M:%S')
         end_str = t_end.datetime.strftime('%Y-%m-%dT%H:%M:%S')
         self.assertIn(start_str, date_string)
