@@ -154,7 +154,8 @@ class SattleTask:
                 satellite_positions[0].append(list(out.ra))
                 satellite_positions[1].append(list(out.dec))
                 unique_satellites.add(tle.norad_number)
-                age_list.append([tle.norad_number, tles_age[i]])
+                if tles_age:
+                    age_list.append([tle.norad_number, tles_age[i]])
 
         if self.config.doWriteAges:
             with open(f'{visit_id}_tle_ages.txt', 'w') as file:

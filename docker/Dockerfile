@@ -43,6 +43,14 @@ RUN c++ -O3 -Wall -shared -std=c++11 $(python3 -m pybind11 --includes) \
 RUN mkdir -p /app/sattle/python/lsst/sattle/ && \
     cp *.so /app/sattle/python/lsst/sattle/sattle.so
 
+# Test stage - validates the build before shipping
+FROM builder AS tester
+RUN pip install pytest astropy
+COPY sattle/tests/ /app/sattle/tests/
+ENV PYTHONPATH=/app/sattle/python
+WORKDIR /app/sattle/tests
+RUN pytest -v test_main.py test_app.py test_sattle.py
+
 # Final stage
 FROM python:3.11.11-slim
 

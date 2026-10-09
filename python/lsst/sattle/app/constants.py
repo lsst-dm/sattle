@@ -1,5 +1,4 @@
 # flake8: noqa
-# https://gist.github.com/jbn/fc90e3ddbc5c60c698d07b3df30004c8
 import os
 import time
 import inspect
@@ -28,6 +27,11 @@ class ContextFilter(logging.Filter):
         record.detector_id = detector_id_ctx.get()
         return True
 
+
+SELFTEST_LINE1 = "1 28900U 05044B   24332.40839354  .00016856  00000-0  30171-2 0  9992"
+SELFTEST_LINE2 = "2 28900   3.1618  27.4062 7009977 210.3167  77.0063  2.63739217169425"
+SELFTEST_JD_START = 2460641.549147066
+SELFTEST_JD_END = 2460641.550536177
 
 LOGGING = {
     'version': 1,

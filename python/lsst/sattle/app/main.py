@@ -1,4 +1,3 @@
-# https://gist.github.com/jbn/fc90e3ddbc5c60c698d07b3df30004c8
 from collections import defaultdict
 import asyncio
 from aiohttp import web
@@ -7,27 +6,36 @@ import logging
 import os
 import requests
 import logging.config
-from astropy.time import Time
+from astropy.time import Time, TimeDelta
 import datetime
-from lsst.sattle import sattlePy
+from lsst.sattle import sattle, sattlePy
 from lsst.sattle.pullCatalog import SatCatFetcher
 
-from .constants import LOGGING, visit_id_ctx, detector_id_ctx
+from .constants import (
+    LOGGING, SELFTEST_LINE1, SELFTEST_LINE2, SELFTEST_JD_START, SELFTEST_JD_END,
+    visit_id_ctx, detector_id_ctx,
+)
 
 ALL_CATS = os.environ.get("SATTLE_ALL_CATS", "true").lower() != "false"
 logger = logging.getLogger(__name__)
 
-TEST_TLE_PARAMS = {
-    "latitude": -30.244633333333333,
-    "longitude": -70.74941666666666,
-    "fov_radius": 1,
-    "elevation": 2662.75,
-    "start_time_jd": 2460641.549147066,
-    "duration": 120,
-    "ra": 38.3951559125,
-    "dec": 7.1126590888,
-    "group_by": 'satellite',
-    "is_illuminated": True, }
+
+def _startup_self_test():
+    """Verify the C++ sattle module can parse TLEs and compute positions."""
+    tle = sattle.TleType()
+    sattle.parse_elements(SELFTEST_LINE1, SELFTEST_LINE2, tle)
+
+    inputs = sattle.Inputs()
+    inputs.target_ra = 38.0
+    inputs.target_dec = 7.0
+    inputs.search_radius = 180.0
+    inputs.ht_in_meters = 2662.75
+    inputs.jd = [SELFTEST_JD_START, SELFTEST_JD_END]
+
+    out = sattle.calc_sat(inputs, tle)
+    if not (any(out.ra) and any(out.dec)):
+        raise RuntimeError("Startup self-test failed: calc_sat returned zero coordinates")
+    logger.info("Startup self-test passed")
 
 
 def tle_time_to_jd(tle_time_str):
@@ -71,8 +79,9 @@ def format_date_for_catalog(mjd):
     t = Time(mjd, format='mjd')
 
     # Create a window around the observation time
-    start_time = t - 0.3833  # Roughly 4.4 hours before
-    end_time = t + 0.3833
+    window = TimeDelta(0.3833, format='jd')
+    start_time = t - window
+    end_time = t + window
 
     start_str = start_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
     end_str = end_time.datetime.strftime('%Y-%m-%dT%H:%M:%S')
@@ -83,6 +92,7 @@ def format_date_for_catalog(mjd):
 
 
 def get_current_tle_time():
+    """Get the current TLE time in YYDDD.DDDDDDDD format."""
     now = datetime.datetime.now(datetime.timezone.utc)
     # Get year in YY format
     year = now.year % 100
@@ -399,7 +409,7 @@ async def cache_update(visit_satellite_cache, tles, force_update=None):
     return
 
 
-async def tle_update(visit_satellite_cache, tles, tles_age):
+async def tle_update(visit_satellite_cache, tles, tles_age, app):
     """Main loop that clears the tle cache according to the clock."""
     interval = 600000  # seconds
 
@@ -410,6 +420,9 @@ async def tle_update(visit_satellite_cache, tles, tles_age):
             #  the default??
             # Always read the current catalog
             tles, tles_age = read_tles('catalog', all_cats=ALL_CATS)  # noqa
+            app['tle_catalog_timestamp'] = (
+                datetime.datetime.now(datetime.timezone.utc).isoformat()
+            )
 
         except Exception as e:
             # So you can observe on disconnects and such.
@@ -461,6 +474,23 @@ async def get_cache_handler(request):
     cache = request.app['visit_satellite_cache']
 
     return web.json_response(cache)
+
+
+async def health_handler(request):
+    """Health check -- verifies C++ layer and reports operational state."""
+    try:
+        _startup_self_test()
+    except Exception as e:
+        return web.json_response(
+            {"status": "unhealthy", "error": str(e)}, status=500)
+
+    cache = request.app.get('visit_satellite_cache', {})
+
+    return web.json_response({
+        "status": "healthy",
+        "cached_visits": len(cache),
+        "tle_catalog_timestamp": request.app.get('tle_catalog_timestamp'),
+    })
 
 
 async def visit_handler(request):
@@ -571,7 +601,8 @@ async def diasource_handler(request):
     return web.json_response(data)
 
 
-async def build_server(address, port, visit_satellite_cache, tles, tles_age, sattleTask):
+async def build_server(address, port, visit_satellite_cache, tles, tles_age,
+                       sattleTask, tle_catalog_timestamp):
     # For most applications -- those with one event loop --
     # you don't need to pass around a loop object. At anytime,
     # you can retrieve it with a call to asyncio.get_event_loop().
@@ -580,6 +611,7 @@ async def build_server(address, port, visit_satellite_cache, tles, tles_age, sat
     # noise.)
     loop = asyncio.get_event_loop()
     app = web.Application(loop=loop, client_max_size=40 * 1024 * 1024)
+    app.router.add_route('GET', "/health", health_handler)
     app.router.add_route('PUT', "/visit_cache", visit_handler)
     app.router.add_route('GET', "/visit_cache", get_cache_handler)
     app.router.add_route('PUT', "/diasource_allow_list", diasource_handler)
@@ -588,12 +620,16 @@ async def build_server(address, port, visit_satellite_cache, tles, tles_age, sat
     app['tles'] = tles
     app['tles_age'] = tles_age
     app['sattleTask'] = sattleTask
+    app['tle_catalog_timestamp'] = tle_catalog_timestamp
 
-    return await loop.create_server(app.make_handler(), address, port)
+    server = await loop.create_server(app.make_handler(), address, port)
+    return server, app
 
 
 def main():
     logging.config.dictConfig(LOGGING)
+
+    _startup_self_test()
 
     HOST = '0.0.0.0'
     PORT = 9999
@@ -601,14 +637,17 @@ def main():
     visit_satellite_cache = defaultdict(dict)
     # Current catalog will always be loaded.
     tles, tles_age = read_tles('catalog', all_cats=ALL_CATS)
+    tle_catalog_timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
     sattleTask = sattlePy.SattleTask()
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(build_server(HOST, PORT, visit_satellite_cache, tles, tles_age, sattleTask))
+    _, app = loop.run_until_complete(
+        build_server(HOST, PORT, visit_satellite_cache, tles, tles_age,
+                     sattleTask, tle_catalog_timestamp))
     logger.info("Server ready!")
 
     task = loop.create_task(cache_update(visit_satellite_cache, tles, tles_age)) # noqa
-    tle_task = loop.create_task(tle_update(visit_satellite_cache, tles, tles_age)) # noqa
+    tle_task = loop.create_task(tle_update(visit_satellite_cache, tles, tles_age, app)) # noqa
     try:
         loop.run_forever()
     except KeyboardInterrupt:
