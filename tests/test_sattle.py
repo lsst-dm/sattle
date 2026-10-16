@@ -1,4 +1,5 @@
-# flake8: noqa
+ # flake8: noqa
+import os
 import unittest
 import numpy as np
 import numpy.testing as npt
@@ -8,45 +9,16 @@ import lsst.utils.tests
 from lsst.sattle.sattlePy import SattleTask, SattleFilterTask
 from lsst.sattle import sattle
 import lsst.sattle.app as app
-import re
-from lsst.sphgeom import ConvexPolygon, UnitVector3d
+from lsst.sphgeom import ConvexPolygon
 
+TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "test_files")
 
-def load_satellites(filename):
-    # Read the file and process each line
-    satellite_list = []
-    with open(filename, 'r') as file:
-        for line in file:
-            try:
-                convex_polygon = parse_convex_polygon(line.strip())
-                satellite_list.append(convex_polygon)
-            except:
-                print("Something didn't work with the polygon")
-
-    # Print out the parsed convex polygons
-    for polygon in satellite_list:
-        print(polygon)
-
-    return satellite_list
-
-
-def parse_convex_polygon(line):
-    vector_pattern = r"UnitVector3d\((-?\d+\.\d+), (-?\d+\.\d+), (-?\d+\.\d+)\)"
-    vectors = re.findall(vector_pattern, line)
-
-    try:
-        unit_vectors = [UnitVector3d(float(x), float(y), float(z)) for x, y, z
-                        in vectors]
-    except:
-        print("Didn't work")
-
-    return ConvexPolygon(unit_vectors)
 
 class FilterSattleTaskTest(unittest.TestCase):
 
     def setUp(self):
         self.satFilterTask = SattleFilterTask()
-        self.boxes = [[[np.float64(180.0), np.float64(-23.1)],
+        self.boxes_satellite_match = [[[np.float64(180.0), np.float64(-23.1)],
                   [np.float64(180.1), np.float64(-23.1)],
                   [np.float64(180.1), np.float64(-23.0)],
                   [np.float64(180.0), np.float64(-23.0)]],
@@ -62,22 +34,43 @@ class FilterSattleTaskTest(unittest.TestCase):
                   [np.float64(20), np.float64(30)],
                   [np.float64(20), np.float64(34)],
                   [np.float64(30), np.float64(0)]]]
+        self.sphere_bboxes = self.satFilterTask.calc_bbox_sph_coords(self.boxes_satellite_match)
+
     def test_run(self):
-        """ This test can only run if a local test sattle server is running. It
-        checks that the full filter task runs successfully and returns
-        the expected list of allowed ids."""
-        #TODO: This will be addressed in DM-50889
-        sattleTask = SattleTask()
-        self.assertEqual(True, True)  # add assertion here
+        """run() filters sources whose bounding boxes intersect a satellite track
+        and returns the IDs of sources that do not for the full satFilterTask."""
+        def _box_midpoint(box):
+            ra = [coord[0] for coord in box]
+            dec = [coord[1] for coord in box]
+            return min(ra), max(ra), (min(dec) + max(dec)) / 2
+
+        ra0_min, ra0_max, dec0_mid = _box_midpoint(self.boxes_satellite_match[0])
+        ra1_min, ra1_max, dec1_mid = _box_midpoint(self.boxes_satellite_match[1])
+        sat_coords = {
+            'matched_satellites': [
+                [[ra0_min, ra0_max], [ra1_min, ra1_max]],
+                [[dec0_mid, dec0_mid], [dec1_mid, dec1_mid]]
+            ]
+        }
+        diaSources = [
+            {'bbox': self.boxes_satellite_match[0], 'diasource_id': 123},
+            {'bbox': self.boxes_satellite_match[1], 'diasource_id': 456},
+            {'bbox': self.boxes_no_match[0], 'diasource_id': 789},
+            {'bbox': self.boxes_no_match[1], 'diasource_id': 101},
+        ]
+        result = self.satFilterTask.run(sat_coords, diaSources, visit_id=1, detector_id=1)
+        self.assertNotIn(123, result)
+        self.assertNotIn(456, result)
+        self.assertIn(789, result)
+        self.assertIn(101, result)
 
     def test_check_tracks_one_filtered(self):
         """ This test checks that check_tracks filtered a single id when
         only one of the satellite tracks matches one dia source bbox."""
-        sphere_bboxes = self.satFilterTask.calc_bbox_sph_coords(self.boxes)
-        tracks = [sphere_bboxes[0]]
+        tracks = [self.sphere_bboxes[0]]
 
         source_ids = [123, 456]
-        ids = self.satFilterTask._check_tracks(sphere_bboxes, tracks, source_ids)
+        ids = self.satFilterTask._check_tracks(self.sphere_bboxes, tracks, source_ids)
         self.assertEqual(ids, [456])
 
     def test_check_tracks_one_source(self):
@@ -85,10 +78,9 @@ class FilterSattleTaskTest(unittest.TestCase):
         passed to the function that check_tracks will still function properly.
         No source should be filtered
         """
-        sphere_bboxes = self.satFilterTask.calc_bbox_sph_coords(self.boxes)
-        tracks = [sphere_bboxes[0]]
+        tracks = [self.sphere_bboxes[0]]
         source_ids = [456]
-        ids = self.satFilterTask._check_tracks(np.array(sphere_bboxes[1]), tracks, source_ids)
+        ids = self.satFilterTask._check_tracks(np.array(self.sphere_bboxes[1]), tracks, source_ids)
         self.assertEqual(ids, [[456]])
 
     def test_check_tracks_all_filtered(self):
@@ -97,28 +89,26 @@ class FilterSattleTaskTest(unittest.TestCase):
         log a warning as the empty array warning is handled within the
         pipeline.
         """
-        sphere_bboxes = self.satFilterTask.calc_bbox_sph_coords(self.boxes)
-        tracks = sphere_bboxes.tolist()
+        tracks = self.sphere_bboxes.tolist()
 
         source_ids = [123, 456]
-        ids = self.satFilterTask._check_tracks(sphere_bboxes, tracks, source_ids)
+        ids = self.satFilterTask._check_tracks(self.sphere_bboxes, tracks, source_ids)
         self.assertFalse(ids)
 
     def test_check_tracks_all_pass(self):
-        sphere_bboxes = self.satFilterTask.calc_bbox_sph_coords(self.boxes)
         tracks = self.satFilterTask.calc_bbox_sph_coords(self.boxes_no_match)
         source_ids = [123, 456]
-        ids = self.satFilterTask._check_tracks(sphere_bboxes, tracks, source_ids)
+        ids = self.satFilterTask._check_tracks(self.sphere_bboxes, tracks, source_ids)
         self.assertEqual(ids, [123, 456])
 
     def test_calc_bbox_sph_coords(self):
         """ Test that the two bounding boxes are returned with sphgeom
         coordinates, as well as check that the order does not matter."""
 
-        coords = self.satFilterTask.calc_bbox_sph_coords(self.boxes)
+        coords = self.satFilterTask.calc_bbox_sph_coords(self.boxes_satellite_match)
 
         self.assertIsInstance(coords[0], lsst.sphgeom._sphgeom.ConvexPolygon)
-        self.assertEquals(len(coords), 2)
+        self.assertEqual(len(coords), 2)
 
         for i, coord in enumerate(coords):
 
@@ -141,7 +131,7 @@ class FilterSattleTaskTest(unittest.TestCase):
                 ra_dec_vertices.append((ra, dec))
 
             list1_sorted = sorted(ra_dec_vertices)
-            list2_sorted = sorted(self.boxes[i])
+            list2_sorted = sorted(self.boxes_satellite_match[i])
 
             for pair1, pair2 in zip(list1_sorted, list2_sorted):
                 for val1, val2 in zip(pair1, pair2):
@@ -172,7 +162,7 @@ class FilterSattleTaskTest(unittest.TestCase):
                                    [0.5,  -0.5, -0.5,  0.5],
                                    [-0.191, -0.516, 1.191, 1.516]]
 
-        tracks = self.satFilterTask.satellite_tracks(width, sat_coords)
+        tracks = self.satFilterTask.satellite_tracks(width, sat_coords, 0, 0)
         self.assertEqual(len(tracks), 4)
         for track in tracks:
             self.assertIsInstance(track, lsst.sphgeom._sphgeom.ConvexPolygon)
@@ -365,14 +355,14 @@ class SattleTaskTest(unittest.TestCase):
         """ The example satchecker_output has 3 satellites """
         # TODO: Add an additional satellite TLE which would not be returned and
         #  a duplicate sat.
-        tles =app.read_tles('tle_file', filename='test_files/satchecker_output.txt')
+        tles, tles_age = app.read_tles('tle_file', filename=os.path.join(TEST_FILES_DIR, 'satchecker_output.txt'))
         visit_id = 1234
         exposure_start_mjd = 60641.04957530673
         exposure_end_mjd = 60641.049922528946
         boresight_ra = 38.3951559125
         boresight_dec = 7.1126590888
         sattleTask = SattleTask()
-        response = sattleTask.run(visit_id, exposure_start_mjd, exposure_end_mjd, boresight_ra, boresight_dec, tles)
+        response = sattleTask.run(visit_id, exposure_start_mjd, exposure_end_mjd, boresight_ra, boresight_dec, tles, tles_age)
         self.assertEqual(len(response), 2)  # add assertion here
         self.assertEqual(len(response[0]), 3)
         self.assertEqual(len(response[1]), 3)
@@ -380,6 +370,84 @@ class SattleTaskTest(unittest.TestCase):
             self.assertEqual(len(entry), 2)
             self.assertIsInstance(entry[0], np.float64)
             self.assertIsInstance(entry[1], np.float64)
+
+
+class Alpha5SattleTest(unittest.TestCase):
+    """Tests that the C++ sat_code layer handles Alpha-5 satellite numbers."""
+
+    # Example of an Alpha-5 TLE, with the satellite identification number
+    # including the letter prefix.
+    ALPHA5_LINE1 = '1 A0001U 24001A   24332.40839354  .00016856  00000-0  30171-2 0  9992'
+    ALPHA5_LINE2 = '2 A0001   3.1618  27.4062 7009977 210.3167  77.0063  2.63739217169425'
+
+    ALPHA5_LINE1_B = '1 B2345U 24050A   24332.60254552  .00004314  00000-0  74105-2 0  9997'
+    ALPHA5_LINE2_B = '2 B2345 100.4080 203.7249 0049438  84.8048 275.8720 13.44540985583795'
+
+    def test_parse_elements_alpha5(self):
+        """parse_elements should accept Alpha-5 satellite numbers without error."""
+        tle = sattle.TleType()
+        sattle.parse_elements(self.ALPHA5_LINE1, self.ALPHA5_LINE2, tle)
+        self.assertIsNotNone(tle.epoch)
+        self.assertGreater(tle.epoch, 0)
+
+    def test_parse_elements_alpha5_norad_number(self):
+        """parse_elements should decode Alpha-5 to the correct integer NORAD number."""
+        tle = sattle.TleType()
+        sattle.parse_elements(self.ALPHA5_LINE1, self.ALPHA5_LINE2, tle)
+        # A0001 = 100001
+        self.assertEqual(tle.norad_number, 100001)
+
+    def test_parse_elements_alpha5_b_prefix(self):
+        """parse_elements should decode B-prefixed Alpha-5 numbers correctly."""
+        tle = sattle.TleType()
+        sattle.parse_elements(self.ALPHA5_LINE1_B, self.ALPHA5_LINE2_B, tle)
+        # B2345 = 112345
+        self.assertEqual(tle.norad_number, 112345)
+
+    def test_calc_sat_alpha5(self):
+        """calc_sat should compute positions for Alpha-5 satellites."""
+        tle = sattle.TleType()
+        sattle.parse_elements(self.ALPHA5_LINE1, self.ALPHA5_LINE2, tle)
+
+        inputs = sattle.Inputs()
+        inputs.target_ra = 38.0
+        inputs.target_dec = 7.0
+        inputs.search_radius = 180.0
+        inputs.jd = [2460641.5, 2460641.6]
+
+        out = sattle.calc_sat(inputs, tle)
+        self.assertEqual(len(out.ra), 2)
+        self.assertEqual(len(out.dec), 2)
+
+    def test_read_tles_file_alpha5_parses(self):
+        """read_tles should parse Alpha-5 TLEs from file and pass to SattleTask."""
+        tles, tle_age = app.read_tles('tle_file', filename=os.path.join(TEST_FILES_DIR, 'alpha5_test.tle'))
+        self.assertEqual(len(tles), 3)
+
+        # Verify Alpha-5 lines are preserved
+        self.assertIn('A0001', tles[0].line1)
+        self.assertIn('B2345', tles[1].line1)
+        # Standard satellite still works
+        self.assertIn('25544', tles[2].line1)
+
+    def test_sattle_task_alpha5_integration(self):
+        """SattleTask.run should handle a mix of Alpha-5 and standard TLEs."""
+        tles, tle_age = app.read_tles('tle_file', filename=os.path.join(TEST_FILES_DIR, 'alpha5_test.tle'))
+        sattleTask = SattleTask()
+
+        visit_id = 9999
+        exposure_start_mjd = 60641.04957530673
+        exposure_end_mjd = 60641.049922528946
+        boresight_ra = 38.0
+        boresight_dec = 7.0
+
+        response = sattleTask.run(
+            visit_id, exposure_start_mjd, exposure_end_mjd,
+            boresight_ra, boresight_dec, tles, tle_age
+        )
+        self.assertEqual(len(response), 2)
+        self.assertIsInstance(response[0], list)
+        self.assertIsInstance(response[1], list)
 
 
 if __name__ == '__main__':
