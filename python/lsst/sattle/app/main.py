@@ -415,7 +415,7 @@ async def cache_update(visit_satellite_cache, tles, force_update=None):
 
 async def tle_update(visit_satellite_cache, tles, tles_age, app):
     """Main loop that clears the tle cache according to the clock."""
-    interval = 600000  # seconds
+    interval = 86400  # seconds (24h safety-net; primary refresh is via cron)
 
     while True:
         try:
@@ -605,6 +605,27 @@ async def diasource_handler(request):
     return web.json_response(data)
 
 
+async def refresh_tles_handler(request):
+    """Refresh the in-memory TLE catalog on demand."""
+    try:
+        tles, tles_age = read_tles('catalog', all_cats=ALL_CATS)
+        request.app['tles'] = tles
+        request.app['tles_age'] = tles_age
+        request.app['tle_catalog_timestamp'] = (
+            datetime.datetime.now(datetime.timezone.utc).isoformat()
+        )
+        logger.info(f"TLE catalog refreshed: {len(tles)} satellites")
+        return web.json_response({
+            "status": "refreshed",
+            "satellites": len(tles),
+            "timestamp": request.app['tle_catalog_timestamp'],
+        })
+    except Exception as e:
+        logger.exception(e)
+        return web.json_response(
+            {"status": "failed", "error": str(e)}, status=500)
+
+
 async def build_server(address, port, visit_satellite_cache, tles, tles_age,
                        sattleTask, tle_catalog_timestamp):
     # For most applications -- those with one event loop --
@@ -619,6 +640,7 @@ async def build_server(address, port, visit_satellite_cache, tles, tles_age,
     app.router.add_route('PUT', "/visit_cache", visit_handler)
     app.router.add_route('GET', "/visit_cache", get_cache_handler)
     app.router.add_route('PUT', "/diasource_allow_list", diasource_handler)
+    app.router.add_route('POST', "/refresh_tles", refresh_tles_handler)
 
     app['visit_satellite_cache'] = visit_satellite_cache
     app['tles'] = tles
