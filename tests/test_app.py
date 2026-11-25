@@ -32,7 +32,7 @@ class TestLogging(unittest.TestCase):
         )
 
     def test_context_filter_attaches_vars(self):
-        """ContextFilter should inject visit_id and detector_id from context vars."""
+        """ContextFilter should inject IDs from context vars."""
         token_v = visit_id_ctx.set('12345')
         token_d = detector_id_ctx.set('42')
         try:
@@ -114,7 +114,7 @@ class TestUtilityFunctions(unittest.TestCase):
         self.assertAlmostEqual(jd, expected, places=4)
 
     def test_tle_time_to_jd_mid_year(self):
-        """TLE epoch '24182.50000000' should map to 2024, day 182.5 (July 1 noon)."""
+        """TLE epoch '24182.50000000' maps to July 1, 2024 at noon."""
         jd = tle_time_to_jd('24182.50000000')
         base = datetime.datetime(2024, 1, 1)
         target = base + datetime.timedelta(days=181.5)
@@ -122,7 +122,7 @@ class TestUtilityFunctions(unittest.TestCase):
         self.assertAlmostEqual(jd, expected, places=4)
 
     def test_format_date_for_catalog_returns_tuple(self):
-        """format_date_for_catalog should return (date_string, observation_date)."""
+        """Return a tuple of date_string and observation_date."""
         mjd = 60641.0
         result = format_date_for_catalog(mjd)
         self.assertIsInstance(result, tuple)
@@ -136,7 +136,7 @@ class TestUtilityFunctions(unittest.TestCase):
         self.assertIn('%2C%3C', date_string)
 
     def test_format_date_for_catalog_window(self):
-        """The time window should be approximately +/- 0.3833 days (~9.2 hours)."""
+        """The time window should be +/- 0.3833 days (~9.2 hours)."""
         mjd = 60641.0
         t = Time(mjd, format='mjd')
         date_string, obs_date = format_date_for_catalog(mjd)
@@ -158,7 +158,7 @@ class TestUtilityFunctions(unittest.TestCase):
         self.assertEqual(obs_date, expected)
 
     def test_get_current_tle_time_range(self):
-        """get_current_tle_time should return value in the range for current year."""
+        """get_current_tle_time should return a value for the current year."""
         result = get_current_tle_time()
         now = datetime.datetime.now(datetime.timezone.utc)
         year_prefix = (now.year % 100) * 1000
@@ -179,7 +179,7 @@ class TestUtilityFunctions(unittest.TestCase):
         self.assertEqual(day_component, now.timetuple().tm_yday)
 
     def test_merge_and_deduplicate_catalogs_picks_closest(self):
-        """When two TLEs exist for the same satellite, pick the one closest to the target date."""
+        """Pick the satellite's TLE closest to the target date."""
         # Satellite 25544, two TLEs with different epochs
         # Epoch "24001.50000000" -> Jan 1 2024 noon
         # Epoch "24010.50000000" -> Jan 10 2024 noon
@@ -306,7 +306,7 @@ class TestReadTles(unittest.TestCase):
 
     @patch('lsst.sattle.app.main.SatCatFetcher')
     def test_read_tles_catalog_no_cui_raises(self, mock_fetcher_cls):
-        """read_tles('catalog') with empty CUI catalog should raise ValueError."""
+        """An empty CUI catalog should raise ValueError."""
         mock_fetcher = MagicMock()
         mock_fetcher_cls.return_value = mock_fetcher
 
@@ -381,7 +381,7 @@ class TestHandlers(unittest.IsolatedAsyncioTestCase):
         await self.client.close()
 
     async def test_visit_handler_missing_column(self):
-        """visit_handler should return 400 when a required column is missing."""
+        """Return 400 when a required visit column is missing."""
         data = {'visit_id': 1, 'exposure_start_mjd': 60641.0}
         resp = await self.client.request('PUT', '/visit_cache', json=data)
         self.assertEqual(resp.status, 400)
@@ -407,7 +407,7 @@ class TestHandlers(unittest.IsolatedAsyncioTestCase):
         self.assertIn('test_visit_1', self.app['visit_satellite_cache'])
 
     async def test_visit_handler_already_cached(self):
-        """visit_handler should return 200 with 'already loaded' if visit is cached."""
+        """Return 200 with 'already loaded' if the visit is cached."""
         self.app['visit_satellite_cache']['cached_visit'] = {'matched_satellites': []}
 
         data = {
@@ -442,7 +442,7 @@ class TestHandlers(unittest.IsolatedAsyncioTestCase):
         self.assertIn('log_test_visit', log_output)
 
     async def test_diasource_handler_missing_column(self):
-        """diasource_handler should return 400 when a required column is missing."""
+        """Return 400 when a required diasource column is missing."""
         data = {'visit_id': 1}
         resp = await self.client.request('PUT', '/diasource_allow_list', json=data)
         self.assertEqual(resp.status, 400)
@@ -518,7 +518,7 @@ class TestHandlers(unittest.IsolatedAsyncioTestCase):
         self.assertIn('v1', json_resp)
 
     async def test_visit_handler_historical_logs(self):
-        """visit_handler with historical=True should log historical catalog usage."""
+        """Log historical catalog usage when historical=True."""
         with patch('lsst.sattle.app.main.read_tles') as mock_read:
             mock_read.return_value = ([], [])
             mock_task = self.app['sattleTask']
@@ -540,7 +540,7 @@ class TestHandlers(unittest.IsolatedAsyncioTestCase):
 
     @patch('lsst.sattle.app.main._startup_self_test')
     async def test_health_handler_returns_timestamp(self, mock_self_test):
-        """health_handler should include tle_catalog_timestamp in its response."""
+        """Include tle_catalog_timestamp in the health response."""
         resp = await self.client.request('GET', '/health')
         self.assertEqual(resp.status, 200)
         json_resp = await resp.json()
@@ -575,7 +575,7 @@ class TestHandlers(unittest.IsolatedAsyncioTestCase):
     @patch('lsst.sattle.app.main.CATALOG_REFRESH_TIMEOUT', 0.01)
     @patch('lsst.sattle.app.main.read_tles')
     async def test_refresh_tles_timeout(self, mock_read_tles):
-        """POST /refresh_tles should return 504 when catalog fetch times out."""
+        """Return 504 when the catalog fetch times out."""
         import time
 
         def slow_read(*args, **kwargs):
@@ -629,7 +629,7 @@ class TestAlpha5Format(unittest.TestCase):
         self.assertIn('A0001', r)
 
     def test_merge_dedup_alpha5_picks_closest(self):
-        """Deduplication should work correctly with Alpha-5 satellite numbers."""
+        """Deduplication should work with Alpha-5 satellite numbers."""
         omm = [
             {'TLE_LINE1': self.ALPHA5_LINE1, 'TLE_LINE2': self.ALPHA5_LINE2},
             {'TLE_LINE1': self.ALPHA5_LINE1_NEWER, 'TLE_LINE2': self.ALPHA5_LINE2_NEWER},
@@ -660,7 +660,7 @@ class TestAlpha5Format(unittest.TestCase):
         self.assertIn('25544', sat_nums)
 
     def test_merge_dedup_alpha5_cross_catalog(self):
-        """Same Alpha-5 satellite in both catalogs should deduplicate to closest epoch."""
+        """Deduplicate Alpha-5 across catalogs to the closest epoch."""
         omm = [
             {'TLE_LINE1': self.ALPHA5_LINE1, 'TLE_LINE2': self.ALPHA5_LINE2},
         ]
@@ -694,7 +694,7 @@ class TestAlpha5Format(unittest.TestCase):
             os.unlink(tmp_path)
 
     def test_read_tles_file_mixed_alpha5_standard(self):
-        """read_tles('tle_file') should handle a mix of Alpha-5 and standard TLEs."""
+        """Handle a mix of Alpha-5 and standard TLEs from a file."""
         import tempfile
         import os
 
@@ -718,7 +718,7 @@ class TestAlpha5Format(unittest.TestCase):
 
     @patch('lsst.sattle.app.main.SatCatFetcher')
     def test_read_tles_catalog_alpha5_current(self, mock_fetcher_cls):
-        """read_tles('catalog') should handle Alpha-5 numbers in current catalog."""
+        """Handle Alpha-5 numbers in the current catalog."""
         mock_fetcher = MagicMock()
         mock_fetcher_cls.return_value = mock_fetcher
 
@@ -742,7 +742,7 @@ class TestAlpha5Format(unittest.TestCase):
 
     @patch('lsst.sattle.app.main.SatCatFetcher')
     def test_read_tles_catalog_alpha5_historical_dedup(self, mock_fetcher_cls):
-        """read_tles('catalog') with historical date should deduplicate Alpha-5 satellites."""
+        """Deduplicate Alpha-5 satellites for a historical date."""
         mock_fetcher = MagicMock()
         mock_fetcher_cls.return_value = mock_fetcher
 
@@ -763,10 +763,10 @@ class TestAlpha5Format(unittest.TestCase):
         with self.assertLogs('lsst.sattle.app.main', level='INFO'):
             tles, tle_age = read_tles('catalog', date=target_mjd, all_cats=True)
 
-        # A0001 should be deduplicated (2 entries -> 1), leaving 3 unique satellites
+        # A0001 is deduplicated (2 entries -> 1), leaving 3 satellites.
         self.assertEqual(len(tles), 3)
         lines = [tle.line1 for tle in tles]
-        alpha5_lines = [l for l in lines if 'A0001' in l]
+        alpha5_lines = [line for line in lines if 'A0001' in line]
         self.assertEqual(len(alpha5_lines), 1)
         self.assertIn('24010.50000000', alpha5_lines[0])
 
