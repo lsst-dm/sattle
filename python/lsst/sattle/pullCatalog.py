@@ -70,7 +70,7 @@ class SatCatFetcher:
 
         login_url = f"{self.BASE_URL}/ajaxauth/login"
         login_data = {"identity": self._username, "password": self._password}
-        login_resp = requests.post(login_url, data=login_data)
+        login_resp = requests.post(login_url, data=login_data, timeout=120)
         login_resp.raise_for_status()
         jar = login_resp.cookies
         self._logger.info("Successfully logged in")
@@ -91,7 +91,7 @@ class SatCatFetcher:
                 "format", "json",
             ])
             self._logger.info("Requesting GP catalog")
-            gp_resp = requests.get(gp_url, cookies=jar)
+            gp_resp = requests.get(gp_url, cookies=jar, timeout=120)
             gp_resp.raise_for_status()
             omm_list = gp_resp.json()
             self._logger.info("Received GP catalog")
@@ -110,7 +110,7 @@ class SatCatFetcher:
             ])
             self._logger.info(
                 f"Requesting file id from folder {self._folder_id}")
-            folder_resp = requests.get(folder_url, cookies=jar)
+            folder_resp = requests.get(folder_url, cookies=jar, timeout=120)
             folder_resp.raise_for_status()
             folder_list = folder_resp.json()
 
@@ -159,7 +159,7 @@ class SatCatFetcher:
                     "file_id", str(satf_id),
                 ])
                 self._logger.info("Requesting file")
-                satf_resp = requests.get(satf_url, cookies=jar)
+                satf_resp = requests.get(satf_url, cookies=jar, timeout=120)
                 satf_resp.raise_for_status()
                 self._last_satf_data = satf_resp.text
                 self._last_satf_id = satf_id
@@ -188,7 +188,7 @@ class SatCatFetcher:
 
         logout_url = f"{self.BASE_URL}/ajaxauth/logout"
         self._logger.info("Logging out")
-        requests.get(logout_url, cookies=jar)
+        requests.get(logout_url, cookies=jar, timeout=120)
         self._logger.info("Logged out")
 
         return omm_list, self._last_satf_data

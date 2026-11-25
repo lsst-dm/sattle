@@ -1,0 +1,4 @@
+# Refresh TLE catalogs daily at 5 PM Chilean time.
+# TZ handles CLT/CLST daylight-saving transitions automatically.
+TZ=America/Santiago
+0 17 * * * /app/refresh_tles.sh

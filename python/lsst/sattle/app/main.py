@@ -19,7 +19,19 @@ from .constants import (
 
 # When ALL_CATS is True, read_tles fetches both catalogs
 ALL_CATS = os.environ.get("SATTLE_ALL_CATS", "true").lower() != "false"
+CATALOG_REFRESH_INTERVAL = 3600   # 1 hour between refresh attempts
+CATALOG_REFRESH_TIMEOUT = 600     # 10 minutes max per refresh attempt
 logger = logging.getLogger(__name__)
+
+
+def _default_refresh_status():
+    return {
+        'last_refresh_success': None,
+        'last_refresh_error': None,
+        'last_refresh_timestamp': None,
+        'refresh_success_count': 0,
+        'refresh_failure_count': 0,
+    }
 
 
 def _startup_self_test():
@@ -390,7 +402,7 @@ class TLE:
 async def cache_update(visit_satellite_cache, tles, force_update=None):
     """Main loop that clears the cache according to the clock."""
     interval = 10  # seconds
-    expire_cache_time_min = 30  # minutes
+    expire_cache_time_min = 720  # minutes (12 hours)
 
     while True:
         try:
@@ -399,7 +411,7 @@ async def cache_update(visit_satellite_cache, tles, force_update=None):
             time_now = time()
 
             for visit_id, cache in visit_satellite_cache.items():
-                if time_now > (cache['compute_time'] + expire_cache_time_min * 3600 * 24):
+                if time_now > (cache['compute_time'] + expire_cache_time_min * 60):
                     try:
                         visit_satellite_cache.pop(visit_id, None)
                     except KeyError:
@@ -414,26 +426,29 @@ async def cache_update(visit_satellite_cache, tles, force_update=None):
 
 
 async def tle_update(visit_satellite_cache, tles, tles_age, app):
-    """Main loop that clears the tle cache according to the clock."""
-    interval = 600000  # seconds
-
+    """Refresh the TLE catalog on a fixed interval."""
     while True:
         try:
-            await asyncio.sleep(interval)
-            # TODO: Make a config so you can actually set what is read as
-            #  the default??
-            # Always read the current catalog
-            tles, tles_age = read_tles('catalog', all_cats=ALL_CATS)  # noqa
+            await asyncio.sleep(CATALOG_REFRESH_INTERVAL)
+            new_tles, new_tles_age = await asyncio.wait_for(
+                asyncio.to_thread(read_tles, 'catalog', all_cats=ALL_CATS),
+                timeout=CATALOG_REFRESH_TIMEOUT,
+            )
+            app['tles'] = new_tles
+            app['tles_age'] = new_tles_age
             app['tle_catalog_timestamp'] = (
                 datetime.datetime.now(datetime.timezone.utc).isoformat()
             )
+            logger.info(f"Hourly TLE refresh succeeded: {len(new_tles)} satellites")
+
+        except asyncio.TimeoutError:
+            logger.warning(
+                f"TLE catalog refresh timed out after "
+                f"{CATALOG_REFRESH_TIMEOUT}s, keeping current catalog"
+            )
 
         except Exception as e:
-            # So you can observe on disconnects and such.
-            logger.exception(e)
-            raise
-
-    return
+            logger.error(f"TLE catalog refresh failed: {e}", exc_info=True)
 
 
 async def aio_scheduler_status_handler(request):
@@ -494,7 +509,53 @@ async def health_handler(request):
         "status": "healthy",
         "cached_visits": len(cache),
         "tle_catalog_timestamp": request.app.get('tle_catalog_timestamp'),
+        "tle_refresh_status": request.app.get('tle_refresh_status'),
     })
+
+
+async def refresh_tles_handler(request):
+    """Refresh the TLE catalog on demand."""
+    status = request.app['tle_refresh_status']
+    try:
+        tles, tles_age = await asyncio.wait_for(
+            asyncio.to_thread(read_tles, 'catalog', all_cats=ALL_CATS),
+            timeout=CATALOG_REFRESH_TIMEOUT,
+        )
+        request.app['tles'] = tles
+        request.app['tles_age'] = tles_age
+        request.app['tle_catalog_timestamp'] = (
+            datetime.datetime.now(datetime.timezone.utc).isoformat()
+        )
+        status['last_refresh_success'] = True
+        status['last_refresh_error'] = None
+        status['last_refresh_timestamp'] = request.app['tle_catalog_timestamp']
+        status['refresh_success_count'] += 1
+        logger.info(f"TLE catalog refreshed: {len(tles)} satellites")
+        return web.json_response({
+            "status": "refreshed",
+            "satellite_count": len(tles),
+        })
+    except asyncio.TimeoutError:
+        msg = f"TLE refresh timed out after {CATALOG_REFRESH_TIMEOUT}s"
+        logger.error(msg)
+        status['last_refresh_success'] = False
+        status['last_refresh_error'] = msg
+        status['last_refresh_timestamp'] = (
+            datetime.datetime.now(datetime.timezone.utc).isoformat()
+        )
+        status['refresh_failure_count'] += 1
+        return web.json_response(
+            {"status": "timeout", "error": msg}, status=504)
+    except Exception as e:
+        logger.error(f"TLE refresh failed: {e}")
+        status['last_refresh_success'] = False
+        status['last_refresh_error'] = str(e)
+        status['last_refresh_timestamp'] = (
+            datetime.datetime.now(datetime.timezone.utc).isoformat()
+        )
+        status['refresh_failure_count'] += 1
+        return web.json_response(
+            {"status": "failed", "error": str(e)}, status=500)
 
 
 async def visit_handler(request):
@@ -527,7 +588,6 @@ async def visit_handler(request):
             tles, tles_age = read_tles('catalog', date=str(data['exposure_start_mjd']), all_cats=ALL_CATS)
             logger.info(f"Using historical catalog: date={data['exposure_start_mjd']}")
         else:
-            # Get the current catalog of TLEs
             tles = request.app['tles']
             tles_age = request.app['tles_age']
 
@@ -619,12 +679,14 @@ async def build_server(address, port, visit_satellite_cache, tles, tles_age,
     app.router.add_route('PUT', "/visit_cache", visit_handler)
     app.router.add_route('GET', "/visit_cache", get_cache_handler)
     app.router.add_route('PUT', "/diasource_allow_list", diasource_handler)
+    app.router.add_route('POST', "/refresh_tles", refresh_tles_handler)
 
     app['visit_satellite_cache'] = visit_satellite_cache
     app['tles'] = tles
     app['tles_age'] = tles_age
     app['sattleTask'] = sattleTask
     app['tle_catalog_timestamp'] = tle_catalog_timestamp
+    app['tle_refresh_status'] = _default_refresh_status()
 
     server = await loop.create_server(app.make_handler(), address, port)
     return server, app
